@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>カメラで指カーソル操作デモ</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Arial", sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        overflow: hidden;
+      }
+
+      #container {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+      }
+
+      #video-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        width: 320px;
+        height: 240px;
+        border: 3px solid white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        background: #000;
+        z-index: 1000;
+      }
+
+      #input_video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transform: scaleX(-1);
+      }
+
+      #output_canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        transform: scaleX(-1);
+      }
+
+      #cursor {
+        position: fixed;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: rgba(255, 100, 100, 0.8);
+        border: 3px solid white;
+        pointer-events: none;
+        z-index: 9999;
+        transform: translate(-50%, -50%);
+        transition: background 0.2s, transform 0.1s;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      }
+
+      #cursor.clicking {
+        background: rgba(100, 255, 100, 0.9);
+        transform: translate(-50%, -50%) scale(1.3);
+      }
+
+      #info {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        max-width: 300px;
+        z-index: 1000;
+      }
+
+      #info h2 {
+        margin-bottom: 10px;
+        color: #667eea;
+        font-size: 20px;
+      }
+
+      #info p {
+        margin: 8px 0;
+        color: #333;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      #info strong {
+        color: #764ba2;
+      }
+
+      #status {
+        margin-top: 12px;
+        padding: 8px 12px;
+        background: #f0f0f0;
+        border-radius: 6px;
+        font-weight: bold;
+        color: #666;
+      }
+
+      #status.active {
+        background: #d4edda;
+        color: #155724;
+      }
+
+      .interactive-box {
+        position: absolute;
+        padding: 20px 30px;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        font-size: 18px;
+        font-weight: bold;
+        color: #667eea;
+      }
+
+      .interactive-box:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+      }
+
+      .interactive-box.clicked {
+        animation: pulse 0.5s;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.1);
+        }
+      }
+
+      #loading {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        text-align: center;
+        z-index: 10000;
+      }
+
+      #loading.hidden {
+        display: none;
+      }
+
+      .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #667eea;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 15px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="loading">
+      <div class="spinner"></div>
+      <p>カメラとMediaPipeを読み込み中...</p>
+    </div>
+
+    <div id="container">
+      <div id="info">
+        <h2>🎯 使い方</h2>
+        <p>👆 <strong>人差し指</strong>でカーソルを動かす</p>
+        <p>👌 <strong>ピンチ</strong>（指を近づける）でドラッグ</p>
+        <p>✋ <strong>指を離す</strong>とドロップ</p>
+        <p>📦 ボックスをドラッグしてみよう！</p>
+        <div id="status">待機中...</div>
+      </div>
+
+      <div id="video-container">
+        <video id="input_video" autoplay playsinline></video>
+        <canvas id="output_canvas"></canvas>
+      </div>
+
+      <div id="cursor"></div>
+
+      <div class="interactive-box" style="top: 40%; left: 25%" data-id="1">ボックス 1</div>
+      <div class="interactive-box" style="top: 40%; right: 25%" data-id="2">ボックス 2</div>
+      <div class="interactive-box" style="bottom: 25%; left: 50%; transform: translateX(-50%)" data-id="3">
+        ボックス 3
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+
+    <script type="module">
+      const videoElement = document.getElementById("input_video");
+      const canvasElement = document.getElementById("output_canvas");
+      const canvasCtx = canvasElement.getContext("2d");
+      const cursor = document.getElementById("cursor");
+      const status = document.getElementById("status");
+      const loading = document.getElementById("loading");
+
+      let smoothX = window.innerWidth / 2;
+      let smoothY = window.innerHeight / 2;
+      const smoothFactor = 0.3;
+      let isClicking = false;
+      let lastClickTime = 0;
+      let isDragging = false;
+      let draggedElement = null;
+      let offsetX = 0;
+      let offsetY = 0;
+
+      // MediaPipe Handsの設定
+      const hands = new Hands({
+        locateFile: (file) => {
+          return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+        },
+      });
+
+      hands.setOptions({
+        maxNumHands: 1,
+        modelComplexity: 1,
+        minDetectionConfidence: 0.7,
+        minTrackingConfidence: 0.7,
+      });
+
+      hands.onResults((results) => {
+        // Canvasのサイズを設定
+        canvasElement.width = videoElement.videoWidth;
+        canvasElement.height = videoElement.videoHeight;
+
+        canvasCtx.save();
+        canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+
+        if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+          const landmarks = results.multiHandLandmarks[0];
+
+          // 手の骨格を描画
+          canvasCtx.strokeStyle = "#00ff00";
+          canvasCtx.lineWidth = 2;
+
+          // 指のつながりを描画
+          const connections = [
+            [0, 1],
+            [1, 2],
+            [2, 3],
+            [3, 4], // 親指
+            [0, 5],
+            [5, 6],
+            [6, 7],
+            [7, 8], // 人差し指
+            [0, 9],
+            [9, 10],
+            [10, 11],
+            [11, 12], // 中指
+            [0, 13],
+            [13, 14],
+            [14, 15],
+            [15, 16], // 薬指
+            [0, 17],
+            [17, 18],
+            [18, 19],
+            [19, 20], // 小指
+            [5, 9],
+            [9, 13],
+            [13, 17], // 手のひら
+          ];
+
+          connections.forEach(([start, end]) => {
+            const startPoint = landmarks[start];
+            const endPoint = landmarks[end];
+            canvasCtx.beginPath();
+            canvasCtx.moveTo(startPoint.x * canvasElement.width, startPoint.y * canvasElement.height);
+            canvasCtx.lineTo(endPoint.x * canvasElement.width, endPoint.y * canvasElement.height);
+            canvasCtx.stroke();
+          });
+
+          // ランドマークを描画
+          landmarks.forEach((landmark, index) => {
+            const x = landmark.x * canvasElement.width;
+            const y = landmark.y * canvasElement.height;
+            canvasCtx.beginPath();
+            canvasCtx.arc(x, y, 5, 0, 2 * Math.PI);
+            canvasCtx.fillStyle = index === 8 ? "#ff0000" : "#00ff00";
+            canvasCtx.fill();
+          });
+
+          // 人差し指の先端 (landmark 8)
+          const indexFingerTip = landmarks[8];
+
+          // カメラ座標を画面座標に変換（映像が反転しているので座標も反転）
+          const targetX = (1.0 - indexFingerTip.x) * window.innerWidth;
+          const targetY = indexFingerTip.y * window.innerHeight;
+
+          // スムーズな動きにする
+          smoothX += (targetX - smoothX) * smoothFactor;
+          smoothY += (targetY - smoothY) * smoothFactor;
+
+          // カーソルを移動
+          cursor.style.left = `${smoothX}px`;
+          cursor.style.top = `${smoothY}px`;
+          cursor.style.display = "block";
+
+          // ピンチジェスチャー検出 (親指と人差し指が近づいたら)
+          const thumbTip = landmarks[4];
+          const distance = Math.sqrt(
+            Math.pow(indexFingerTip.x - thumbTip.x, 2) +
+              Math.pow(indexFingerTip.y - thumbTip.y, 2) +
+              Math.pow(indexFingerTip.z - thumbTip.z, 2)
+          );
+
+          const now = Date.now();
+          if (distance < 0.06) {
+            if (!isClicking) {
+              isClicking = true;
+              cursor.classList.add("clicking");
+
+              // ドラッグ開始
+              const element = document.elementFromPoint(smoothX, smoothY);
+              if (element && element.classList.contains("interactive-box")) {
+                isDragging = true;
+                draggedElement = element;
+
+                // 要素の現在位置を取得
+                const rect = element.getBoundingClientRect();
+                offsetX = smoothX - rect.left;
+                offsetY = smoothY - rect.top;
+
+                element.style.cursor = "grabbing";
+                element.style.zIndex = "9998";
+                console.log("ドラッグ開始:", element.dataset.id);
+              }
+            }
+
+            // ドラッグ中
+            if (isDragging && draggedElement) {
+              draggedElement.style.left = `${smoothX - offsetX}px`;
+              draggedElement.style.top = `${smoothY - offsetY}px`;
+              draggedElement.style.right = "auto";
+              draggedElement.style.bottom = "auto";
+              draggedElement.style.transform = "none";
+            }
+          } else {
+            // ドラッグ終了
+            if (isDragging && draggedElement) {
+              draggedElement.style.cursor = "pointer";
+              draggedElement.style.zIndex = "";
+              draggedElement.classList.add("clicked");
+              draggedElement.style.background = `hsl(${Math.random() * 360}, 70%, 80%)`;
+              setTimeout(() => draggedElement.classList.remove("clicked"), 500);
+              console.log("ドラッグ終了:", draggedElement.dataset.id);
+              draggedElement = null;
+            }
+            isDragging = false;
+            isClicking = false;
+            cursor.classList.remove("clicking");
+          }
+
+          status.textContent = "手を検出中 ✓";
+          status.classList.add("active");
+        } else {
+          status.textContent = "手が見えません...";
+          status.classList.remove("active");
+        }
+
+        canvasCtx.restore();
+      });
+
+      // カメラを起動
+      async function startCamera() {
+        // セキュリティチェック
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          const errorMsg = "このブラウザはカメラAPIに対応していません。HTTPSで開いているか確認してください。";
+          console.error(errorMsg);
+          loading.querySelector("p").innerHTML =
+            `⚠️ ${errorMsg}<br><br>` +
+            `<strong>解決方法:</strong><br>` +
+            `1. HTTPSでページを開く<br>` +
+            `2. または localhost で開く<br>` +
+            `3. Chrome/Firefoxの最新版を使用`;
+          return;
+        }
+
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: { width: 1280, height: 720 },
+          });
+          videoElement.srcObject = stream;
+
+          videoElement.addEventListener("loadeddata", async () => {
+            loading.classList.add("hidden");
+            console.log("カメラ起動完了");
+
+            // フレームごとに処理
+            async function onFrame() {
+              await hands.send({ image: videoElement });
+              requestAnimationFrame(onFrame);
+            }
+            onFrame();
+          });
+        } catch (error) {
+          console.error("カメラエラー:", error);
+          loading.querySelector("p").textContent = "カメラの起動に失敗しました: " + error.message;
+        }
+      }
+
+      startCamera();
+
+      // インタラクティブボックスのホバーエフェクト
+      document.querySelectorAll(".interactive-box").forEach((box) => {
+        box.addEventListener("mouseenter", () => {
+          box.style.transform = box.style.transform.includes("translateX")
+            ? "translateX(-50%) translateY(-4px)"
+            : "translateY(-4px)";
+        });
+        box.addEventListener("mouseleave", () => {
+          box.style.transform = box.style.transform.includes("translateX") ? "translateX(-50%)" : "none";
+        });
+      });
+    </script>
+  </body>
+</html>
