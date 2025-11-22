@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>福笑いデモ</title>
+    <title>福笑いゲーム</title>
     <style>
       * {
         margin: 0;
@@ -75,6 +75,27 @@
         transform: scaleX(-1);
       }
 
+      /* 手のカーソル */
+      #hand-cursor {
+        position: fixed;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: rgba(255, 100, 100, 0.8);
+        border: 3px solid white;
+        pointer-events: none;
+        z-index: 9999;
+        transform: translate(-50%, -50%);
+        transition: background 0.2s, transform 0.1s;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        display: none;
+      }
+
+      #hand-cursor.pinching {
+        background: rgba(100, 255, 100, 0.9);
+        transform: translate(-50%, -50%) scale(1.3);
+      }
+
       #capture-btn {
         display: block;
         width: 100%;
@@ -108,6 +129,30 @@
         color: #155724;
       }
 
+      /* 操作モード切替 */
+      .mode-switch {
+        margin-top: 15px;
+        display: flex;
+        gap: 10px;
+      }
+
+      .mode-switch button {
+        flex: 1;
+        padding: 10px;
+        border: 2px solid #ff6b6b;
+        border-radius: 8px;
+        background: white;
+        color: #ff6b6b;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .mode-switch button.active {
+        background: #ff6b6b;
+        color: white;
+      }
+
       /* 福笑いエリア */
       .fukuwarai-section {
         flex: 1;
@@ -123,6 +168,54 @@
         margin-bottom: 15px;
       }
 
+      /* タイマー表示 */
+      .game-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+
+      #timer {
+        font-size: 32px;
+        font-weight: bold;
+        color: #ff6b6b;
+        background: #fff0f0;
+        padding: 10px 20px;
+        border-radius: 12px;
+      }
+
+      #timer.warning {
+        color: #dc3545;
+        animation: pulse 0.5s infinite;
+      }
+
+      @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+      }
+
+      #start-game-btn {
+        padding: 15px 30px;
+        background: linear-gradient(135deg, #6bcb77 0%, #4caf50 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: transform 0.2s;
+      }
+
+      #start-game-btn:hover {
+        transform: translateY(-2px);
+      }
+
+      #start-game-btn:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+
       .fukuwarai-container {
         display: flex;
         gap: 20px;
@@ -136,6 +229,18 @@
         border-radius: 50%;
         background: #fff5f5;
         position: relative;
+        overflow: hidden;
+      }
+
+      /* 顔ガイド（ぼんやり表示） */
+      #face-guide {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0.15;
+        pointer-events: none;
       }
 
       /* パーツ置き場 */
@@ -241,6 +346,74 @@
         color: white;
       }
 
+      /* スコア表示 */
+      #score-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.7);
+        z-index: 10001;
+        justify-content: center;
+        align-items: center;
+      }
+
+      #score-modal.show {
+        display: flex;
+      }
+
+      .score-content {
+        background: white;
+        padding: 40px;
+        border-radius: 20px;
+        text-align: center;
+        max-width: 400px;
+        animation: slideIn 0.3s ease;
+      }
+
+      @keyframes slideIn {
+        from { transform: translateY(-50px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+      }
+
+      .score-content h2 {
+        color: #ff6b6b;
+        margin-bottom: 20px;
+        font-size: 28px;
+      }
+
+      .score-value {
+        font-size: 72px;
+        font-weight: bold;
+        color: #4caf50;
+        margin: 20px 0;
+      }
+
+      .score-rank {
+        font-size: 48px;
+        margin: 10px 0;
+      }
+
+      .score-detail {
+        color: #666;
+        margin: 10px 0;
+        font-size: 14px;
+      }
+
+      .score-content button {
+        margin-top: 20px;
+        padding: 15px 40px;
+        background: #ff6b6b;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+
       /* ローディング */
       #loading {
         position: fixed;
@@ -282,6 +455,26 @@
         font-size: 14px;
         color: #856404;
       }
+
+      /* 時間設定 */
+      .time-setting {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 10px;
+      }
+
+      .time-setting label {
+        font-size: 14px;
+        color: #666;
+      }
+
+      .time-setting select {
+        padding: 8px 12px;
+        border: 2px solid #ffb6c1;
+        border-radius: 8px;
+        font-size: 14px;
+      }
     </style>
   </head>
   <body>
@@ -290,8 +483,22 @@
       <p>カメラとMediaPipeを読み込み中...</p>
     </div>
 
+    <!-- 手のカーソル -->
+    <div id="hand-cursor"></div>
+
+    <!-- スコアモーダル -->
+    <div id="score-modal">
+      <div class="score-content">
+        <h2>結果発表！</h2>
+        <div class="score-rank" id="score-rank"></div>
+        <div class="score-value" id="score-value">0</div>
+        <div class="score-detail" id="score-detail"></div>
+        <button id="close-score">もう一度遊ぶ</button>
+      </div>
+    </div>
+
     <div class="container">
-      <h1>🎭 福笑い</h1>
+      <h1>🎭 福笑いゲーム</h1>
 
       <div class="main-area">
         <!-- カメラセクション -->
@@ -303,13 +510,34 @@
           </div>
           <button id="capture-btn">📸 パーツをキャプチャ</button>
           <div id="status">待機中...</div>
+
+          <!-- 操作モード切替 -->
+          <div class="mode-switch">
+            <button id="mode-mouse" class="active">🖱 マウス</button>
+            <button id="mode-hand">✋ 手で操作</button>
+          </div>
+
+          <!-- 時間設定 -->
+          <div class="time-setting">
+            <label>制限時間:</label>
+            <select id="time-select">
+              <option value="30">30秒</option>
+              <option value="60" selected>60秒</option>
+              <option value="90">90秒</option>
+              <option value="0">無制限</option>
+            </select>
+          </div>
         </div>
 
         <!-- 福笑いセクション -->
         <div class="fukuwarai-section">
-          <h2>🎯 福笑いで遊ぼう</h2>
-          <div class="instructions">
-            💡 パーツをドラッグして顔の上に配置しよう！
+          <div class="game-header">
+            <h2>🎯 福笑いで遊ぼう</h2>
+            <div id="timer">--:--</div>
+            <button id="start-game-btn" disabled>🎮 ゲーム開始</button>
+          </div>
+          <div class="instructions" id="instructions">
+            💡 1. まず顔をキャプチャ → 2. ゲーム開始 → 3. パーツを正しい位置に配置！
           </div>
           <div class="fukuwarai-container">
             <!-- パーツ置き場 -->
@@ -342,7 +570,9 @@
             </div>
 
             <!-- 顔のキャンバス -->
-            <div id="face-canvas"></div>
+            <div id="face-canvas">
+              <canvas id="face-guide"></canvas>
+            </div>
           </div>
 
           <div class="controls">
@@ -355,7 +585,7 @@
     </div>
 
     <script type="module">
-      import { FilesetResolver, FaceLandmarker } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest";
+      import { FilesetResolver, FaceLandmarker, HandLandmarker } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest";
 
       const videoElement = document.getElementById("input_video");
       const canvasElement = document.getElementById("output_canvas");
@@ -364,7 +594,13 @@
       const loading = document.getElementById("loading");
       const captureBtn = document.getElementById("capture-btn");
       const faceCanvas = document.getElementById("face-canvas");
-      const partsTray = document.getElementById("parts-tray");
+      const faceGuide = document.getElementById("face-guide");
+      const faceGuideCtx = faceGuide.getContext("2d");
+      const handCursor = document.getElementById("hand-cursor");
+      const timerDisplay = document.getElementById("timer");
+      const startGameBtn = document.getElementById("start-game-btn");
+      const scoreModal = document.getElementById("score-modal");
+      const instructions = document.getElementById("instructions");
 
       // パーツ用キャンバス
       const trayCanvases = {
@@ -377,9 +613,24 @@
       };
 
       let faceLandmarker = null;
+      let handLandmarker = null;
       let lastVideoTime = -1;
       let currentLandmarks = null;
+      let correctPositions = {}; // 正解の位置を保存
       let placedParts = [];
+      let isHandMode = false;
+      let isGameRunning = false;
+      let gameTimer = null;
+      let remainingTime = 60;
+
+      // 手操作用の変数
+      let smoothX = window.innerWidth / 2;
+      let smoothY = window.innerHeight / 2;
+      const smoothFactor = 0.3;
+      let isPinching = false;
+      let handDraggedPart = null;
+      let handOffsetX = 0;
+      let handOffsetY = 0;
 
       // FaceMeshのランドマークインデックス
       const FACE_PARTS = {
@@ -391,12 +642,13 @@
         rightEyebrow: [300, 293, 334, 296, 336, 285, 295, 282, 283, 276],
       };
 
-      // MediaPipe Face Landmarkerの初期化
-      async function initializeFaceLandmarker() {
+      // MediaPipe初期化
+      async function initializeMediaPipe() {
         const vision = await FilesetResolver.forVisionTasks(
           "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
         );
 
+        // Face Landmarker
         faceLandmarker = await FaceLandmarker.createFromOptions(vision, {
           baseOptions: {
             modelAssetPath:
@@ -409,7 +661,21 @@
           minTrackingConfidence: 0.5,
         });
 
-        console.log("Face Landmarker初期化完了");
+        // Hand Landmarker
+        handLandmarker = await HandLandmarker.createFromOptions(vision, {
+          baseOptions: {
+            modelAssetPath:
+              "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
+            delegate: "GPU",
+          },
+          runningMode: "VIDEO",
+          numHands: 1,
+          minHandDetectionConfidence: 0.7,
+          minHandPresenceConfidence: 0.7,
+          minTrackingConfidence: 0.7,
+        });
+
+        console.log("MediaPipe初期化完了");
       }
 
       // パーツの範囲を計算
@@ -424,6 +690,14 @@
           minY: Math.max(0, Math.min(...ys) - padding),
           maxY: Math.min(videoElement.videoHeight, Math.max(...ys) + padding),
         };
+      }
+
+      // パーツの中心座標を計算（正解位置用）
+      function getPartCenter(landmarks, indices) {
+        const points = indices.map((i) => landmarks[i]);
+        const avgX = points.reduce((sum, p) => sum + p.x, 0) / points.length;
+        const avgY = points.reduce((sum, p) => sum + p.y, 0) / points.length;
+        return { x: avgX, y: avgY };
       }
 
       // パーツを切り出してキャンバスに描画
@@ -443,21 +717,67 @@
           mirroredX, bounds.minY, width, height,
           0, 0, canvas.width, canvas.height
         );
+
+        // 正解位置を保存（face-canvas座標系に変換）
+        const center = getPartCenter(landmarks, indices);
+        correctPositions[partName] = {
+          x: (1 - center.x) * faceCanvas.offsetWidth,
+          y: center.y * faceCanvas.offsetHeight,
+        };
       }
 
-      // 顔のランドマークを処理
-      function processFaceLandmarks(results) {
+      // 顔のガイドを描画
+      function drawFaceGuide(landmarks) {
+        faceGuide.width = faceCanvas.offsetWidth;
+        faceGuide.height = faceCanvas.offsetHeight;
+
+        faceGuideCtx.clearRect(0, 0, faceGuide.width, faceGuide.height);
+
+        // 顔の輪郭を描画
+        const faceOutline = [10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109];
+
+        faceGuideCtx.strokeStyle = "#ffb6c1";
+        faceGuideCtx.lineWidth = 3;
+        faceGuideCtx.beginPath();
+
+        faceOutline.forEach((index, i) => {
+          const x = (1 - landmarks[index].x) * faceGuide.width;
+          const y = landmarks[index].y * faceGuide.height;
+          if (i === 0) {
+            faceGuideCtx.moveTo(x, y);
+          } else {
+            faceGuideCtx.lineTo(x, y);
+          }
+        });
+        faceGuideCtx.closePath();
+        faceGuideCtx.stroke();
+
+        // パーツの正解位置をぼんやり表示
+        Object.entries(FACE_PARTS).forEach(([partName, indices]) => {
+          const center = getPartCenter(landmarks, indices);
+          const x = (1 - center.x) * faceGuide.width;
+          const y = center.y * faceGuide.height;
+
+          faceGuideCtx.fillStyle = "rgba(255, 182, 193, 0.3)";
+          faceGuideCtx.beginPath();
+          faceGuideCtx.ellipse(x, y, 30, 20, 0, 0, Math.PI * 2);
+          faceGuideCtx.fill();
+        });
+      }
+
+      // 顔と手のランドマークを処理
+      function processResults(faceResults, handResults) {
         canvasElement.width = videoElement.videoWidth;
         canvasElement.height = videoElement.videoHeight;
 
         canvasCtx.save();
         canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
 
-        if (results.faceLandmarks && results.faceLandmarks.length > 0) {
-          const landmarks = results.faceLandmarks[0];
+        // 顔の検出
+        if (faceResults.faceLandmarks && faceResults.faceLandmarks.length > 0) {
+          const landmarks = faceResults.faceLandmarks[0];
           currentLandmarks = landmarks;
 
-          // 顔のランドマークを描画
           canvasCtx.fillStyle = "rgba(0, 255, 0, 0.5)";
           landmarks.forEach((landmark) => {
             const x = landmark.x * canvasElement.width;
@@ -475,7 +795,116 @@
           status.classList.remove("active");
         }
 
+        // 手の検出（手モードの場合）
+        if (isHandMode && handResults.landmarks && handResults.landmarks.length > 0) {
+          const handLandmarks = handResults.landmarks[0];
+
+          // 手の骨格を描画
+          canvasCtx.strokeStyle = "#00ff00";
+          canvasCtx.lineWidth = 2;
+
+          const connections = [
+            [0, 1], [1, 2], [2, 3], [3, 4],
+            [0, 5], [5, 6], [6, 7], [7, 8],
+            [0, 9], [9, 10], [10, 11], [11, 12],
+            [0, 13], [13, 14], [14, 15], [15, 16],
+            [0, 17], [17, 18], [18, 19], [19, 20],
+            [5, 9], [9, 13], [13, 17],
+          ];
+
+          connections.forEach(([start, end]) => {
+            const startPoint = handLandmarks[start];
+            const endPoint = handLandmarks[end];
+            canvasCtx.beginPath();
+            canvasCtx.moveTo(startPoint.x * canvasElement.width, startPoint.y * canvasElement.height);
+            canvasCtx.lineTo(endPoint.x * canvasElement.width, endPoint.y * canvasElement.height);
+            canvasCtx.stroke();
+          });
+
+          // 人差し指の先端でカーソルを動かす
+          const indexFingerTip = handLandmarks[8];
+          const targetX = (1.0 - indexFingerTip.x) * window.innerWidth;
+          const targetY = indexFingerTip.y * window.innerHeight;
+
+          smoothX += (targetX - smoothX) * smoothFactor;
+          smoothY += (targetY - smoothY) * smoothFactor;
+
+          handCursor.style.left = `${smoothX}px`;
+          handCursor.style.top = `${smoothY}px`;
+          handCursor.style.display = "block";
+
+          // ピンチジェスチャー検出
+          const thumbTip = handLandmarks[4];
+          const distance = Math.sqrt(
+            Math.pow(indexFingerTip.x - thumbTip.x, 2) +
+            Math.pow(indexFingerTip.y - thumbTip.y, 2) +
+            Math.pow(indexFingerTip.z - thumbTip.z, 2)
+          );
+
+          if (distance < 0.06) {
+            if (!isPinching) {
+              isPinching = true;
+              handCursor.classList.add("pinching");
+
+              // パーツを掴む
+              const element = document.elementFromPoint(smoothX, smoothY);
+              if (element && element.classList.contains("placed-part")) {
+                handDraggedPart = element;
+                const rect = element.getBoundingClientRect();
+                handOffsetX = smoothX - rect.left;
+                handOffsetY = smoothY - rect.top;
+              } else if (element && element.closest(".draggable-part")) {
+                // トレイからパーツを取る
+                const partElement = element.closest(".draggable-part");
+                const partName = partElement.dataset.part;
+                createPlacedPart(partName, smoothX, smoothY);
+              }
+            }
+
+            // ドラッグ中
+            if (handDraggedPart) {
+              const faceRect = faceCanvas.getBoundingClientRect();
+              handDraggedPart.style.left = (smoothX - faceRect.left - handOffsetX) + "px";
+              handDraggedPart.style.top = (smoothY - faceRect.top - handOffsetY) + "px";
+            }
+          } else {
+            isPinching = false;
+            handCursor.classList.remove("pinching");
+            handDraggedPart = null;
+          }
+        } else if (isHandMode) {
+          handCursor.style.display = "none";
+        }
+
         canvasCtx.restore();
+      }
+
+      // 配置パーツを作成
+      function createPlacedPart(partName, x, y) {
+        const canvas = trayCanvases[partName];
+        const img = document.createElement("img");
+        img.src = canvas.toDataURL();
+        img.className = "placed-part";
+        img.dataset.part = partName;
+        img.style.width = canvas.width + "px";
+        img.style.height = canvas.height + "px";
+
+        const faceRect = faceCanvas.getBoundingClientRect();
+        img.style.left = (x - faceRect.left - canvas.width / 2) + "px";
+        img.style.top = (y - faceRect.top - canvas.height / 2) + "px";
+
+        faceCanvas.appendChild(img);
+        placedParts.push(img);
+
+        if (!isHandMode) {
+          setupPlacedPartDrag(img);
+        }
+
+        if (isHandMode) {
+          handDraggedPart = img;
+          handOffsetX = canvas.width / 2;
+          handOffsetY = canvas.height / 2;
+        }
       }
 
       // キャプチャボタン
@@ -490,10 +919,134 @@
           extractPart(currentLandmarks, partName, indices);
         });
 
-        status.textContent = "キャプチャ完了！パーツをドラッグして遊ぼう";
+        // 顔ガイドを描画
+        drawFaceGuide(currentLandmarks);
+
+        startGameBtn.disabled = false;
+        status.textContent = "キャプチャ完了！ゲームを開始しよう";
+        instructions.textContent = "✅ キャプチャ完了！「ゲーム開始」ボタンを押してスタート！";
       });
 
-      // ドラッグ&ドロップ機能
+      // ゲーム開始
+      startGameBtn.addEventListener("click", () => {
+        if (isGameRunning) return;
+
+        // リセット
+        placedParts.forEach(p => p.remove());
+        placedParts = [];
+
+        isGameRunning = true;
+        startGameBtn.disabled = true;
+
+        const selectedTime = parseInt(document.getElementById("time-select").value);
+        remainingTime = selectedTime;
+
+        if (selectedTime > 0) {
+          updateTimerDisplay();
+          gameTimer = setInterval(() => {
+            remainingTime--;
+            updateTimerDisplay();
+
+            if (remainingTime <= 10) {
+              timerDisplay.classList.add("warning");
+            }
+
+            if (remainingTime <= 0) {
+              endGame();
+            }
+          }, 1000);
+        } else {
+          timerDisplay.textContent = "∞";
+        }
+
+        instructions.textContent = "🎮 ゲーム中！パーツを正しい位置に配置しよう！";
+      });
+
+      function updateTimerDisplay() {
+        const minutes = Math.floor(remainingTime / 60);
+        const seconds = remainingTime % 60;
+        timerDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, "0")}`;
+      }
+
+      function endGame() {
+        isGameRunning = false;
+        clearInterval(gameTimer);
+        startGameBtn.disabled = false;
+        timerDisplay.classList.remove("warning");
+
+        // スコア計算
+        calculateScore();
+      }
+
+      // スコア計算
+      function calculateScore() {
+        let totalScore = 0;
+        let details = [];
+
+        const maxDistance = Math.sqrt(
+          Math.pow(faceCanvas.offsetWidth, 2) +
+          Math.pow(faceCanvas.offsetHeight, 2)
+        );
+
+        Object.keys(FACE_PARTS).forEach((partName) => {
+          const placedPart = placedParts.find(p => p.dataset.part === partName);
+          const correct = correctPositions[partName];
+
+          if (placedPart && correct) {
+            const partX = parseInt(placedPart.style.left) + parseInt(placedPart.style.width) / 2;
+            const partY = parseInt(placedPart.style.top) + parseInt(placedPart.style.height) / 2;
+
+            const distance = Math.sqrt(
+              Math.pow(partX - correct.x, 2) +
+              Math.pow(partY - correct.y, 2)
+            );
+
+            const partScore = Math.max(0, Math.round(100 * (1 - distance / (maxDistance * 0.3))));
+            totalScore += partScore;
+
+            details.push(`${partName}: ${partScore}点`);
+          } else {
+            details.push(`${partName}: 未配置`);
+          }
+        });
+
+        const averageScore = Math.round(totalScore / Object.keys(FACE_PARTS).length);
+
+        // ランク判定
+        let rank = "";
+        if (averageScore >= 90) rank = "🏆 S";
+        else if (averageScore >= 80) rank = "🥇 A";
+        else if (averageScore >= 70) rank = "🥈 B";
+        else if (averageScore >= 60) rank = "🥉 C";
+        else rank = "😅 D";
+
+        document.getElementById("score-value").textContent = averageScore;
+        document.getElementById("score-rank").textContent = rank;
+        document.getElementById("score-detail").innerHTML = details.join("<br>");
+        scoreModal.classList.add("show");
+      }
+
+      // スコアモーダルを閉じる
+      document.getElementById("close-score").addEventListener("click", () => {
+        scoreModal.classList.remove("show");
+        timerDisplay.textContent = "--:--";
+      });
+
+      // 操作モード切替
+      document.getElementById("mode-mouse").addEventListener("click", () => {
+        isHandMode = false;
+        document.getElementById("mode-mouse").classList.add("active");
+        document.getElementById("mode-hand").classList.remove("active");
+        handCursor.style.display = "none";
+      });
+
+      document.getElementById("mode-hand").addEventListener("click", () => {
+        isHandMode = true;
+        document.getElementById("mode-hand").classList.add("active");
+        document.getElementById("mode-mouse").classList.remove("active");
+      });
+
+      // ドラッグ&ドロップ機能（マウス用）
       function setupDragAndDrop() {
         const draggableParts = document.querySelectorAll(".draggable-part");
 
@@ -503,12 +1056,12 @@
         });
 
         function startDrag(e) {
+          if (isHandMode) return;
           e.preventDefault();
           const partElement = e.currentTarget;
           const partName = partElement.dataset.part;
           const canvas = trayCanvases[partName];
 
-          // 新しいパーツ画像を作成
           const newPart = document.createElement("img");
           newPart.src = canvas.toDataURL();
           newPart.className = "placed-part dragging";
@@ -542,8 +1095,6 @@
             document.removeEventListener("mouseup", stopDrag);
             document.removeEventListener("touchmove", movePart);
             document.removeEventListener("touchend", stopDrag);
-
-            // 配置済みパーツのドラッグ設定
             setupPlacedPartDrag(newPart);
           }
 
@@ -560,6 +1111,7 @@
         part.addEventListener("touchstart", startPlacedDrag, { passive: false });
 
         function startPlacedDrag(e) {
+          if (isHandMode) return;
           e.preventDefault();
           e.stopPropagation();
           part.classList.add("dragging");
@@ -601,13 +1153,9 @@
           return;
         }
 
-        // 既存のパーツをクリア
         placedParts.forEach(p => p.remove());
         placedParts = [];
 
-        const faceRect = faceCanvas.getBoundingClientRect();
-
-        // ランダムに配置
         Object.entries(trayCanvases).forEach(([partName, canvas]) => {
           const img = document.createElement("img");
           img.src = canvas.toDataURL();
@@ -628,6 +1176,14 @@
       document.getElementById("reset-btn").addEventListener("click", () => {
         placedParts.forEach(p => p.remove());
         placedParts = [];
+
+        if (isGameRunning) {
+          clearInterval(gameTimer);
+          isGameRunning = false;
+          startGameBtn.disabled = false;
+          timerDisplay.textContent = "--:--";
+          timerDisplay.classList.remove("warning");
+        }
       });
 
       // 保存ボタン
@@ -637,7 +1193,6 @@
         saveCanvas.height = faceCanvas.offsetHeight;
         const ctx = saveCanvas.getContext("2d");
 
-        // 背景を描画
         ctx.fillStyle = "#fff5f5";
         ctx.beginPath();
         ctx.ellipse(
@@ -649,14 +1204,12 @@
         );
         ctx.fill();
 
-        // パーツを描画
         placedParts.forEach(part => {
           const x = parseInt(part.style.left);
           const y = parseInt(part.style.top);
           ctx.drawImage(part, x, y);
         });
 
-        // ダウンロード
         const link = document.createElement("a");
         link.download = "fukuwarai.png";
         link.href = saveCanvas.toDataURL();
@@ -665,7 +1218,7 @@
 
       // カメラを起動
       async function startCamera() {
-        await initializeFaceLandmarker();
+        await initializeMediaPipe();
 
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
           loading.querySelector("p").textContent = "カメラAPIに対応していません";
@@ -683,14 +1236,15 @@
             console.log("カメラ起動完了");
 
             function onFrame() {
-              if (!faceLandmarker) return;
+              if (!faceLandmarker || !handLandmarker) return;
 
               const startTimeMs = performance.now();
 
               if (videoElement.currentTime !== lastVideoTime) {
                 lastVideoTime = videoElement.currentTime;
-                const results = faceLandmarker.detectForVideo(videoElement, startTimeMs);
-                processFaceLandmarks(results);
+                const faceResults = faceLandmarker.detectForVideo(videoElement, startTimeMs);
+                const handResults = handLandmarker.detectForVideo(videoElement, startTimeMs);
+                processResults(faceResults, handResults);
               }
 
               requestAnimationFrame(onFrame);
