@@ -428,15 +428,16 @@
 
           // 人差し指の先端 (landmark 8)
           const indexFingerTip = landmarks[8];
-
+          // console.log("人差し指先端座標:", indexFingerTip);
           // カメラ座標を画面座標に変換（映像が反転しているので座標も反転）
           const targetX = (1.0 - indexFingerTip.x) * window.innerWidth;
           const targetY = indexFingerTip.y * window.innerHeight;
-
+          console.log(targetX, targetY);
           // スムーズな動きにする
-          smoothX += (targetX - smoothX) * smoothFactor;
-          smoothY += (targetY - smoothY) * smoothFactor;
-
+          // smoothX += (targetX - smoothX) * smoothFactor;
+          // smoothY += (targetY - smoothY) * smoothFactor;
+          smoothX = targetX;
+          smoothY = targetY;
           // カーソルを移動
           cursor.style.left = `${smoothX}px`;
           cursor.style.top = `${smoothY}px`;
