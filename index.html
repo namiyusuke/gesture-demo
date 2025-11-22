@@ -13,7 +13,7 @@
 
       body {
         font-family: "Arial", sans-serif;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: #333;
         min-height: 100vh;
         overflow: hidden;
       }
@@ -56,21 +56,25 @@
 
       #cursor {
         position: fixed;
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        background: rgba(255, 100, 100, 0.8);
-        border: 3px solid white;
         pointer-events: none;
         z-index: 9999;
         transform: translate(-50%, -50%);
         transition: background 0.2s, transform 0.1s;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
       }
 
       #cursor.clicking {
-        background: rgba(100, 255, 100, 0.9);
         transform: translate(-50%, -50%) scale(1.3);
+      }
+
+      /* 流体キャンバス */
+      #fluid-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+        pointer-events: none;
       }
 
       #info {
@@ -207,6 +211,7 @@
       </div>
 
       <div id="cursor"></div>
+      <canvas id="fluid-canvas"></canvas>
 
       <div class="interactive-box" style="top: 40%; left: 25%" data-id="1">ボックス 1</div>
       <div class="interactive-box" style="top: 40%; right: 25%" data-id="2">ボックス 2</div>
@@ -215,9 +220,9 @@
       </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/vision_bundle.js" crossorigin="anonymous"></script>
-
     <script type="module">
+      import { FilesetResolver, HandLandmarker } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest";
+
       const videoElement = document.getElementById("input_video");
       const canvasElement = document.getElementById("output_canvas");
       const canvasCtx = canvasElement.getContext("2d");
@@ -237,6 +242,107 @@
       let handLandmarker = null;
       let lastVideoTime = -1;
 
+      // ========== 軽量Canvas2D流体エフェクト ==========
+      const fluidCanvas = document.getElementById("fluid-canvas");
+      const fluidCtx = fluidCanvas.getContext("2d");
+
+      // パーティクルシステム
+      const particles = [];
+      const maxParticles = 100;
+      let lastFluidX = 0;
+      let lastFluidY = 0;
+
+      function resizeFluidCanvas() {
+        fluidCanvas.width = window.innerWidth;
+        fluidCanvas.height = window.innerHeight;
+      }
+      resizeFluidCanvas();
+      window.addEventListener("resize", resizeFluidCanvas);
+
+      class Particle {
+        constructor(x, y, vx, vy, hue) {
+          this.x = x;
+          this.y = y;
+          this.vx = vx;
+          this.vy = vy;
+          this.hue = hue;
+          this.life = 1.0;
+          this.decay = 0.015 + Math.random() * 0.01;
+          this.size = 20 + Math.random() * 30;
+        }
+
+        update() {
+          this.x += this.vx;
+          this.y += this.vy;
+          this.vx *= 0.98;
+          this.vy *= 0.98;
+          this.life -= this.decay;
+          this.size *= 0.99;
+        }
+
+        draw(ctx) {
+          if (this.life <= 0) return;
+          const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size);
+          gradient.addColorStop(0, `hsla(${this.hue}, 80%, 60%, ${this.life * 0.6})`);
+          gradient.addColorStop(0.5, `hsla(${this.hue}, 70%, 50%, ${this.life * 0.3})`);
+          gradient.addColorStop(1, `hsla(${this.hue}, 60%, 40%, 0)`);
+          ctx.fillStyle = gradient;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // 流体更新関数
+      window.updateFluid = function (x, y) {
+        const dx = x - lastFluidX;
+        const dy = y - lastFluidY;
+        const speed = Math.sqrt(dx * dx + dy * dy);
+
+        if (speed > 2) {
+          const hue = (Date.now() * 0.1) % 360;
+          const count = Math.min(3, Math.floor(speed / 10) + 1);
+
+          for (let i = 0; i < count; i++) {
+            if (particles.length >= maxParticles) {
+              particles.shift();
+            }
+            particles.push(
+              new Particle(
+                x + (Math.random() - 0.5) * 10,
+                y + (Math.random() - 0.5) * 10,
+                dx * 0.2 + (Math.random() - 0.5) * 2,
+                dy * 0.2 + (Math.random() - 0.5) * 2,
+                hue + Math.random() * 30
+              )
+            );
+          }
+        }
+
+        lastFluidX = x;
+        lastFluidY = y;
+      };
+
+      // アニメーションループ
+      function animateFluid() {
+        fluidCtx.clearRect(0, 0, fluidCanvas.width, fluidCanvas.height);
+
+        // ブレンドモード
+        fluidCtx.globalCompositeOperation = "lighter";
+
+        for (let i = particles.length - 1; i >= 0; i--) {
+          particles[i].update();
+          particles[i].draw(fluidCtx);
+          if (particles[i].life <= 0) {
+            particles.splice(i, 1);
+          }
+        }
+
+        fluidCtx.globalCompositeOperation = "source-over";
+        requestAnimationFrame(animateFluid);
+      }
+      animateFluid();
+
       // MediaPipe Hand Landmarkerの初期化
       async function initializeHandLandmarker() {
         const vision = await FilesetResolver.forVisionTasks(
@@ -245,14 +351,15 @@
 
         handLandmarker = await HandLandmarker.createFromOptions(vision, {
           baseOptions: {
-            modelAssetPath: "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
-            delegate: "GPU"
+            modelAssetPath:
+              "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
+            delegate: "GPU",
           },
           runningMode: "VIDEO",
           numHands: 1,
           minHandDetectionConfidence: 0.7,
           minHandPresenceConfidence: 0.7,
-          minTrackingConfidence: 0.7
+          minTrackingConfidence: 0.7,
         });
 
         console.log("Hand Landmarker初期化完了");
@@ -334,6 +441,11 @@
           cursor.style.left = `${smoothX}px`;
           cursor.style.top = `${smoothY}px`;
           cursor.style.display = "block";
+
+          // 流体を更新
+          if (window.updateFluid) {
+            window.updateFluid(smoothX, smoothY);
+          }
 
           // ピンチジェスチャー検出 (親指と人差し指が近づいたら)
           const thumbTip = landmarks[4];
