@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>お賽銭ジェスチャー - おみくじ</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Hiragino Kaku Gothic ProN", "メイリオ", sans-serif;
+        background: linear-gradient(135deg, #1a0a2e 0%, #16213e 50%, #0f3460 100%);
+        min-height: 100vh;
+        overflow: hidden;
+      }
+
+      #container {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+      }
+
+      #video-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        width: 280px;
+        height: 210px;
+        border: 3px solid #ffd700;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(255, 215, 0, 0.3);
+        background: #000;
+        z-index: 1000;
+      }
+
+      #input_video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transform: scaleX(-1);
+      }
+
+      #output_canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        transform: scaleX(-1);
+      }
+
+      /* 神社の背景 */
+      #shrine {
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        text-align: center;
+      }
+
+      /* 鳥居 */
+      #torii {
+        font-size: 200px;
+        color: #c41e3a;
+        text-shadow: 0 0 30px rgba(196, 30, 58, 0.5);
+        margin-bottom: -30px;
+      }
+
+      /* 賽銭箱 */
+      #saisenbox {
+        width: 300px;
+        height: 120px;
+        background: linear-gradient(180deg, #8b4513 0%, #654321 50%, #4a3218 100%);
+        border: 4px solid #daa520;
+        border-radius: 8px 8px 0 0;
+        margin: 0 auto;
+        position: relative;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      }
+
+      #saisenbox::before {
+        content: "賽銭";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 36px;
+        color: #ffd700;
+        font-weight: bold;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+      }
+
+      #saisenbox::after {
+        content: "";
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 200px;
+        height: 15px;
+        background: #1a1a1a;
+        border-radius: 2px;
+      }
+
+      /* 鈴 */
+      #bell {
+        font-size: 80px;
+        position: absolute;
+        top: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.5));
+        transition: transform 0.1s;
+      }
+
+      #bell.ringing {
+        animation: ring 0.5s ease-in-out;
+      }
+
+      @keyframes ring {
+        0%, 100% { transform: translateX(-50%) rotate(0deg); }
+        20% { transform: translateX(-50%) rotate(15deg); }
+        40% { transform: translateX(-50%) rotate(-15deg); }
+        60% { transform: translateX(-50%) rotate(10deg); }
+        80% { transform: translateX(-50%) rotate(-10deg); }
+      }
+
+      /* 手の位置インジケーター */
+      #hand-indicator {
+        position: fixed;
+        width: 60px;
+        height: 60px;
+        font-size: 50px;
+        pointer-events: none;
+        z-index: 9999;
+        transform: translate(-50%, -50%);
+        transition: transform 0.05s;
+        filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+      }
+
+      /* 小銭 */
+      .coin {
+        position: fixed;
+        font-size: 40px;
+        pointer-events: none;
+        z-index: 500;
+        filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.8));
+      }
+
+      /* おみくじ */
+      #omikuji-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 2000;
+        opacity: 0;
+        transition: opacity 0.5s;
+      }
+
+      #omikuji-overlay.show {
+        display: flex;
+        opacity: 1;
+      }
+
+      #omikuji-paper {
+        background: linear-gradient(180deg, #fff8e7 0%, #f5e6c8 100%);
+        width: 200px;
+        padding: 40px 30px;
+        border-radius: 4px;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        transform: scale(0) rotate(-10deg);
+        transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+
+      #omikuji-overlay.show #omikuji-paper {
+        transform: scale(1) rotate(0deg);
+      }
+
+      #omikuji-result {
+        font-size: 72px;
+        font-weight: bold;
+        margin-bottom: 20px;
+      }
+
+      #omikuji-message {
+        font-size: 16px;
+        color: #333;
+        line-height: 1.8;
+      }
+
+      #close-omikuji {
+        margin-top: 30px;
+        padding: 10px 30px;
+        font-size: 16px;
+        background: #c41e3a;
+        color: white;
+        border: none;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: background 0.3s;
+      }
+
+      #close-omikuji:hover {
+        background: #a01830;
+      }
+
+      /* 説明パネル */
+      #info {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        max-width: 280px;
+        z-index: 1000;
+      }
+
+      #info h2 {
+        margin-bottom: 10px;
+        color: #c41e3a;
+        font-size: 20px;
+      }
+
+      #info p {
+        margin: 8px 0;
+        color: #333;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      #status {
+        margin-top: 12px;
+        padding: 8px 12px;
+        background: #f0f0f0;
+        border-radius: 6px;
+        font-weight: bold;
+        color: #666;
+        text-align: center;
+      }
+
+      #status.active {
+        background: #d4edda;
+        color: #155724;
+      }
+
+      #status.throwing {
+        background: #fff3cd;
+        color: #856404;
+      }
+
+      /* ゲージ */
+      #throw-gauge {
+        margin-top: 10px;
+        height: 10px;
+        background: #ddd;
+        border-radius: 5px;
+        overflow: hidden;
+      }
+
+      #throw-gauge-fill {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #ffd700, #ff6b6b);
+        transition: width 0.1s;
+      }
+
+      /* ローディング */
+      #loading {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        text-align: center;
+        z-index: 10000;
+      }
+
+      #loading.hidden {
+        display: none;
+      }
+
+      .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #c41e3a;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 15px;
+      }
+
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      /* キラキラエフェクト */
+      .sparkle {
+        position: fixed;
+        pointer-events: none;
+        font-size: 30px;
+        animation: sparkle 1s ease-out forwards;
+        z-index: 1500;
+      }
+
+      @keyframes sparkle {
+        0% {
+          opacity: 1;
+          transform: scale(0) rotate(0deg);
+        }
+        50% {
+          opacity: 1;
+          transform: scale(1.2) rotate(180deg);
+        }
+        100% {
+          opacity: 0;
+          transform: scale(0.5) rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="loading">
+      <div class="spinner"></div>
+      <p>カメラを起動中...</p>
+    </div>
+
+    <div id="container">
+      <div id="info">
+        <h2>⛩️ お賽銭ジェスチャー</h2>
+        <p>✋ <strong>手を上に上げて</strong>準備</p>
+        <p>👇 <strong>手を振り下ろす</strong>とお賽銭を投げます</p>
+        <p>🔔 鈴が鳴っておみくじが出ます！</p>
+        <div id="status">待機中...</div>
+        <div id="throw-gauge">
+          <div id="throw-gauge-fill"></div>
+        </div>
+      </div>
+
+      <div id="video-container">
+        <video id="input_video" autoplay playsinline></video>
+        <canvas id="output_canvas"></canvas>
+      </div>
+
+      <div id="hand-indicator">✋</div>
+
+      <div id="shrine">
+        <div id="bell">🔔</div>
+        <div id="torii">⛩️</div>
+        <div id="saisenbox"></div>
+      </div>
+    </div>
+
+    <!-- おみくじオーバーレイ -->
+    <div id="omikuji-overlay">
+      <div id="omikuji-paper">
+        <div id="omikuji-result"></div>
+        <div id="omikuji-message"></div>
+        <button id="close-omikuji">もう一度引く</button>
+      </div>
+    </div>
+
+    <!-- 鈴の音（Web Audio API） -->
+    <script>
+      // 鈴の音を生成
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+      function playBellSound() {
+        const oscillator1 = audioCtx.createOscillator();
+        const oscillator2 = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+
+        oscillator1.type = 'sine';
+        oscillator1.frequency.setValueAtTime(2000, audioCtx.currentTime);
+        oscillator1.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.5);
+
+        oscillator2.type = 'sine';
+        oscillator2.frequency.setValueAtTime(3000, audioCtx.currentTime);
+        oscillator2.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.5);
+
+        gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1);
+
+        oscillator1.connect(gainNode);
+        oscillator2.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        oscillator1.start();
+        oscillator2.start();
+        oscillator1.stop(audioCtx.currentTime + 1);
+        oscillator2.stop(audioCtx.currentTime + 1);
+      }
+
+      function playCoinSound() {
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+
+        oscillator.type = 'square';
+        oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.1);
+
+        gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + 0.2);
+      }
+    </script>
+
+    <script type="module">
+      import { FilesetResolver, HandLandmarker } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest";
+
+      const videoElement = document.getElementById("input_video");
+      const canvasElement = document.getElementById("output_canvas");
+      const canvasCtx = canvasElement.getContext("2d");
+      const handIndicator = document.getElementById("hand-indicator");
+      const status = document.getElementById("status");
+      const loading = document.getElementById("loading");
+      const bell = document.getElementById("bell");
+      const saisenbox = document.getElementById("saisenbox");
+      const omikujiOverlay = document.getElementById("omikuji-overlay");
+      const omikujiResult = document.getElementById("omikuji-result");
+      const omikujiMessage = document.getElementById("omikuji-message");
+      const closeOmikuji = document.getElementById("close-omikuji");
+      const throwGaugeFill = document.getElementById("throw-gauge-fill");
+
+      let handLandmarker = null;
+      let lastVideoTime = -1;
+
+      // ジェスチャー検出用
+      let handYHistory = [];
+      const historyLength = 10;
+      let canThrow = true;
+      let throwCooldown = false;
+
+      // おみくじデータ
+      const omikujiData = [
+        { result: "大吉", color: "#ff0000", message: "最高の運勢！\n願い事が叶うでしょう。\n積極的に行動を。" },
+        { result: "中吉", color: "#ff6600", message: "良い運勢です。\n努力が実を結びます。\n焦らず進みましょう。" },
+        { result: "小吉", color: "#ffcc00", message: "まずまずの運勢。\n小さな幸せを大切に。\n感謝を忘れずに。" },
+        { result: "吉", color: "#33cc33", message: "普通の運勢。\n平穏な日々が続きます。\n健康に注意を。" },
+        { result: "末吉", color: "#3399ff", message: "これから上向き。\n辛抱強く待てば\n良いことがあります。" },
+        { result: "凶", color: "#9933ff", message: "注意が必要です。\n慎重に行動し\n無理は禁物。" },
+      ];
+
+      // おみくじを閉じる
+      closeOmikuji.addEventListener("click", () => {
+        omikujiOverlay.classList.remove("show");
+        canThrow = true;
+      });
+
+      // MediaPipe初期化
+      async function initializeHandLandmarker() {
+        const vision = await FilesetResolver.forVisionTasks(
+          "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
+        );
+
+        handLandmarker = await HandLandmarker.createFromOptions(vision, {
+          baseOptions: {
+            modelAssetPath:
+              "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
+            delegate: "GPU",
+          },
+          runningMode: "VIDEO",
+          numHands: 1,
+          minHandDetectionConfidence: 0.7,
+          minHandPresenceConfidence: 0.7,
+          minTrackingConfidence: 0.7,
+        });
+
+        console.log("Hand Landmarker初期化完了");
+      }
+
+      // 小銭アニメーション
+      function throwCoin(startX, startY) {
+        const coin = document.createElement("div");
+        coin.className = "coin";
+        coin.textContent = "🪙";
+        coin.style.left = `${startX}px`;
+        coin.style.top = `${startY}px`;
+        document.body.appendChild(coin);
+
+        // 賽銭箱の位置
+        const boxRect = saisenbox.getBoundingClientRect();
+        const targetX = boxRect.left + boxRect.width / 2;
+        const targetY = boxRect.top + 30;
+
+        // 放物線アニメーション
+        const duration = 800;
+        const startTime = Date.now();
+
+        function animateCoin() {
+          const elapsed = Date.now() - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+
+          // 放物線の計算
+          const x = startX + (targetX - startX) * progress;
+          const y = startY + (targetY - startY) * progress - Math.sin(progress * Math.PI) * 150;
+
+          coin.style.left = `${x}px`;
+          coin.style.top = `${y}px`;
+          coin.style.transform = `rotate(${progress * 720}deg)`;
+
+          if (progress < 1) {
+            requestAnimationFrame(animateCoin);
+          } else {
+            // 着地
+            playCoinSound();
+            coin.remove();
+
+            // キラキラエフェクト
+            createSparkles(targetX, targetY);
+
+            // 鈴を鳴らす
+            setTimeout(() => {
+              bell.classList.add("ringing");
+              playBellSound();
+              setTimeout(() => bell.classList.remove("ringing"), 500);
+
+              // おみくじ表示
+              setTimeout(showOmikuji, 800);
+            }, 300);
+          }
+        }
+
+        animateCoin();
+      }
+
+      // キラキラエフェクト
+      function createSparkles(x, y) {
+        const sparkles = ["✨", "⭐", "💫"];
+        for (let i = 0; i < 8; i++) {
+          const sparkle = document.createElement("div");
+          sparkle.className = "sparkle";
+          sparkle.textContent = sparkles[Math.floor(Math.random() * sparkles.length)];
+          sparkle.style.left = `${x + (Math.random() - 0.5) * 100}px`;
+          sparkle.style.top = `${y + (Math.random() - 0.5) * 100}px`;
+          document.body.appendChild(sparkle);
+          setTimeout(() => sparkle.remove(), 1000);
+        }
+      }
+
+      // おみくじ表示
+      function showOmikuji() {
+        const fortune = omikujiData[Math.floor(Math.random() * omikujiData.length)];
+        omikujiResult.textContent = fortune.result;
+        omikujiResult.style.color = fortune.color;
+        omikujiMessage.textContent = fortune.message;
+        omikujiOverlay.classList.add("show");
+      }
+
+      // 手の動きを処理
+      function processHandLandmarks(results) {
+        canvasElement.width = videoElement.videoWidth;
+        canvasElement.height = videoElement.videoHeight;
+
+        canvasCtx.save();
+        canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+
+        if (results.landmarks && results.landmarks.length > 0) {
+          const landmarks = results.landmarks[0];
+
+          // 手の骨格を描画
+          drawHandSkeleton(landmarks);
+
+          // 手首の位置（landmark 0）
+          const wrist = landmarks[0];
+          const handX = (1.0 - wrist.x) * window.innerWidth;
+          const handY = wrist.y * window.innerHeight;
+
+          // 手のインジケーターを移動
+          handIndicator.style.left = `${handX}px`;
+          handIndicator.style.top = `${handY}px`;
+          handIndicator.style.display = "block";
+
+          // Y座標の履歴を記録
+          handYHistory.push(handY);
+          if (handYHistory.length > historyLength) {
+            handYHistory.shift();
+          }
+
+          // 振り下ろしジェスチャーを検出
+          if (handYHistory.length >= historyLength && canThrow && !throwCooldown) {
+            const firstY = handYHistory[0];
+            const lastY = handYHistory[handYHistory.length - 1];
+            const movement = lastY - firstY;
+
+            // ゲージを更新
+            const gaugeProgress = Math.min(Math.max(movement / 200, 0), 1) * 100;
+            throwGaugeFill.style.width = `${gaugeProgress}%`;
+
+            // 上から下への大きな動き（200px以上）を検出
+            if (movement > 200 && firstY < window.innerHeight * 0.4) {
+              canThrow = false;
+              throwCooldown = true;
+              status.textContent = "投げた！🪙";
+              status.className = "throwing";
+
+              // 小銭を投げる
+              throwCoin(handX, handY);
+
+              // クールダウン
+              setTimeout(() => {
+                throwCooldown = false;
+                throwGaugeFill.style.width = "0%";
+              }, 3000);
+            }
+          }
+
+          // 手が上にあるとき
+          if (handY < window.innerHeight * 0.4 && canThrow) {
+            status.textContent = "準備OK！振り下ろして！";
+            status.className = "active";
+          } else if (canThrow && !throwCooldown) {
+            status.textContent = "手を上に上げてください";
+            status.className = "";
+          }
+
+        } else {
+          handIndicator.style.display = "none";
+          status.textContent = "手が見えません...";
+          status.className = "";
+          handYHistory = [];
+        }
+
+        canvasCtx.restore();
+      }
+
+      // 手の骨格を描画
+      function drawHandSkeleton(landmarks) {
+        canvasCtx.strokeStyle = "#ffd700";
+        canvasCtx.lineWidth = 2;
+
+        const connections = [
+          [0, 1], [1, 2], [2, 3], [3, 4],
+          [0, 5], [5, 6], [6, 7], [7, 8],
+          [0, 9], [9, 10], [10, 11], [11, 12],
+          [0, 13], [13, 14], [14, 15], [15, 16],
+          [0, 17], [17, 18], [18, 19], [19, 20],
+          [5, 9], [9, 13], [13, 17],
+        ];
+
+        connections.forEach(([start, end]) => {
+          const startPoint = landmarks[start];
+          const endPoint = landmarks[end];
+          canvasCtx.beginPath();
+          canvasCtx.moveTo(startPoint.x * canvasElement.width, startPoint.y * canvasElement.height);
+          canvasCtx.lineTo(endPoint.x * canvasElement.width, endPoint.y * canvasElement.height);
+          canvasCtx.stroke();
+        });
+
+        landmarks.forEach((landmark) => {
+          const x = landmark.x * canvasElement.width;
+          const y = landmark.y * canvasElement.height;
+          canvasCtx.beginPath();
+          canvasCtx.arc(x, y, 4, 0, 2 * Math.PI);
+          canvasCtx.fillStyle = "#ffd700";
+          canvasCtx.fill();
+        });
+      }
+
+      // カメラ起動
+      async function startCamera() {
+        await initializeHandLandmarker();
+
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          loading.querySelector("p").textContent = "カメラAPIに対応していません";
+          return;
+        }
+
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: { width: 1280, height: 720 },
+          });
+          videoElement.srcObject = stream;
+
+          videoElement.addEventListener("loadeddata", () => {
+            loading.classList.add("hidden");
+            console.log("カメラ起動完了");
+
+            function onFrame() {
+              if (!handLandmarker) return;
+
+              const startTimeMs = performance.now();
+
+              if (videoElement.currentTime !== lastVideoTime) {
+                lastVideoTime = videoElement.currentTime;
+                const results = handLandmarker.detectForVideo(videoElement, startTimeMs);
+                processHandLandmarks(results);
+              }
+
+              requestAnimationFrame(onFrame);
+            }
+            onFrame();
+          });
+        } catch (error) {
+          console.error("カメラエラー:", error);
+          loading.querySelector("p").textContent = "カメラの起動に失敗: " + error.message;
+        }
+      }
+
+      startCamera();
+    </script>
+  </body>
+</html>
