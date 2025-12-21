@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>馬以外の動物をつまみ出せ！</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Arial", sans-serif;
+        background: #f5e6d3;
+        min-height: 100vh;
+        overflow: hidden;
+      }
+
+      #container {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+      }
+
+      #game-canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+      }
+
+      #video-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        width: 240px;
+        height: 180px;
+        border: 3px solid white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        background: #000;
+        z-index: 1000;
+      }
+
+      #input_video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transform: scaleX(-1);
+      }
+
+      #output_canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        transform: scaleX(-1);
+      }
+
+      #cursor {
+        position: fixed;
+        width: 60px;
+        height: 60px;
+        border: 4px solid #ff6b6b;
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 9999;
+        transform: translate(-50%, -50%);
+        transition: all 0.15s ease;
+        background: rgba(255, 107, 107, 0.2);
+      }
+
+      #cursor.pinching {
+        width: 40px;
+        height: 40px;
+        border-color: #4ecdc4;
+        background: rgba(78, 205, 196, 0.4);
+        box-shadow: 0 0 20px rgba(78, 205, 196, 0.6);
+      }
+
+      #cursor.grabbing {
+        width: 80px;
+        height: 80px;
+        border-color: #ffe66d;
+        background: rgba(255, 230, 109, 0.4);
+        animation: pulse 0.3s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%, 100% { transform: translate(-50%, -50%) scale(1); }
+        50% { transform: translate(-50%, -50%) scale(1.1); }
+      }
+
+      #info {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        max-width: 280px;
+        z-index: 1000;
+      }
+
+      #info h1 {
+        font-size: 18px;
+        color: #c9684a;
+        margin-bottom: 10px;
+      }
+
+      #info p {
+        font-size: 14px;
+        color: #666;
+        margin: 5px 0;
+      }
+
+      #score {
+        font-size: 24px;
+        font-weight: bold;
+        color: #4ecdc4;
+        margin-top: 10px;
+      }
+
+      #remaining {
+        font-size: 16px;
+        color: #ff6b6b;
+        margin-top: 5px;
+      }
+
+      #status {
+        margin-top: 12px;
+        padding: 8px 12px;
+        background: #f0f0f0;
+        border-radius: 6px;
+        font-weight: bold;
+        color: #666;
+        font-size: 12px;
+      }
+
+      #status.active {
+        background: #d4edda;
+        color: #155724;
+      }
+
+      #loading {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        text-align: center;
+        z-index: 10000;
+      }
+
+      #loading.hidden {
+        display: none;
+      }
+
+      .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #c9684a;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 15px;
+      }
+
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      #clear-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 20000;
+      }
+
+      #clear-modal.show {
+        display: flex;
+      }
+
+      #clear-content {
+        background: white;
+        padding: 40px;
+        border-radius: 20px;
+        text-align: center;
+        animation: bounceIn 0.5s ease;
+      }
+
+      @keyframes bounceIn {
+        0% { transform: scale(0); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+      }
+
+      #clear-content h2 {
+        font-size: 36px;
+        color: #4ecdc4;
+        margin-bottom: 20px;
+      }
+
+      #clear-content p {
+        font-size: 18px;
+        color: #666;
+        margin-bottom: 20px;
+      }
+
+      #restart-btn {
+        padding: 15px 40px;
+        font-size: 18px;
+        background: #ff6b6b;
+        color: white;
+        border: none;
+        border-radius: 30px;
+        cursor: pointer;
+        transition: transform 0.2s;
+      }
+
+      #restart-btn:hover {
+        transform: scale(1.05);
+      }
+
+      /* 捕獲エリア */
+      #capture-zone {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 120px;
+        background: linear-gradient(to top, rgba(78, 205, 196, 0.3), transparent);
+        z-index: 500;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        padding-bottom: 10px;
+      }
+
+      #capture-zone p {
+        color: #4ecdc4;
+        font-weight: bold;
+        font-size: 14px;
+        text-shadow: 0 0 10px white;
+      }
+
+      #captured-animals {
+        position: fixed;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 10px;
+        z-index: 600;
+      }
+
+      .captured-icon {
+        width: 50px;
+        height: 50px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        animation: popIn 0.3s ease;
+      }
+
+      @keyframes popIn {
+        0% { transform: scale(0) rotate(-180deg); }
+        100% { transform: scale(1) rotate(0deg); }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="loading">
+      <div class="spinner"></div>
+      <p>カメラとMediaPipeを読み込み中...</p>
+    </div>
+
+    <div id="container">
+      <canvas id="game-canvas"></canvas>
+
+      <div id="info">
+        <h1>馬以外の動物をつまみ出せ！</h1>
+        <p>👆 人差し指でカーソルを動かす</p>
+        <p>👌 動物をピンチでつまむ</p>
+        <p>⬇️ 下のエリアにドラッグして捕獲！</p>
+        <div id="score">スコア: 0</div>
+        <div id="remaining">残り: 0匹</div>
+        <div id="status">待機中...</div>
+      </div>
+
+      <div id="video-container">
+        <video id="input_video" autoplay playsinline></video>
+        <canvas id="output_canvas"></canvas>
+      </div>
+
+      <div id="cursor"></div>
+
+      <div id="capture-zone">
+        <p>ここにドロップして捕獲！</p>
+      </div>
+
+      <div id="captured-animals"></div>
+    </div>
+
+    <div id="clear-modal">
+      <div id="clear-content">
+        <h2>🎉 クリア！</h2>
+        <p>全ての動物を見つけました！</p>
+        <button id="restart-btn">もう一度遊ぶ</button>
+      </div>
+    </div>
+
+    <script type="module">
+      import { FilesetResolver, HandLandmarker } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest";
+
+      const videoElement = document.getElementById("input_video");
+      const canvasElement = document.getElementById("output_canvas");
+      const canvasCtx = canvasElement.getContext("2d");
+      const cursor = document.getElementById("cursor");
+      const status = document.getElementById("status");
+      const loading = document.getElementById("loading");
+      const gameCanvas = document.getElementById("game-canvas");
+      const gameCtx = gameCanvas.getContext("2d");
+      const scoreElement = document.getElementById("score");
+      const remainingElement = document.getElementById("remaining");
+      const clearModal = document.getElementById("clear-modal");
+      const restartBtn = document.getElementById("restart-btn");
+      const capturedAnimalsDiv = document.getElementById("captured-animals");
+      const captureZone = document.getElementById("capture-zone");
+
+      let smoothX = window.innerWidth / 2;
+      let smoothY = window.innerHeight / 2;
+      let isPinching = false;
+      let handLandmarker = null;
+      let lastVideoTime = -1;
+
+      // ゲーム状態
+      let score = 0;
+      let grabbedAnimal = null;
+      let grabOffset = { x: 0, y: 0 };
+      let horses = [];
+      let hiddenAnimals = [];
+      let capturedAnimals = [];
+
+      // 画像を読み込み
+      const images = {};
+      let imagesLoaded = 0;
+      const imageFiles = ['uma', 'ushi', 'saru', 'hebi'];
+
+      imageFiles.forEach(name => {
+        images[name] = new Image();
+        images[name].onload = () => {
+          imagesLoaded++;
+          if (imagesLoaded === imageFiles.length) {
+            console.log('全画像読み込み完了');
+            resizeCanvas();
+          }
+        };
+        images[name].src = `horse_game-images/${name}.png`;
+      });
+
+      // 隠れている動物の種類（馬以外）
+      const animalTypes = [
+        { type: "ushi", name: "牛", emoji: "🐄" },
+        { type: "saru", name: "猿", emoji: "🐵" },
+        { type: "hebi", name: "蛇", emoji: "🐍" },
+      ];
+
+      // キャンバスサイズ調整
+      function resizeCanvas() {
+        gameCanvas.width = window.innerWidth;
+        gameCanvas.height = window.innerHeight;
+        // 画像がロードされていれば初期化
+        if (imagesLoaded === imageFiles.length) {
+          initGame();
+        }
+      }
+
+      // 馬を描画（画像を使用）
+      function drawHorse(ctx, x, y, size, isFlipped = false) {
+        if (!images.uma) return;
+        ctx.save();
+        ctx.translate(x, y);
+        if (isFlipped) ctx.scale(-1, 1);
+
+        const img = images.uma;
+        const scale = size / 80;
+        const w = img.width * scale;
+        const h = img.height * scale;
+        ctx.drawImage(img, -w / 2, -h / 2, w, h);
+        ctx.restore();
+      }
+
+      // 隠れている動物を描画（画像を使用）
+      function drawAnimal(ctx, animal) {
+        const img = images[animal.type];
+        if (!img) return;
+
+        ctx.save();
+        ctx.translate(animal.x, animal.y);
+
+        const scale = animal.size / 80;
+        const w = img.width * scale;
+        const h = img.height * scale;
+        ctx.drawImage(img, -w / 2, -h / 2, w, h);
+
+        ctx.restore();
+      }
+
+      // ゲーム初期化
+      function initGame() {
+        horses = [];
+        hiddenAnimals = [];
+        capturedAnimals = [];
+        score = 0;
+        grabbedAnimal = null;
+        capturedAnimalsDiv.innerHTML = "";
+        clearModal.classList.remove("show");
+
+        const width = gameCanvas.width;
+        const height = gameCanvas.height;
+        const horseSize = 80;
+        const spacingX = 120; // 横の間隔
+        const spacingY = 100; // 縦の間隔
+        const cols = Math.ceil(width / spacingX);
+        const rows = Math.ceil((height - 120) / spacingY); // 下の捕獲エリアを除く
+
+        // 馬を配置（少なめに）
+        for (let row = 0; row < rows; row++) {
+          for (let col = 0; col < cols; col++) {
+            const x = col * spacingX + (row % 2) * (spacingX / 2) + 60 + Math.random() * 30 - 15;
+            const y = row * spacingY + 80 + Math.random() * 20 - 10;
+            horses.push({
+              x: x,
+              y: y,
+              size: horseSize + Math.random() * 20 - 10,
+              flipped: Math.random() > 0.5
+            });
+          }
+        }
+
+        // 隠れている動物を配置（馬の位置を一部置き換え）
+        const numAnimals = Math.min(5, Math.max(3, Math.floor(horses.length / 8)));
+        const usedIndices = new Set();
+
+        for (let i = 0; i < numAnimals; i++) {
+          let idx;
+          do {
+            idx = Math.floor(Math.random() * horses.length);
+          } while (usedIndices.has(idx));
+          usedIndices.add(idx);
+
+          const horse = horses[idx];
+          const animalType = animalTypes[i % animalTypes.length];
+
+          hiddenAnimals.push({
+            id: i,
+            x: horse.x,
+            y: horse.y,
+            originalX: horse.x,
+            originalY: horse.y,
+            size: horse.size,
+            type: animalType.type,
+            name: animalType.name,
+            emoji: animalType.emoji,
+            isGrabbed: false,
+            isCaptured: false
+          });
+
+          // 馬のリストから削除
+          horses.splice(idx, 1);
+        }
+
+        updateUI();
+        render();
+      }
+
+      // UI更新
+      function updateUI() {
+        const remaining = hiddenAnimals.filter(a => !a.isCaptured).length;
+        scoreElement.textContent = `スコア: ${score}`;
+        remainingElement.textContent = `残り: ${remaining}匹`;
+      }
+
+      // レンダリング
+      function render() {
+        gameCtx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+
+        // 背景
+        gameCtx.fillStyle = "#f5e6d3";
+        gameCtx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
+
+        // 馬を描画
+        horses.forEach(horse => {
+          drawHorse(gameCtx, horse.x, horse.y, horse.size, horse.flipped);
+        });
+
+        // 隠れている動物を描画（捕獲されていないもの）
+        hiddenAnimals.forEach(animal => {
+          if (!animal.isCaptured) {
+            drawAnimal(gameCtx, animal);
+          }
+        });
+
+        requestAnimationFrame(render);
+      }
+
+      // 動物との当たり判定
+      function checkAnimalHit(x, y) {
+        for (const animal of hiddenAnimals) {
+          if (animal.isCaptured) continue;
+          const dx = x - animal.x;
+          const dy = y - animal.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < animal.size * 0.6) {
+            return animal;
+          }
+        }
+        return null;
+      }
+
+      // 捕獲ゾーンチェック
+      function isInCaptureZone(y) {
+        return y > gameCanvas.height - 120;
+      }
+
+      // 動物を捕獲
+      function captureAnimal(animal) {
+        animal.isCaptured = true;
+        capturedAnimals.push(animal);
+        score += 100;
+
+        // 捕獲アイコンを追加
+        const icon = document.createElement("div");
+        icon.className = "captured-icon";
+        icon.textContent = animal.emoji;
+        capturedAnimalsDiv.appendChild(icon);
+
+        updateUI();
+
+        // 全部捕獲したらクリア
+        const remaining = hiddenAnimals.filter(a => !a.isCaptured).length;
+        if (remaining === 0) {
+          setTimeout(() => {
+            clearModal.classList.add("show");
+          }, 500);
+        }
+      }
+
+      // MediaPipe初期化
+      async function initializeHandLandmarker() {
+        const vision = await FilesetResolver.forVisionTasks(
+          "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
+        );
+
+        handLandmarker = await HandLandmarker.createFromOptions(vision, {
+          baseOptions: {
+            modelAssetPath:
+              "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
+            delegate: "GPU",
+          },
+          runningMode: "VIDEO",
+          numHands: 1,
+          minHandDetectionConfidence: 0.7,
+          minHandPresenceConfidence: 0.7,
+          minTrackingConfidence: 0.7,
+        });
+      }
+
+      function processHandLandmarks(results) {
+        canvasElement.width = videoElement.videoWidth;
+        canvasElement.height = videoElement.videoHeight;
+
+        canvasCtx.save();
+        canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+
+        if (results.landmarks && results.landmarks.length > 0) {
+          const landmarks = results.landmarks[0];
+
+          // 手の骨格を描画
+          canvasCtx.strokeStyle = "#00ff00";
+          canvasCtx.lineWidth = 2;
+
+          const connections = [
+            [0, 1], [1, 2], [2, 3], [3, 4],
+            [0, 5], [5, 6], [6, 7], [7, 8],
+            [0, 9], [9, 10], [10, 11], [11, 12],
+            [0, 13], [13, 14], [14, 15], [15, 16],
+            [0, 17], [17, 18], [18, 19], [19, 20],
+            [5, 9], [9, 13], [13, 17],
+          ];
+
+          connections.forEach(([start, end]) => {
+            const startPoint = landmarks[start];
+            const endPoint = landmarks[end];
+            canvasCtx.beginPath();
+            canvasCtx.moveTo(startPoint.x * canvasElement.width, startPoint.y * canvasElement.height);
+            canvasCtx.lineTo(endPoint.x * canvasElement.width, endPoint.y * canvasElement.height);
+            canvasCtx.stroke();
+          });
+
+          // 人差し指の先端
+          const indexFingerTip = landmarks[8];
+          const targetX = (1.0 - indexFingerTip.x) * window.innerWidth;
+          const targetY = indexFingerTip.y * window.innerHeight;
+
+          smoothX = targetX;
+          smoothY = targetY;
+
+          cursor.style.left = `${smoothX}px`;
+          cursor.style.top = `${smoothY}px`;
+          cursor.style.display = "block";
+
+          // ピンチジェスチャー検出
+          const thumbTip = landmarks[4];
+          const distance = Math.sqrt(
+            Math.pow(indexFingerTip.x - thumbTip.x, 2) +
+            Math.pow(indexFingerTip.y - thumbTip.y, 2) +
+            Math.pow(indexFingerTip.z - thumbTip.z, 2)
+          );
+
+          const wasPinching = isPinching;
+          isPinching = distance < 0.06;
+
+          if (isPinching && !wasPinching) {
+            // ピンチ開始
+            cursor.classList.add("pinching");
+            const animal = checkAnimalHit(smoothX, smoothY);
+            if (animal && !animal.isCaptured) {
+              grabbedAnimal = animal;
+              grabOffset.x = smoothX - animal.x;
+              grabOffset.y = smoothY - animal.y;
+              cursor.classList.remove("pinching");
+              cursor.classList.add("grabbing");
+            }
+          } else if (!isPinching && wasPinching) {
+            // ピンチ終了
+            cursor.classList.remove("pinching");
+            cursor.classList.remove("grabbing");
+
+            if (grabbedAnimal) {
+              if (isInCaptureZone(grabbedAnimal.y)) {
+                captureAnimal(grabbedAnimal);
+              } else {
+                // 元の位置に戻す
+                grabbedAnimal.x = grabbedAnimal.originalX;
+                grabbedAnimal.y = grabbedAnimal.originalY;
+              }
+              grabbedAnimal = null;
+            }
+          }
+
+          // 動物をドラッグ
+          if (grabbedAnimal && isPinching) {
+            grabbedAnimal.x = smoothX - grabOffset.x;
+            grabbedAnimal.y = smoothY - grabOffset.y;
+          }
+
+          status.textContent = "手を検出中 ✓";
+          status.classList.add("active");
+        } else {
+          status.textContent = "手が見えません...";
+          status.classList.remove("active");
+        }
+
+        canvasCtx.restore();
+      }
+
+      async function startCamera() {
+        await initializeHandLandmarker();
+
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          loading.querySelector("p").textContent = "カメラAPIに対応していません";
+          return;
+        }
+
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: { width: 1280, height: 720 },
+          });
+          videoElement.srcObject = stream;
+
+          videoElement.addEventListener("loadeddata", () => {
+            loading.classList.add("hidden");
+
+            function onFrame() {
+              if (!handLandmarker) return;
+
+              const startTimeMs = performance.now();
+
+              if (videoElement.currentTime !== lastVideoTime) {
+                lastVideoTime = videoElement.currentTime;
+                const results = handLandmarker.detectForVideo(videoElement, startTimeMs);
+                processHandLandmarks(results);
+              }
+
+              requestAnimationFrame(onFrame);
+            }
+            onFrame();
+          });
+        } catch (error) {
+          loading.querySelector("p").textContent = "カメラの起動に失敗: " + error.message;
+        }
+      }
+
+      // イベントリスナー
+      window.addEventListener("resize", resizeCanvas);
+      restartBtn.addEventListener("click", initGame);
+
+      // 初期化
+      resizeCanvas();
+      startCamera();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>粘土をコネコネ</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        font-family: "Hiragino Sans", sans-serif;
+        background: #3d2317;
+        min-height: 100vh;
+        overflow: hidden;
+        touch-action: none;
+      }
+      #clay-canvas {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+      }
+      #video-container {
+        position: fixed;
+        top: 20px; right: 20px;
+        width: 180px; height: 135px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-radius: 10px;
+        overflow: hidden;
+        background: #000;
+        z-index: 1000;
+      }
+      #input_video {
+        width: 100%; height: 100%;
+        object-fit: cover;
+        transform: scaleX(-1);
+      }
+      #output_canvas {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        transform: scaleX(-1);
+      }
+      #info {
+        position: fixed;
+        top: 20px; left: 20px;
+        background: rgba(0,0,0,0.7);
+        padding: 15px;
+        border-radius: 10px;
+        color: white;
+        font-size: 13px;
+        z-index: 1000;
+      }
+      .btn {
+        position: fixed;
+        bottom: 20px;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 25px;
+        font-size: 14px;
+        font-weight: bold;
+        cursor: pointer;
+        z-index: 1000;
+      }
+      #reset-btn { right: 20px; background: #e57373; color: white; }
+      #add-btn { right: 130px; background: #81c784; color: white; }
+      #intro-screen {
+        position: fixed;
+        inset: 0;
+        background: linear-gradient(135deg, #2c1810, #3d2317);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        text-align: center;
+        z-index: 10000;
+        transition: opacity 0.5s;
+      }
+      #intro-screen.hidden { opacity: 0; pointer-events: none; }
+      #intro-screen h1 { font-size: 32px; margin: 20px 0; }
+      .hand-icon { font-size: 60px; }
+      #loading {
+        position: fixed;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0,0,0,0.9);
+        padding: 30px;
+        border-radius: 15px;
+        color: white;
+        z-index: 10001;
+      }
+      #loading.hidden { display: none; }
+    </style>
+  </head>
+  <body>
+    <div id="loading"><p>読み込み中...</p></div>
+    <div id="intro-screen">
+      <div class="hand-icon">🖐️</div>
+      <h1>粘土をコネコネ</h1>
+      <p>指で触って自由に形を作ろう</p>
+    </div>
+
+    <canvas id="clay-canvas"></canvas>
+
+    <div id="video-container">
+      <video id="input_video" autoplay playsinline></video>
+      <canvas id="output_canvas"></canvas>
+    </div>
+
+    <div id="info">
+      <div>👆 指で触ると粘土がついてくる</div>
+      <div>🖐️ 引っ張って自由に変形</div>
+    </div>
+
+    <button class="btn" id="add-btn">+ 追加</button>
+    <button class="btn" id="reset-btn">リセット</button>
+
+    <script type="module">
+      import { FilesetResolver, HandLandmarker } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest";
+
+      const canvas = document.getElementById("clay-canvas");
+      const ctx = canvas.getContext("2d");
+      const videoElement = document.getElementById("input_video");
+      const canvasElement = document.getElementById("output_canvas");
+      const canvasCtx = canvasElement.getContext("2d");
+      const loading = document.getElementById("loading");
+      const introScreen = document.getElementById("intro-screen");
+
+      let handLandmarker = null;
+      let lastVideoTime = -1;
+      let gameStarted = false;
+
+      function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      resize();
+      window.addEventListener("resize", resize);
+
+      // ========== ソフトボディ粘土 ==========
+      class SoftBodyClay {
+        constructor(cx, cy, width = 200, height = 200) {
+          this.particles = [];
+          this.constraints = [];
+          this.grabbed = new Map(); // particleIndex -> fingerIndex
+
+          // 色
+          this.color = {
+            r: 180 + Math.random() * 30,
+            g: 120 + Math.random() * 30,
+            b: 80 + Math.random() * 20
+          };
+
+          // グリッド状にパーティクルを配置
+          const cols = 10;
+          const rows = 10;
+          const spacingX = width / (cols - 1);
+          const spacingY = height / (rows - 1);
+          const startX = cx - width / 2;
+          const startY = cy - height / 2;
+
+          // パーティクル作成
+          for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < cols; col++) {
+              this.particles.push({
+                x: startX + col * spacingX,
+                y: startY + row * spacingY,
+                ox: startX + col * spacingX, // 前フレームの位置（Verlet用）
+                oy: startY + row * spacingY,
+                pinned: false
+              });
+            }
+          }
+
+          // バネ制約を作成（構造バネ + せん断バネ）
+          for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < cols; col++) {
+              const i = row * cols + col;
+
+              // 右隣
+              if (col < cols - 1) {
+                this.addConstraint(i, i + 1);
+              }
+              // 下隣
+              if (row < rows - 1) {
+                this.addConstraint(i, i + cols);
+              }
+              // 斜め右下
+              if (col < cols - 1 && row < rows - 1) {
+                this.addConstraint(i, i + cols + 1);
+              }
+              // 斜め左下
+              if (col > 0 && row < rows - 1) {
+                this.addConstraint(i, i + cols - 1);
+              }
+              // 2つ先（曲げ剛性）
+              if (col < cols - 2) {
+                this.addConstraint(i, i + 2, 0.3);
+              }
+              if (row < rows - 2) {
+                this.addConstraint(i, i + cols * 2, 0.3);
+              }
+            }
+          }
+
+          this.cols = cols;
+          this.rows = rows;
+        }
+
+        addConstraint(i1, i2, stiffness = 0.8) {
+          const p1 = this.particles[i1];
+          const p2 = this.particles[i2];
+          const dx = p2.x - p1.x;
+          const dy = p2.y - p1.y;
+          const restLength = Math.sqrt(dx * dx + dy * dy);
+
+          this.constraints.push({
+            i1, i2,
+            restLength,
+            stiffness
+          });
+        }
+
+        // 指との相互作用
+        interact(fingers) {
+          const grabRadius = 50;
+
+          // 新しいグラブ状態を計算
+          const newGrabbed = new Map();
+
+          for (let fi = 0; fi < fingers.length; fi++) {
+            const finger = fingers[fi];
+
+            for (let pi = 0; pi < this.particles.length; pi++) {
+              const p = this.particles[pi];
+              const dx = p.x - finger.x;
+              const dy = p.y - finger.y;
+              const dist = Math.sqrt(dx * dx + dy * dy);
+
+              if (dist < grabRadius) {
+                // この指がこのパーティクルをつかむ
+                if (!newGrabbed.has(pi) || dist < newGrabbed.get(pi).dist) {
+                  newGrabbed.set(pi, { fingerIndex: fi, dist });
+                }
+              }
+            }
+          }
+
+          // グラブされたパーティクルを指の位置に移動
+          for (const [pi, info] of newGrabbed) {
+            const finger = fingers[info.fingerIndex];
+            const p = this.particles[pi];
+
+            // 指に向かって強く引っ張る
+            const strength = 0.5 * (1 - info.dist / grabRadius);
+            p.x += (finger.x - p.x) * strength;
+            p.y += (finger.y - p.y) * strength;
+          }
+
+          this.grabbed = newGrabbed;
+        }
+
+        update() {
+          const gravity = 0.2;
+          const friction = 0.99;
+          const iterations = 5;
+
+          // Verlet積分
+          for (const p of this.particles) {
+            if (this.grabbed.has(this.particles.indexOf(p))) continue;
+
+            const vx = (p.x - p.ox) * friction;
+            const vy = (p.y - p.oy) * friction;
+
+            p.ox = p.x;
+            p.oy = p.y;
+
+            p.x += vx;
+            p.y += vy + gravity;
+
+            // 画面端との衝突
+            if (p.x < 20) { p.x = 20; p.ox = p.x; }
+            if (p.x > canvas.width - 20) { p.x = canvas.width - 20; p.ox = p.x; }
+            if (p.y < 20) { p.y = 20; p.oy = p.y; }
+            if (p.y > canvas.height - 20) { p.y = canvas.height - 20; p.oy = p.y; }
+          }
+
+          // 制約の解決（複数回反復）
+          for (let iter = 0; iter < iterations; iter++) {
+            for (const c of this.constraints) {
+              const p1 = this.particles[c.i1];
+              const p2 = this.particles[c.i2];
+
+              const dx = p2.x - p1.x;
+              const dy = p2.y - p1.y;
+              const dist = Math.sqrt(dx * dx + dy * dy);
+
+              if (dist === 0) continue;
+
+              const diff = (dist - c.restLength) / dist;
+              const moveX = dx * diff * 0.5 * c.stiffness;
+              const moveY = dy * diff * 0.5 * c.stiffness;
+
+              const p1Grabbed = this.grabbed.has(c.i1);
+              const p2Grabbed = this.grabbed.has(c.i2);
+
+              if (!p1Grabbed && !p2Grabbed) {
+                p1.x += moveX;
+                p1.y += moveY;
+                p2.x -= moveX;
+                p2.y -= moveY;
+              } else if (!p1Grabbed) {
+                p1.x += moveX * 2;
+                p1.y += moveY * 2;
+              } else if (!p2Grabbed) {
+                p2.x -= moveX * 2;
+                p2.y -= moveY * 2;
+              }
+            }
+          }
+        }
+
+        draw(ctx) {
+          // 塗りつぶしのためにパスを作成
+          ctx.save();
+
+          // 外周のパーティクルを結んで形を描く
+          const cols = this.cols;
+          const rows = this.rows;
+
+          ctx.beginPath();
+
+          // 上辺
+          ctx.moveTo(this.particles[0].x, this.particles[0].y);
+          for (let c = 1; c < cols; c++) {
+            const p = this.particles[c];
+            ctx.lineTo(p.x, p.y);
+          }
+
+          // 右辺
+          for (let r = 1; r < rows; r++) {
+            const p = this.particles[r * cols + (cols - 1)];
+            ctx.lineTo(p.x, p.y);
+          }
+
+          // 下辺
+          for (let c = cols - 2; c >= 0; c--) {
+            const p = this.particles[(rows - 1) * cols + c];
+            ctx.lineTo(p.x, p.y);
+          }
+
+          // 左辺
+          for (let r = rows - 2; r >= 0; r--) {
+            const p = this.particles[r * cols];
+            ctx.lineTo(p.x, p.y);
+          }
+
+          ctx.closePath();
+
+          // グラデーション
+          const bounds = this.getBounds();
+          const gradient = ctx.createRadialGradient(
+            bounds.cx - 30, bounds.cy - 30, 0,
+            bounds.cx, bounds.cy, Math.max(bounds.width, bounds.height)
+          );
+          gradient.addColorStop(0, `rgb(${this.color.r + 50}, ${this.color.g + 40}, ${this.color.b + 30})`);
+          gradient.addColorStop(0.5, `rgb(${this.color.r}, ${this.color.g}, ${this.color.b})`);
+          gradient.addColorStop(1, `rgb(${this.color.r - 40}, ${this.color.g - 40}, ${this.color.b - 30})`);
+
+          ctx.fillStyle = gradient;
+          ctx.fill();
+
+          // 内部のメッシュ線（立体感）
+          ctx.strokeStyle = `rgba(${this.color.r - 50}, ${this.color.g - 50}, ${this.color.b - 40}, 0.3)`;
+          ctx.lineWidth = 1;
+
+          for (let r = 0; r < rows; r++) {
+            ctx.beginPath();
+            ctx.moveTo(this.particles[r * cols].x, this.particles[r * cols].y);
+            for (let c = 1; c < cols; c++) {
+              const p = this.particles[r * cols + c];
+              ctx.lineTo(p.x, p.y);
+            }
+            ctx.stroke();
+          }
+
+          for (let c = 0; c < cols; c++) {
+            ctx.beginPath();
+            ctx.moveTo(this.particles[c].x, this.particles[c].y);
+            for (let r = 1; r < rows; r++) {
+              const p = this.particles[r * cols + c];
+              ctx.lineTo(p.x, p.y);
+            }
+            ctx.stroke();
+          }
+
+          // 輪郭
+          ctx.beginPath();
+          ctx.moveTo(this.particles[0].x, this.particles[0].y);
+          for (let c = 1; c < cols; c++) {
+            ctx.lineTo(this.particles[c].x, this.particles[c].y);
+          }
+          for (let r = 1; r < rows; r++) {
+            ctx.lineTo(this.particles[r * cols + (cols - 1)].x, this.particles[r * cols + (cols - 1)].y);
+          }
+          for (let c = cols - 2; c >= 0; c--) {
+            ctx.lineTo(this.particles[(rows - 1) * cols + c].x, this.particles[(rows - 1) * cols + c].y);
+          }
+          for (let r = rows - 2; r >= 0; r--) {
+            ctx.lineTo(this.particles[r * cols].x, this.particles[r * cols].y);
+          }
+          ctx.closePath();
+          ctx.strokeStyle = `rgb(${this.color.r - 60}, ${this.color.g - 60}, ${this.color.b - 50})`;
+          ctx.lineWidth = 3;
+          ctx.stroke();
+
+          // ハイライト
+          ctx.beginPath();
+          ctx.ellipse(bounds.cx - 40, bounds.cy - 40, 30, 20, -0.5, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(255, 255, 255, 0.2)";
+          ctx.fill();
+
+          ctx.restore();
+        }
+
+        getBounds() {
+          let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+          for (const p of this.particles) {
+            minX = Math.min(minX, p.x);
+            minY = Math.min(minY, p.y);
+            maxX = Math.max(maxX, p.x);
+            maxY = Math.max(maxY, p.y);
+          }
+          return {
+            x: minX, y: minY,
+            width: maxX - minX, height: maxY - minY,
+            cx: (minX + maxX) / 2, cy: (minY + maxY) / 2
+          };
+        }
+      }
+
+      // 粘土リスト
+      let clays = [];
+
+      function addClay(x, y) {
+        clays.push(new SoftBodyClay(
+          x ?? canvas.width / 2,
+          y ?? canvas.height / 2,
+          180 + Math.random() * 40,
+          180 + Math.random() * 40
+        ));
+      }
+
+      function resetClays() {
+        clays = [];
+        addClay();
+      }
+
+      document.getElementById("add-btn").onclick = () => addClay(
+        canvas.width / 2 + (Math.random() - 0.5) * 300,
+        canvas.height / 2 + (Math.random() - 0.5) * 200
+      );
+      document.getElementById("reset-btn").onclick = resetClays;
+
+      // ========== 指の位置 ==========
+      const fingers = [];
+      const prevFingers = new Map();
+
+      // ========== MediaPipe ==========
+      async function initHandLandmarker() {
+        const vision = await FilesetResolver.forVisionTasks(
+          "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
+        );
+        handLandmarker = await HandLandmarker.createFromOptions(vision, {
+          baseOptions: {
+            modelAssetPath: "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
+            delegate: "GPU",
+          },
+          runningMode: "VIDEO",
+          numHands: 2,
+        });
+      }
+
+      function processHands(results) {
+        canvasElement.width = videoElement.videoWidth;
+        canvasElement.height = videoElement.videoHeight;
+        canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+
+        fingers.length = 0;
+
+        if (results.landmarks?.length > 0) {
+          if (!gameStarted) {
+            gameStarted = true;
+            introScreen.classList.add("hidden");
+            resetClays();
+          }
+
+          for (let h = 0; h < results.landmarks.length; h++) {
+            const lm = results.landmarks[h];
+            drawHand(lm);
+
+            // 全ての指先を追加
+            for (const idx of [4, 8, 12, 16, 20]) {
+              const tip = lm[idx];
+              const x = (1 - tip.x) * canvas.width;
+              const y = tip.y * canvas.height;
+              fingers.push({ x, y });
+            }
+          }
+        }
+      }
+
+      function drawHand(landmarks) {
+        canvasCtx.strokeStyle = "#0f0";
+        canvasCtx.lineWidth = 2;
+        const connections = [
+          [0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],
+          [0,9],[9,10],[10,11],[11,12],[0,13],[13,14],[14,15],[15,16],
+          [0,17],[17,18],[18,19],[19,20],[5,9],[9,13],[13,17]
+        ];
+        for (const [a, b] of connections) {
+          canvasCtx.beginPath();
+          canvasCtx.moveTo(landmarks[a].x * canvasElement.width, landmarks[a].y * canvasElement.height);
+          canvasCtx.lineTo(landmarks[b].x * canvasElement.width, landmarks[b].y * canvasElement.height);
+          canvasCtx.stroke();
+        }
+      }
+
+      // ========== メインループ ==========
+      function animate() {
+        // 背景
+        ctx.fillStyle = "#3d2317";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // 木目
+        ctx.strokeStyle = "rgba(0,0,0,0.06)";
+        ctx.lineWidth = 1;
+        for (let i = 0; i < canvas.height; i += 15) {
+          ctx.beginPath();
+          ctx.moveTo(0, i + Math.sin(i * 0.02) * 4);
+          ctx.lineTo(canvas.width, i + Math.sin(i * 0.02 + 1) * 4);
+          ctx.stroke();
+        }
+
+        // 粘土の更新と描画
+        for (const clay of clays) {
+          clay.interact(fingers);
+          clay.update();
+          clay.draw(ctx);
+        }
+
+        // 指の位置を表示
+        for (const f of fingers) {
+          ctx.beginPath();
+          ctx.arc(f.x, f.y, 15, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(255, 200, 100, 0.5)";
+          ctx.fill();
+          ctx.strokeStyle = "rgba(255, 255, 255, 0.8)";
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+
+        requestAnimationFrame(animate);
+      }
+
+      // ========== カメラ起動 ==========
+      async function startCamera() {
+        await initHandLandmarker();
+
+        if (!navigator.mediaDevices?.getUserMedia) {
+          loading.innerHTML = "<p>カメラが使えません。<br>HTTPSまたはlocalhostで開いてください</p>";
+          return;
+        }
+
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 } });
+          videoElement.srcObject = stream;
+
+          videoElement.addEventListener("loadeddata", () => {
+            loading.classList.add("hidden");
+
+            function onFrame() {
+              if (handLandmarker && videoElement.currentTime !== lastVideoTime) {
+                lastVideoTime = videoElement.currentTime;
+                const results = handLandmarker.detectForVideo(videoElement, performance.now());
+                processHands(results);
+              }
+              requestAnimationFrame(onFrame);
+            }
+            onFrame();
+          });
+        } catch (e) {
+          loading.innerHTML = `<p>カメラエラー: ${e.message}</p>`;
+        }
+      }
+
+      // ========== マウス/タッチ操作 ==========
+      let mouseDown = false;
+
+      canvas.addEventListener("mousedown", () => {
+        mouseDown = true;
+        if (!gameStarted) {
+          gameStarted = true;
+          introScreen.classList.add("hidden");
+          resetClays();
+        }
+      });
+      canvas.addEventListener("mouseup", () => mouseDown = false);
+      canvas.addEventListener("mouseleave", () => mouseDown = false);
+      canvas.addEventListener("mousemove", (e) => {
+        if (mouseDown) {
+          fingers.length = 0;
+          fingers.push({ x: e.clientX, y: e.clientY });
+        }
+      });
+
+      canvas.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        if (!gameStarted) {
+          gameStarted = true;
+          introScreen.classList.add("hidden");
+          resetClays();
+        }
+      });
+      canvas.addEventListener("touchmove", (e) => {
+        e.preventDefault();
+        fingers.length = 0;
+        for (const t of e.touches) {
+          fingers.push({ x: t.clientX, y: t.clientY });
+        }
+      });
+      canvas.addEventListener("touchend", () => {
+        fingers.length = 0;
+      });
+
+      // 開始
+      startCamera();
+      animate();
+    </script>
+  </body>
+</html>
