@@ -446,16 +446,19 @@
         const cols = Math.ceil(width / spacingX);
         const rows = Math.ceil((height - 120) / spacingY); // 下の捕獲エリアを除く
 
-        // 馬を配置（少なめに）
+        // 馬を配置（右から左へ走る）
         for (let row = 0; row < rows; row++) {
           for (let col = 0; col < cols; col++) {
             const x = col * spacingX + (row % 2) * (spacingX / 2) + 60 + Math.random() * 30 - 15;
             const y = row * spacingY + 80 + Math.random() * 20 - 10;
+            const speed = 2 + Math.random() * 2; // 移動速度（速め）
             horses.push({
               x: x,
               y: y,
+              vx: -speed, // 左方向へ
+              vy: 0,
               size: horseSize + Math.random() * 20 - 10,
-              flipped: Math.random() > 0.5
+              flipped: false // 全て左向き
             });
           }
         }
@@ -478,8 +481,8 @@
             id: i,
             x: horse.x,
             y: horse.y,
-            originalX: horse.x,
-            originalY: horse.y,
+            vx: 0, // 動かない
+            vy: 0,
             size: horse.size,
             type: animalType.type,
             name: animalType.name,
@@ -503,23 +506,49 @@
         remainingElement.textContent = `残り: ${remaining}匹`;
       }
 
+      // 動物の移動更新
+      function updatePositions() {
+        const margin = 50;
+        const maxY = gameCanvas.height - 150; // 捕獲エリアの上
+
+        // 馬を動かす（右から左へループ）
+        horses.forEach(horse => {
+          horse.x += horse.vx;
+
+          // 左端を超えたら右端から出てくる
+          if (horse.x < -50) {
+            horse.x = gameCanvas.width + 50;
+          }
+        });
+
+        // 隠れ動物は動かない（その場に留まる）
+      }
+
       // レンダリング
       function render() {
+        // 位置を更新
+        updatePositions();
+
         gameCtx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
 
         // 背景
         gameCtx.fillStyle = "#f5e6d3";
         gameCtx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
 
-        // 馬を描画
-        horses.forEach(horse => {
-          drawHorse(gameCtx, horse.x, horse.y, horse.size, horse.flipped);
-        });
+        // 馬と隠れ動物をまとめてY座標でソートして描画（奥から手前へ）
+        const allEntities = [
+          ...horses.map(h => ({ ...h, isHorse: true })),
+          ...hiddenAnimals.filter(a => !a.isCaptured).map(a => ({ ...a, isHorse: false }))
+        ];
 
-        // 隠れている動物を描画（捕獲されていないもの）
-        hiddenAnimals.forEach(animal => {
-          if (!animal.isCaptured) {
-            drawAnimal(gameCtx, animal);
+        // Y座標でソート（小さい＝奥のものを先に描画）
+        allEntities.sort((a, b) => a.y - b.y);
+
+        allEntities.forEach(entity => {
+          if (entity.isHorse) {
+            drawHorse(gameCtx, entity.x, entity.y, entity.size, entity.flipped);
+          } else {
+            drawAnimal(gameCtx, entity);
           }
         });
 
@@ -649,6 +678,7 @@
             const animal = checkAnimalHit(smoothX, smoothY);
             if (animal && !animal.isCaptured) {
               grabbedAnimal = animal;
+              grabbedAnimal.isGrabbed = true;
               grabOffset.x = smoothX - animal.x;
               grabOffset.y = smoothY - animal.y;
               cursor.classList.remove("pinching");
@@ -660,13 +690,11 @@
             cursor.classList.remove("grabbing");
 
             if (grabbedAnimal) {
+              grabbedAnimal.isGrabbed = false;
               if (isInCaptureZone(grabbedAnimal.y)) {
                 captureAnimal(grabbedAnimal);
-              } else {
-                // 元の位置に戻す
-                grabbedAnimal.x = grabbedAnimal.originalX;
-                grabbedAnimal.y = grabbedAnimal.originalY;
               }
+              // 離したら現在位置からまた動き出す
               grabbedAnimal = null;
             }
           }
