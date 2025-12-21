@@ -1,0 +1,718 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>射的ゲーム - 的をねらえ！</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Arial", sans-serif;
+        background: #1a1a2e;
+        min-height: 100vh;
+        overflow: hidden;
+      }
+
+      #container {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+      }
+
+      #game-canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+      }
+
+      #video-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        width: 240px;
+        height: 180px;
+        border: 3px solid #ffd700;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        background: #000;
+        z-index: 1000;
+      }
+
+      #input_video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transform: scaleX(-1);
+      }
+
+      #output_canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        transform: scaleX(-1);
+      }
+
+      /* 照準 */
+      #crosshair {
+        position: fixed;
+        width: 80px;
+        height: 80px;
+        pointer-events: none;
+        z-index: 9999;
+        transform: translate(-50%, -50%);
+      }
+
+      #crosshair::before,
+      #crosshair::after {
+        content: "";
+        position: absolute;
+        background: #ff0000;
+      }
+
+      #crosshair::before {
+        width: 2px;
+        height: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+
+      #crosshair::after {
+        width: 100%;
+        height: 2px;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+
+      #crosshair .circle {
+        position: absolute;
+        width: 40px;
+        height: 40px;
+        border: 2px solid #ff0000;
+        border-radius: 50%;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+
+      #crosshair.shooting {
+        animation: recoil 0.1s ease-out;
+      }
+
+      @keyframes recoil {
+        0% {
+          transform: translate(-50%, -50%) scale(1);
+        }
+        50% {
+          transform: translate(-50%, -50%) scale(1.3);
+        }
+        100% {
+          transform: translate(-50%, -50%) scale(1);
+        }
+      }
+
+      #info {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        background: rgba(0, 0, 0, 0.8);
+        padding: 20px;
+        border-radius: 12px;
+        border: 2px solid #ffd700;
+        max-width: 280px;
+        z-index: 1000;
+        color: white;
+      }
+
+      #info h1 {
+        font-size: 20px;
+        color: #ffd700;
+        margin-bottom: 10px;
+      }
+
+      #info p {
+        font-size: 14px;
+        color: #ddd;
+        margin: 5px 0;
+      }
+
+      #score {
+        font-size: 28px;
+        font-weight: bold;
+        color: #ffd700;
+        margin-top: 10px;
+      }
+
+      #ammo {
+        font-size: 18px;
+        color: #ff6b6b;
+        margin-top: 5px;
+      }
+
+      #gesture-status {
+        margin-top: 10px;
+        padding: 8px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 6px;
+        font-size: 14px;
+      }
+
+      #loading {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.9);
+        padding: 30px;
+        border-radius: 12px;
+        border: 2px solid #ffd700;
+        text-align: center;
+        z-index: 10000;
+        color: white;
+      }
+
+      #loading.hidden {
+        display: none;
+      }
+
+      .spinner {
+        border: 4px solid #333;
+        border-top: 4px solid #ffd700;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 15px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* マズルフラッシュ */
+      #muzzle-flash {
+        position: fixed;
+        width: 100px;
+        height: 100px;
+        background: radial-gradient(circle, rgba(255, 200, 0, 0.8) 0%, rgba(255, 100, 0, 0.4) 50%, transparent 70%);
+        pointer-events: none;
+        z-index: 9998;
+        transform: translate(-50%, -50%);
+        opacity: 0;
+        transition: opacity 0.05s;
+      }
+
+      #muzzle-flash.flash {
+        opacity: 1;
+      }
+
+      /* ヒットエフェクト */
+      .hit-effect {
+        position: fixed;
+        font-size: 30px;
+        font-weight: bold;
+        color: #ffd700;
+        pointer-events: none;
+        z-index: 9000;
+        animation: hitPop 0.5s ease-out forwards;
+      }
+
+      @keyframes hitPop {
+        0% {
+          transform: translate(-50%, -50%) scale(0);
+          opacity: 1;
+        }
+        50% {
+          transform: translate(-50%, -50%) scale(1.5);
+          opacity: 1;
+        }
+        100% {
+          transform: translate(-50%, -80%) scale(1);
+          opacity: 0;
+        }
+      }
+
+      /* ピストルアイコン */
+      #pistol-indicator {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        font-size: 60px;
+        z-index: 1000;
+        filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.5));
+        transition: transform 0.1s;
+      }
+
+      #pistol-indicator.ready {
+        color: #ffd700;
+      }
+
+      #pistol-indicator.shooting {
+        transform: rotate(-20deg);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="loading">
+      <div class="spinner"></div>
+      <p>カメラとMediaPipeを読み込み中...</p>
+    </div>
+
+    <div id="container">
+      <canvas id="game-canvas"></canvas>
+
+      <div id="info">
+        <h1>的をねらえ！</h1>
+        <p>🔫 手をピストル型にする</p>
+        <p>⬆️ 手首を跳ね上げて発射！</p>
+        <div id="score">スコア: 0</div>
+        <div id="ammo">弾数: ∞</div>
+        <div id="gesture-status">待機中...</div>
+      </div>
+
+      <div id="video-container">
+        <video id="input_video" autoplay playsinline></video>
+        <canvas id="output_canvas"></canvas>
+      </div>
+
+      <div id="crosshair">
+        <div class="circle"></div>
+      </div>
+
+      <div id="muzzle-flash"></div>
+      <div id="pistol-indicator">🔫</div>
+    </div>
+
+    <script type="module">
+      import { FilesetResolver, HandLandmarker } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest";
+
+      const videoElement = document.getElementById("input_video");
+      const canvasElement = document.getElementById("output_canvas");
+      const canvasCtx = canvasElement.getContext("2d");
+      const crosshair = document.getElementById("crosshair");
+      const loading = document.getElementById("loading");
+      const gameCanvas = document.getElementById("game-canvas");
+      const gameCtx = gameCanvas.getContext("2d");
+      const scoreElement = document.getElementById("score");
+      const gestureStatus = document.getElementById("gesture-status");
+      const muzzleFlash = document.getElementById("muzzle-flash");
+      const pistolIndicator = document.getElementById("pistol-indicator");
+
+      let handLandmarker = null;
+      let lastVideoTime = -1;
+      let smoothX = window.innerWidth / 2;
+      let smoothY = window.innerHeight / 2;
+
+      // ゲーム状態
+      let score = 0;
+      let targets = [];
+      let lastShootTime = 0;
+
+      // 発射検出用（手首の上下動き）
+      let prevWristY = 0;
+      let isRecoiling = false;
+
+      // 的の種類
+      const targetTypes = [
+        { emoji: "🎯", points: 100, size: 60 },
+        { emoji: "🧸", points: 150, size: 70 },
+        { emoji: "🤖", points: 200, size: 80 },
+        { emoji: "🎮", points: 250, size: 50 },
+        { emoji: "🚗", points: 180, size: 60 },
+        { emoji: "🍭", points: 120, size: 40 },
+      ];
+
+      // キャンバスサイズ調整
+      function resizeCanvas() {
+        gameCanvas.width = window.innerWidth;
+        gameCanvas.height = window.innerHeight;
+        initTargets();
+      }
+
+      // 的を初期化
+      function initTargets() {
+        targets = [];
+        const rows = 3;
+        const cols = 5;
+        const marginX = 150;
+        const marginY = 150;
+        const spacingX = (gameCanvas.width - marginX * 2) / (cols - 1);
+        const spacingY = (gameCanvas.height - marginY * 2) / (rows - 1);
+
+        for (let row = 0; row < rows; row++) {
+          for (let col = 0; col < cols; col++) {
+            const type = targetTypes[Math.floor(Math.random() * targetTypes.length)];
+            targets.push({
+              x: marginX + col * spacingX + (Math.random() - 0.5) * 40,
+              y: marginY + row * spacingY + (Math.random() - 0.5) * 30,
+              size: type.size,
+              emoji: type.emoji,
+              points: type.points,
+              isHit: false,
+              hitTime: 0,
+            });
+          }
+        }
+      }
+
+      // 背景を描画（お祭りの射的屋台風）
+      function drawBackground() {
+        // 背景色
+        const gradient = gameCtx.createLinearGradient(0, 0, 0, gameCanvas.height);
+        gradient.addColorStop(0, "#2c1810");
+        gradient.addColorStop(1, "#1a0f0a");
+        gameCtx.fillStyle = gradient;
+        gameCtx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
+
+        // 赤白の縦縞（屋台の装飾）
+        const stripeWidth = 80;
+        for (let i = 0; i < gameCanvas.width / stripeWidth; i++) {
+          if (i % 2 === 0) {
+            gameCtx.fillStyle = "#cc0000";
+          } else {
+            gameCtx.fillStyle = "#ffffff";
+          }
+          gameCtx.fillRect(i * stripeWidth, 0, stripeWidth, 60);
+          gameCtx.fillRect(i * stripeWidth, gameCanvas.height - 60, stripeWidth, 60);
+        }
+
+        // 提灯を描画
+        const lanternSpacing = 150;
+        for (let x = 75; x < gameCanvas.width; x += lanternSpacing) {
+          drawLantern(x, 90);
+        }
+
+        // 棚を描画
+        gameCtx.fillStyle = "#8B4513";
+        const shelfY = [200, 350, 500];
+        shelfY.forEach((y) => {
+          if (y < gameCanvas.height - 100) {
+            gameCtx.fillRect(50, y, gameCanvas.width - 100, 15);
+          }
+        });
+      }
+
+      // 提灯を描画
+      function drawLantern(x, y) {
+        gameCtx.fillStyle = "#ff3333";
+        gameCtx.beginPath();
+        gameCtx.ellipse(x, y, 25, 35, 0, 0, Math.PI * 2);
+        gameCtx.fill();
+
+        // 提灯の縞模様
+        gameCtx.strokeStyle = "#cc0000";
+        gameCtx.lineWidth = 2;
+        for (let i = -20; i <= 20; i += 10) {
+          gameCtx.beginPath();
+          gameCtx.moveTo(x - 20, y + i);
+          gameCtx.lineTo(x + 20, y + i);
+          gameCtx.stroke();
+        }
+
+        // 紐
+        gameCtx.strokeStyle = "#333";
+        gameCtx.lineWidth = 2;
+        gameCtx.beginPath();
+        gameCtx.moveTo(x, y - 35);
+        gameCtx.lineTo(x, y - 55);
+        gameCtx.stroke();
+      }
+
+      // 的を描画
+      function drawTargets() {
+        targets.forEach((target) => {
+          if (target.isHit) {
+            // ヒット後のフェードアウト
+            const elapsed = Date.now() - target.hitTime;
+            if (elapsed < 500) {
+              gameCtx.globalAlpha = 1 - elapsed / 500;
+              gameCtx.font = `${target.size}px Arial`;
+              gameCtx.textAlign = "center";
+              gameCtx.textBaseline = "middle";
+              gameCtx.fillText(target.emoji, target.x, target.y);
+              gameCtx.globalAlpha = 1;
+            }
+          } else {
+            gameCtx.font = `${target.size}px Arial`;
+            gameCtx.textAlign = "center";
+            gameCtx.textBaseline = "middle";
+            gameCtx.fillText(target.emoji, target.x, target.y);
+          }
+        });
+      }
+
+      // レンダリング
+      function render() {
+        gameCtx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+        drawBackground();
+        drawTargets();
+        requestAnimationFrame(render);
+      }
+
+      // 発射処理
+      function shoot(x, y) {
+        const now = Date.now();
+        if (now - lastShootTime < 300) return; // 連射制限
+        lastShootTime = now;
+
+        // マズルフラッシュ
+        muzzleFlash.style.left = `${x}px`;
+        muzzleFlash.style.top = `${y}px`;
+        muzzleFlash.classList.add("flash");
+        crosshair.classList.add("shooting");
+        pistolIndicator.classList.add("shooting");
+
+        setTimeout(() => {
+          muzzleFlash.classList.remove("flash");
+          crosshair.classList.remove("shooting");
+          pistolIndicator.classList.remove("shooting");
+        }, 100);
+
+        // 当たり判定
+        let hit = false;
+        targets.forEach((target) => {
+          if (target.isHit) return;
+          const dx = x - target.x;
+          const dy = y - target.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < target.size * 0.6) {
+            target.isHit = true;
+            target.hitTime = now;
+            score += target.points;
+            scoreElement.textContent = `スコア: ${score}`;
+            hit = true;
+
+            // ヒットエフェクト
+            const effect = document.createElement("div");
+            effect.className = "hit-effect";
+            effect.textContent = `+${target.points}`;
+            effect.style.left = `${target.x}px`;
+            effect.style.top = `${target.y}px`;
+            document.body.appendChild(effect);
+            setTimeout(() => effect.remove(), 500);
+          }
+        });
+
+        // 全部倒したら再生成
+        if (targets.every((t) => t.isHit)) {
+          setTimeout(initTargets, 1000);
+        }
+      }
+
+      // ピストルジェスチャー検出
+      function detectPistolGesture(landmarks) {
+        // 手首
+        const wrist = landmarks[0];
+
+        // 人差し指の先端と根元
+        const indexTip = landmarks[8];
+        const indexMcp = landmarks[5];
+
+        // 親指
+        const thumbTip = landmarks[4];
+
+        // 中指、薬指、小指（曲がっているか）
+        const middleTip = landmarks[12];
+        const middleMcp = landmarks[9];
+        const ringTip = landmarks[16];
+        const ringMcp = landmarks[13];
+        const pinkyTip = landmarks[20];
+        const pinkyMcp = landmarks[17];
+
+        // 人差し指が伸びているか
+        const indexExtended = indexTip.y < indexMcp.y - 0.03;
+
+        // 中指、薬指、小指が曲がっているか
+        const middleBent = middleTip.y > middleMcp.y - 0.02;
+        const ringBent = ringTip.y > ringMcp.y - 0.02;
+        const pinkyBent = pinkyTip.y > pinkyMcp.y - 0.02;
+
+        // ピストル型の判定
+        const isPistolShape = indexExtended && middleBent && ringBent && pinkyBent;
+
+        // 発射検出：手首を上に跳ね上げる（Y座標が急に小さくなる＝上に動く）
+        const currentWristY = wrist.y;
+        const yVelocity = prevWristY - currentWristY; // 正の値 = 上に動いている
+
+        // 前フレームの位置を保存
+        prevWristY = currentWristY;
+
+        // 撃つ動作：手首を素早く上に跳ね上げる
+        const shootThreshold = 0.02; // この値を調整して感度を変える
+        const isShooting = yVelocity > shootThreshold && isPistolShape;
+
+        return {
+          isPistol: isPistolShape,
+          isTrigger: isShooting,
+          yVelocity: yVelocity,
+        };
+      }
+
+      // MediaPipe初期化
+      async function initializeHandLandmarker() {
+        const vision = await FilesetResolver.forVisionTasks(
+          "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
+        );
+
+        handLandmarker = await HandLandmarker.createFromOptions(vision, {
+          baseOptions: {
+            modelAssetPath:
+              "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
+            delegate: "GPU",
+          },
+          runningMode: "VIDEO",
+          numHands: 1,
+          minHandDetectionConfidence: 0.7,
+          minHandPresenceConfidence: 0.7,
+          minTrackingConfidence: 0.7,
+        });
+      }
+
+      function processHandLandmarks(results) {
+        canvasElement.width = videoElement.videoWidth;
+        canvasElement.height = videoElement.videoHeight;
+
+        canvasCtx.save();
+        canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+
+        if (results.landmarks && results.landmarks.length > 0) {
+          const landmarks = results.landmarks[0];
+
+          // 手の骨格を描画
+          canvasCtx.strokeStyle = "#ffd700";
+          canvasCtx.lineWidth = 2;
+
+          const connections = [
+            [0, 1],
+            [1, 2],
+            [2, 3],
+            [3, 4],
+            [0, 5],
+            [5, 6],
+            [6, 7],
+            [7, 8],
+            [0, 9],
+            [9, 10],
+            [10, 11],
+            [11, 12],
+            [0, 13],
+            [13, 14],
+            [14, 15],
+            [15, 16],
+            [0, 17],
+            [17, 18],
+            [18, 19],
+            [19, 20],
+            [5, 9],
+            [9, 13],
+            [13, 17],
+          ];
+
+          connections.forEach(([start, end]) => {
+            const startPoint = landmarks[start];
+            const endPoint = landmarks[end];
+            canvasCtx.beginPath();
+            canvasCtx.moveTo(startPoint.x * canvasElement.width, startPoint.y * canvasElement.height);
+            canvasCtx.lineTo(endPoint.x * canvasElement.width, endPoint.y * canvasElement.height);
+            canvasCtx.stroke();
+          });
+
+          // 人差し指の先端で照準を動かす
+          const indexFingerTip = landmarks[8];
+          const targetX = (1.0 - indexFingerTip.x) * window.innerWidth;
+          const targetY = indexFingerTip.y * window.innerHeight;
+
+          smoothX += (targetX - smoothX) * 0.3;
+          smoothY += (targetY - smoothY) * 0.3;
+
+          crosshair.style.left = `${smoothX}px`;
+          crosshair.style.top = `${smoothY}px`;
+          crosshair.style.display = "block";
+
+          // ピストルジェスチャー検出
+          const gesture = detectPistolGesture(landmarks);
+
+          if (gesture.isPistol) {
+            pistolIndicator.classList.add("ready");
+            gestureStatus.textContent = `🔫 構え中... (跳ね上げて発射！)`;
+            gestureStatus.style.color = "#ffd700";
+
+            // 撃つ動作を検出したら発射
+            if (gesture.isTrigger) {
+              shoot(smoothX, smoothY);
+              gestureStatus.textContent = "💥 発射！";
+            }
+          } else {
+            pistolIndicator.classList.remove("ready");
+            gestureStatus.textContent = "手をピストル型に...";
+            gestureStatus.style.color = "#888";
+          }
+        } else {
+          gestureStatus.textContent = "手が見えません...";
+          gestureStatus.style.color = "#ff6b6b";
+          pistolIndicator.classList.remove("ready");
+        }
+
+        canvasCtx.restore();
+      }
+
+      async function startCamera() {
+        await initializeHandLandmarker();
+
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          loading.querySelector("p").textContent = "カメラAPIに対応していません";
+          return;
+        }
+
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: { width: 1280, height: 720 },
+          });
+          videoElement.srcObject = stream;
+
+          videoElement.addEventListener("loadeddata", () => {
+            loading.classList.add("hidden");
+
+            function onFrame() {
+              if (!handLandmarker) return;
+
+              const startTimeMs = performance.now();
+
+              if (videoElement.currentTime !== lastVideoTime) {
+                lastVideoTime = videoElement.currentTime;
+                const results = handLandmarker.detectForVideo(videoElement, startTimeMs);
+                processHandLandmarks(results);
+              }
+
+              requestAnimationFrame(onFrame);
+            }
+            onFrame();
+          });
+        } catch (error) {
+          loading.querySelector("p").textContent = "カメラの起動に失敗: " + error.message;
+        }
+      }
+
+      // 初期化
+      window.addEventListener("resize", resizeCanvas);
+      resizeCanvas();
+      render();
+      startCamera();
+    </script>
+  </body>
+</html>
