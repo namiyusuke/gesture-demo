@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>書き初め - ジェスチャーで書道</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Hiragino Kaku Gothic ProN", "メイリオ", sans-serif;
+        min-height: 100vh;
+        overflow: hidden;
+        background: #2c1810;
+      }
+
+      #container {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+      }
+
+      /* 和風背景 */
+      #background {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #8b4513 0%, #654321 50%, #3d2914 100%);
+        z-index: -2;
+      }
+
+      /* 畳模様のオーバーレイ */
+      #background::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 20px,
+            rgba(0, 0, 0, 0.1) 20px,
+            rgba(0, 0, 0, 0.1) 21px
+          ),
+          repeating-linear-gradient(
+            90deg,
+            transparent,
+            transparent 20px,
+            rgba(0, 0, 0, 0.1) 20px,
+            rgba(0, 0, 0, 0.1) 21px
+          );
+        pointer-events: none;
+      }
+
+      #top-banner {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        padding: 15px;
+        background: linear-gradient(180deg, rgba(139, 69, 19, 0.9) 0%, transparent 100%);
+        text-align: center;
+        z-index: 100;
+      }
+
+      #top-banner h1 {
+        color: #ffd700;
+        font-size: 28px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        font-weight: bold;
+      }
+
+      #video-container {
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        width: 240px;
+        height: 180px;
+        border: 3px solid #ffd700;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        background: #000;
+        z-index: 1000;
+      }
+
+      #input_video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transform: scaleX(-1);
+      }
+
+      #output_canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        transform: scaleX(-1);
+      }
+
+      /* 書道エリア */
+      #calligraphy-area {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+      }
+
+      /* 半紙 */
+      #paper-container {
+        position: relative;
+        width: 400px;
+        height: 600px;
+      }
+
+      #paper-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 4px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+      }
+
+      /* 描画用キャンバス */
+      #drawing-canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        border-radius: 4px;
+      }
+
+      /* 筆カーソル */
+      #pen-cursor {
+        position: fixed;
+        height: 120px;
+        width: auto;
+        pointer-events: none;
+        z-index: 9999;
+        transform: translate(-50%, -10%);
+        transition: opacity 0.2s;
+        filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, 0.4));
+      }
+
+      #pen-cursor.hidden {
+        opacity: 0;
+      }
+
+      #pen-cursor.active {
+        filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, 0.4)) brightness(1.2);
+      }
+
+      /* 墨汁エリア */
+      #charcoal-container {
+        position: fixed;
+        bottom: 50px;
+        left: 50px;
+        width: 120px;
+        z-index: 100;
+      }
+
+      #charcoal-image {
+        width: 100%;
+        filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, 0.4));
+      }
+
+      /* 説明パネル */
+      #info {
+        position: fixed;
+        top: 100px;
+        left: 20px;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        max-width: 260px;
+        z-index: 1000;
+        border: 2px solid #8b4513;
+      }
+
+      #info h2 {
+        margin-bottom: 10px;
+        color: #8b4513;
+        font-size: 18px;
+      }
+
+      #info p {
+        margin: 8px 0;
+        color: #333;
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      #status {
+        margin-top: 12px;
+        padding: 8px 12px;
+        background: #f0f0f0;
+        border-radius: 6px;
+        font-weight: bold;
+        color: #666;
+        text-align: center;
+        font-size: 14px;
+      }
+
+      #status.active {
+        background: #d4edda;
+        color: #155724;
+      }
+
+      #status.writing {
+        background: #fff3cd;
+        color: #856404;
+      }
+
+      /* ボタンエリア */
+      #button-area {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        display: flex;
+        gap: 15px;
+        z-index: 1000;
+      }
+
+      .control-btn {
+        padding: 15px 30px;
+        font-size: 16px;
+        font-weight: bold;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      }
+
+      #clear-btn {
+        background: linear-gradient(135deg, #e74c3c, #c0392b);
+        color: white;
+      }
+
+      #clear-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+      }
+
+      #save-btn {
+        background: linear-gradient(135deg, #27ae60, #229954);
+        color: white;
+      }
+
+      #save-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
+      }
+
+      /* 太さ調整 */
+      #brush-size-container {
+        position: fixed;
+        bottom: 100px;
+        right: 30px;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 15px;
+        border-radius: 10px;
+        z-index: 1000;
+        border: 2px solid #8b4513;
+      }
+
+      #brush-size-container label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+        color: #333;
+      }
+
+      #brush-size {
+        width: 150px;
+        cursor: pointer;
+      }
+
+      /* ローディング */
+      #loading {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        text-align: center;
+        z-index: 10000;
+      }
+
+      #loading.hidden {
+        display: none;
+      }
+
+      .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #8b4513;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 15px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* つまみ状態のインジケーター */
+      #pinch-indicator {
+        position: fixed;
+        bottom: 200px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 10px 20px;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        border-radius: 20px;
+        font-size: 18px;
+        z-index: 1000;
+        transition: all 0.2s;
+        opacity: 0;
+      }
+
+      #pinch-indicator.show {
+        opacity: 1;
+      }
+
+      #pinch-indicator.pinching {
+        background: rgba(39, 174, 96, 0.9);
+      }
+
+      /* 墨インジケーター */
+      #ink-indicator {
+        position: fixed;
+        bottom: 180px;
+        left: 50px;
+        width: 120px;
+        height: 20px;
+        background: #ddd;
+        border-radius: 10px;
+        overflow: hidden;
+        z-index: 1000;
+      }
+
+      #ink-level {
+        height: 100%;
+        background: linear-gradient(90deg, #1a1a1a, #333);
+        width: 100%;
+        transition: width 0.3s;
+      }
+
+      #ink-label {
+        position: fixed;
+        bottom: 205px;
+        left: 50px;
+        color: white;
+        font-size: 14px;
+        z-index: 1000;
+        text-shadow: 1px 1px 2px black;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="loading">
+      <div class="spinner"></div>
+      <p>カメラを起動中...</p>
+    </div>
+
+    <div id="background"></div>
+
+    <div id="container">
+      <div id="top-banner">
+        <h1>書き初め - ジェスチャーで書道</h1>
+      </div>
+
+      <div id="info">
+        <h2>遊び方</h2>
+        <p>👌 <strong>親指と人差し指でつまむ</strong>と筆を持てます</p>
+        <p>✍️ <strong>つまんだまま動かす</strong>と紙に書けます</p>
+        <p>🖌️ <strong>墨汁に触れる</strong>と墨を補充</p>
+        <div id="status">待機中...</div>
+      </div>
+
+      <div id="video-container">
+        <video id="input_video" autoplay playsinline></video>
+        <canvas id="output_canvas"></canvas>
+      </div>
+
+      <img id="pen-cursor" src="kakizome-images/pen.png" alt="筆" class="hidden" />
+
+      <div id="calligraphy-area">
+        <div id="paper-container">
+          <img id="paper-image" src="kakizome-images/paper.png" alt="半紙" />
+          <canvas id="drawing-canvas"></canvas>
+        </div>
+      </div>
+
+      <div id="charcoal-container">
+        <img id="charcoal-image" src="kakizome-images/charcoal.png" alt="墨汁" />
+      </div>
+
+      <div id="ink-label">墨の量</div>
+      <div id="ink-indicator">
+        <div id="ink-level"></div>
+      </div>
+
+      <div id="pinch-indicator">つまんでいません</div>
+
+      <div id="brush-size-container">
+        <label>筆の太さ: <span id="size-value">15</span>px</label>
+        <input type="range" id="brush-size" min="5" max="40" value="15" />
+      </div>
+
+      <div id="button-area">
+        <button id="clear-btn" class="control-btn">クリア</button>
+        <button id="save-btn" class="control-btn">保存</button>
+      </div>
+    </div>
+
+    <script type="module">
+      import { FilesetResolver, HandLandmarker } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest";
+
+      const videoElement = document.getElementById("input_video");
+      const canvasElement = document.getElementById("output_canvas");
+      const canvasCtx = canvasElement.getContext("2d");
+      const penCursor = document.getElementById("pen-cursor");
+      const status = document.getElementById("status");
+      const loading = document.getElementById("loading");
+      const drawingCanvas = document.getElementById("drawing-canvas");
+      const drawingCtx = drawingCanvas.getContext("2d");
+      const paperContainer = document.getElementById("paper-container");
+      const charcoalContainer = document.getElementById("charcoal-container");
+      const pinchIndicator = document.getElementById("pinch-indicator");
+      const inkLevel = document.getElementById("ink-level");
+      const clearBtn = document.getElementById("clear-btn");
+      const saveBtn = document.getElementById("save-btn");
+      const brushSizeSlider = document.getElementById("brush-size");
+      const sizeValue = document.getElementById("size-value");
+
+      let handLandmarker = null;
+      let lastVideoTime = -1;
+
+      // ゲーム状態
+      let isPinching = false;
+      let lastDrawX = null;
+      let lastDrawY = null;
+      let inkAmount = 100; // 墨の残量
+      let brushSize = 15;
+
+      // スムージング用の履歴
+      const positionHistory = [];
+      const historySize = 5; // 平均を取る点の数
+      let lastSmoothedX = null;
+      let lastSmoothedY = null;
+      let prevMidX = null;
+      let prevMidY = null;
+
+      // 座標のスムージング
+      function smoothPosition(x, y) {
+        positionHistory.push({ x, y });
+        if (positionHistory.length > historySize) {
+          positionHistory.shift();
+        }
+
+        // 加重移動平均（最新の値に重みを置く）
+        let totalWeight = 0;
+        let smoothedX = 0;
+        let smoothedY = 0;
+
+        positionHistory.forEach((pos, index) => {
+          const weight = index + 1; // 新しいほど重み大
+          smoothedX += pos.x * weight;
+          smoothedY += pos.y * weight;
+          totalWeight += weight;
+        });
+
+        return {
+          x: smoothedX / totalWeight,
+          y: smoothedY / totalWeight
+        };
+      }
+
+      // スムージングをリセット
+      function resetSmoothing() {
+        positionHistory.length = 0;
+        lastSmoothedX = null;
+        lastSmoothedY = null;
+        prevMidX = null;
+        prevMidY = null;
+        lastDrawX = null;
+        lastDrawY = null;
+      }
+
+      // 描画キャンバスの初期化
+      function initDrawingCanvas() {
+        const rect = paperContainer.getBoundingClientRect();
+        drawingCanvas.width = rect.width;
+        drawingCanvas.height = rect.height;
+        drawingCtx.lineCap = "round";
+        drawingCtx.lineJoin = "round";
+      }
+
+      // ウィンドウリサイズ時にキャンバスを再初期化
+      window.addEventListener("resize", () => {
+        // 現在の描画内容を保存
+        const imageData = drawingCtx.getImageData(0, 0, drawingCanvas.width, drawingCanvas.height);
+        initDrawingCanvas();
+        // 描画内容を復元
+        drawingCtx.putImageData(imageData, 0, 0);
+      });
+
+      // ブラシサイズ変更
+      brushSizeSlider.addEventListener("input", (e) => {
+        brushSize = parseInt(e.target.value);
+        sizeValue.textContent = brushSize;
+      });
+
+      // クリアボタン
+      clearBtn.addEventListener("click", () => {
+        drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+        inkAmount = 100;
+        inkLevel.style.width = "100%";
+        resetSmoothing();
+      });
+
+      // 保存ボタン
+      saveBtn.addEventListener("click", () => {
+        // 半紙と描画を合成して保存
+        const tempCanvas = document.createElement("canvas");
+        const tempCtx = tempCanvas.getContext("2d");
+        const paperImage = document.getElementById("paper-image");
+
+        tempCanvas.width = drawingCanvas.width;
+        tempCanvas.height = drawingCanvas.height;
+
+        // 半紙を描画
+        tempCtx.drawImage(paperImage, 0, 0, tempCanvas.width, tempCanvas.height);
+        // 書いた内容を重ねる
+        tempCtx.drawImage(drawingCanvas, 0, 0);
+
+        // ダウンロード
+        const link = document.createElement("a");
+        link.download = "kakizome_" + new Date().toISOString().slice(0, 10) + ".png";
+        link.href = tempCanvas.toDataURL("image/png");
+        link.click();
+      });
+
+      // MediaPipe初期化
+      async function initializeHandLandmarker() {
+        const vision = await FilesetResolver.forVisionTasks(
+          "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
+        );
+
+        handLandmarker = await HandLandmarker.createFromOptions(vision, {
+          baseOptions: {
+            modelAssetPath:
+              "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
+            delegate: "GPU",
+          },
+          runningMode: "VIDEO",
+          numHands: 1,
+          minHandDetectionConfidence: 0.7,
+          minHandPresenceConfidence: 0.7,
+          minTrackingConfidence: 0.7,
+        });
+
+        console.log("Hand Landmarker初期化完了");
+      }
+
+      // ピンチ（つまみ）を検出
+      function detectPinch(landmarks) {
+        // 親指の先端 (landmark 4)
+        const thumbTip = landmarks[4];
+        // 人差し指の先端 (landmark 8)
+        const indexTip = landmarks[8];
+
+        // 2点間の距離を計算
+        const distance = Math.sqrt(
+          Math.pow(thumbTip.x - indexTip.x, 2) +
+            Math.pow(thumbTip.y - indexTip.y, 2) +
+            Math.pow(thumbTip.z - indexTip.z, 2)
+        );
+
+        // 閾値（調整可能）
+        const pinchThreshold = 0.06;
+
+        return distance < pinchThreshold;
+      }
+
+      // つまみ位置（親指と人差し指の中点）を取得
+      function getPinchPosition(landmarks) {
+        const thumbTip = landmarks[4];
+        const indexTip = landmarks[8];
+
+        return {
+          x: (thumbTip.x + indexTip.x) / 2,
+          y: (thumbTip.y + indexTip.y) / 2,
+        };
+      }
+
+      // 紙の上かどうかをチェック
+      function isOverPaper(screenX, screenY) {
+        const paperRect = paperContainer.getBoundingClientRect();
+        return (
+          screenX >= paperRect.left &&
+          screenX <= paperRect.right &&
+          screenY >= paperRect.top &&
+          screenY <= paperRect.bottom
+        );
+      }
+
+      // 墨汁の上かどうかをチェック
+      function isOverCharcoal(screenX, screenY) {
+        const charcoalRect = charcoalContainer.getBoundingClientRect();
+        return (
+          screenX >= charcoalRect.left &&
+          screenX <= charcoalRect.right &&
+          screenY >= charcoalRect.top &&
+          screenY <= charcoalRect.bottom
+        );
+      }
+
+      // 紙上の座標に変換
+      function screenToPaperCoords(screenX, screenY) {
+        const paperRect = paperContainer.getBoundingClientRect();
+        return {
+          x: screenX - paperRect.left,
+          y: screenY - paperRect.top,
+        };
+      }
+
+      // 墨で線を描く（スムージング＆ベジェ曲線）
+      function drawInk(rawX, rawY) {
+        if (inkAmount <= 0) return;
+
+        // 座標をスムージング
+        const smoothed = smoothPosition(rawX, rawY);
+        const x = smoothed.x;
+        const y = smoothed.y;
+
+        const opacity = Math.min(1, inkAmount / 30);
+        const size = brushSize;
+
+        drawingCtx.strokeStyle = `rgba(20, 20, 20, ${opacity})`;
+        drawingCtx.lineWidth = size;
+
+        if (lastSmoothedX !== null && lastSmoothedY !== null) {
+          // 中点を計算してベジェ曲線で滑らかに描画
+          const midX = (lastSmoothedX + x) / 2;
+          const midY = (lastSmoothedY + y) / 2;
+
+          if (prevMidX !== null && prevMidY !== null) {
+            // 二次ベジェ曲線で前の中点から現在の中点へ描画
+            drawingCtx.beginPath();
+            drawingCtx.moveTo(prevMidX, prevMidY);
+            drawingCtx.quadraticCurveTo(lastSmoothedX, lastSmoothedY, midX, midY);
+            drawingCtx.stroke();
+          } else {
+            // 最初の線は直線で
+            drawingCtx.beginPath();
+            drawingCtx.moveTo(lastSmoothedX, lastSmoothedY);
+            drawingCtx.lineTo(midX, midY);
+            drawingCtx.stroke();
+          }
+
+          prevMidX = midX;
+          prevMidY = midY;
+        }
+
+        lastSmoothedX = x;
+        lastSmoothedY = y;
+        lastDrawX = x;
+        lastDrawY = y;
+
+        // 墨を消費（少し減らす）
+        inkAmount = Math.max(0, inkAmount - 0.15);
+        inkLevel.style.width = `${inkAmount}%`;
+      }
+
+      // 手のランドマークを処理
+      function processHandLandmarks(results) {
+        canvasElement.width = videoElement.videoWidth;
+        canvasElement.height = videoElement.videoHeight;
+
+        canvasCtx.save();
+        canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+
+        if (results.landmarks && results.landmarks.length > 0) {
+          const landmarks = results.landmarks[0];
+
+          // 手の骨格を描画
+          drawHandSkeleton(landmarks);
+
+          // ピンチ検出
+          const currentPinching = detectPinch(landmarks);
+          const pinchPos = getPinchPosition(landmarks);
+
+          // 画面座標に変換（ミラー反転）
+          const screenX = (1.0 - pinchPos.x) * window.innerWidth;
+          const screenY = pinchPos.y * window.innerHeight;
+
+          // 筆カーソルを移動
+          penCursor.style.left = `${screenX}px`;
+          penCursor.style.top = `${screenY}px`;
+          penCursor.classList.remove("hidden");
+
+          if (currentPinching) {
+            penCursor.classList.add("active");
+            pinchIndicator.textContent = "つまんでいます！✍️";
+            pinchIndicator.classList.add("show", "pinching");
+
+            // 墨汁の上にいるとき
+            if (isOverCharcoal(screenX, screenY)) {
+              inkAmount = Math.min(100, inkAmount + 2);
+              inkLevel.style.width = `${inkAmount}%`;
+              status.textContent = "墨を補充中...";
+              status.className = "active";
+              resetSmoothing();
+            }
+            // 紙の上にいるとき
+            else if (isOverPaper(screenX, screenY)) {
+              const paperCoords = screenToPaperCoords(screenX, screenY);
+              drawInk(paperCoords.x, paperCoords.y);
+
+              if (inkAmount > 0) {
+                status.textContent = `書いています... (墨: ${Math.floor(inkAmount)}%)`;
+                status.className = "writing";
+              } else {
+                status.textContent = "墨がありません！墨汁につけてください";
+                status.className = "";
+              }
+            } else {
+              status.textContent = "紙の上に移動してください";
+              status.className = "active";
+              resetSmoothing();
+            }
+          } else {
+            penCursor.classList.remove("active");
+            pinchIndicator.textContent = "つまんでいません";
+            pinchIndicator.classList.add("show");
+            pinchIndicator.classList.remove("pinching");
+
+            // つまみを離したらスムージングをリセット
+            if (isPinching) {
+              resetSmoothing();
+            }
+
+            if (isOverPaper(screenX, screenY)) {
+              status.textContent = "つまんで書き始めましょう！";
+              status.className = "";
+            } else {
+              status.textContent = "紙の上で指をつまむと書けます";
+              status.className = "";
+            }
+          }
+
+          isPinching = currentPinching;
+        } else {
+          penCursor.classList.add("hidden");
+          pinchIndicator.classList.remove("show");
+          status.textContent = "手が見えません...";
+          status.className = "";
+          resetSmoothing();
+        }
+
+        canvasCtx.restore();
+      }
+
+      // 手の骨格を描画
+      function drawHandSkeleton(landmarks) {
+        canvasCtx.strokeStyle = "#8b4513";
+        canvasCtx.lineWidth = 2;
+
+        const connections = [
+          [0, 1],
+          [1, 2],
+          [2, 3],
+          [3, 4],
+          [0, 5],
+          [5, 6],
+          [6, 7],
+          [7, 8],
+          [0, 9],
+          [9, 10],
+          [10, 11],
+          [11, 12],
+          [0, 13],
+          [13, 14],
+          [14, 15],
+          [15, 16],
+          [0, 17],
+          [17, 18],
+          [18, 19],
+          [19, 20],
+          [5, 9],
+          [9, 13],
+          [13, 17],
+        ];
+
+        connections.forEach(([start, end]) => {
+          const startPoint = landmarks[start];
+          const endPoint = landmarks[end];
+          canvasCtx.beginPath();
+          canvasCtx.moveTo(startPoint.x * canvasElement.width, startPoint.y * canvasElement.height);
+          canvasCtx.lineTo(endPoint.x * canvasElement.width, endPoint.y * canvasElement.height);
+          canvasCtx.stroke();
+        });
+
+        landmarks.forEach((landmark, index) => {
+          const x = landmark.x * canvasElement.width;
+          const y = landmark.y * canvasElement.height;
+          canvasCtx.beginPath();
+          canvasCtx.arc(x, y, index === 4 || index === 8 ? 6 : 4, 0, 2 * Math.PI);
+          canvasCtx.fillStyle = index === 4 || index === 8 ? "#ffd700" : "#8b4513";
+          canvasCtx.fill();
+        });
+      }
+
+      // カメラ起動
+      async function startCamera() {
+        await initializeHandLandmarker();
+
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          loading.querySelector("p").textContent = "カメラAPIに対応していません";
+          return;
+        }
+
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: { width: 1280, height: 720 },
+          });
+          videoElement.srcObject = stream;
+
+          videoElement.addEventListener("loadeddata", () => {
+            loading.classList.add("hidden");
+            initDrawingCanvas();
+            console.log("カメラ起動完了");
+
+            function onFrame() {
+              if (!handLandmarker) return;
+
+              const startTimeMs = performance.now();
+
+              if (videoElement.currentTime !== lastVideoTime) {
+                lastVideoTime = videoElement.currentTime;
+                const results = handLandmarker.detectForVideo(videoElement, startTimeMs);
+                processHandLandmarks(results);
+              }
+
+              requestAnimationFrame(onFrame);
+            }
+            onFrame();
+          });
+        } catch (error) {
+          console.error("カメラエラー:", error);
+          loading.querySelector("p").textContent = "カメラの起動に失敗: " + error.message;
+        }
+      }
+
+      startCamera();
+    </script>
+  </body>
+</html>
