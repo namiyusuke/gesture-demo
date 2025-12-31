@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
@@ -30,29 +30,9 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background:
-          repeating-conic-gradient(
-            from 0deg at 50% 50%,
-            #d4a017 0deg 90deg,
-            #c49a15 90deg 180deg
-          );
+        background: repeating-conic-gradient(from 0deg at 50% 50%, #d4a017 0deg 90deg, #c49a15 90deg 180deg);
         background-size: 60px 60px;
         z-index: -2;
-      }
-
-      /* 上部の赤い帯 */
-      #top-banner {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 80px;
-        background: linear-gradient(180deg, #c41e3a 0%, #a01830 100%);
-        z-index: 10;
-        display: flex;
-        align-items: center;
-        padding-left: 30px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
       }
 
       #top-banner h1 {
@@ -108,11 +88,10 @@
       /* 鳥居画像 */
       #torii-image {
         position: absolute;
-        bottom: 50px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 800px;
-        max-width: 95%;
+        inset: 0;
+        margin: auto;
+        width: 100%;
+
         z-index: 5;
       }
 
@@ -135,12 +114,30 @@
       #dog-character {
         position: absolute;
         bottom: 100px;
-        left: calc(50% - 200px);
+        left: calc(50% - 250px);
         width: 140px;
         height: auto;
         z-index: 25;
         filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
-        transition: transform 0.3s ease;
+        opacity: 0;
+        transition: all 0.3s ease;
+      }
+
+      #dog-character.active {
+        opacity: 1;
+      }
+
+      #dog-character.blocking {
+        animation: dogBlock 2s linear forwards;
+      }
+
+      @keyframes dogBlock {
+        0% {
+          transform: translateX(0);
+        }
+        100% {
+          transform: translateX(350px);
+        }
       }
 
       /* 猫キャラクター（邪魔役） */
@@ -167,10 +164,19 @@
       }
 
       @keyframes catBlock {
-        0%, 100% { transform: translateX(0) rotate(0deg) scale(1); }
-        25% { transform: translateX(-50px) rotate(-15deg) scale(1.1); }
-        50% { transform: translateX(0) rotate(0deg) scale(1.2); }
-        75% { transform: translateX(50px) rotate(15deg) scale(1.1); }
+        0%,
+        100% {
+          transform: translateX(0) rotate(0deg) scale(1);
+        }
+        25% {
+          transform: translateX(-50px) rotate(-15deg) scale(1.1);
+        }
+        50% {
+          transform: translateX(0) rotate(0deg) scale(1.2);
+        }
+        75% {
+          transform: translateX(50px) rotate(15deg) scale(1.1);
+        }
       }
 
       /* 鈴 */
@@ -190,23 +196,22 @@
       }
 
       @keyframes ring {
-        0%, 100% { transform: translateX(-50%) rotate(0deg); }
-        20% { transform: translateX(-50%) rotate(20deg); }
-        40% { transform: translateX(-50%) rotate(-20deg); }
-        60% { transform: translateX(-50%) rotate(15deg); }
-        80% { transform: translateX(-50%) rotate(-15deg); }
-      }
-
-      /* 紐 */
-      #bell-rope {
-        position: absolute;
-        top: 120px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 8px;
-        height: 100px;
-        background: linear-gradient(180deg, #8b0000 0%, #c41e3a 50%, #8b0000 100%);
-        z-index: 14;
+        0%,
+        100% {
+          transform: translateX(-50%) rotate(0deg);
+        }
+        20% {
+          transform: translateX(-50%) rotate(20deg);
+        }
+        40% {
+          transform: translateX(-50%) rotate(-20deg);
+        }
+        60% {
+          transform: translateX(-50%) rotate(15deg);
+        }
+        80% {
+          transform: translateX(-50%) rotate(-15deg);
+        }
       }
 
       /* 手の位置インジケーター */
@@ -250,9 +255,15 @@
       }
 
       @keyframes lightBurst {
-        0% { opacity: 0; }
-        20% { opacity: 1; }
-        100% { opacity: 0; }
+        0% {
+          opacity: 0;
+        }
+        20% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0;
+        }
       }
 
       /* 光の粒子 */
@@ -439,8 +450,12 @@
       }
 
       @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
       }
 
       /* キラキラエフェクト */
@@ -486,7 +501,6 @@
           transform: scale(1.5) translateY(-50px);
         }
       }
-
     </style>
   </head>
   <body>
@@ -520,10 +534,7 @@
       <div id="hand-indicator">✋</div>
 
       <div id="shrine-area">
-        <div id="bell-rope"></div>
-        <div id="bell">🔔</div>
         <img id="torii-image" src="osaisen-images/tobira.png" alt="鳥居" />
-
         <div id="saisenbox-area">
           <img id="saisenbox-image" src="osaisen-images/box.png" alt="賽銭箱" />
         </div>
@@ -531,7 +542,6 @@
         <img id="dog-character" src="osaisen-images/dog.png" alt="犬" />
         <img id="cat-character" src="osaisen-images/cat.png" alt="猫" />
       </div>
-
     </div>
 
     <!-- おみくじオーバーレイ -->
@@ -553,15 +563,15 @@
         const oscillator3 = audioCtx.createOscillator();
         const gainNode = audioCtx.createGain();
 
-        oscillator1.type = 'sine';
+        oscillator1.type = "sine";
         oscillator1.frequency.setValueAtTime(2500, audioCtx.currentTime);
         oscillator1.frequency.exponentialRampToValueAtTime(1000, audioCtx.currentTime + 0.8);
 
-        oscillator2.type = 'sine';
+        oscillator2.type = "sine";
         oscillator2.frequency.setValueAtTime(3500, audioCtx.currentTime);
         oscillator2.frequency.exponentialRampToValueAtTime(1500, audioCtx.currentTime + 0.8);
 
-        oscillator3.type = 'triangle';
+        oscillator3.type = "triangle";
         oscillator3.frequency.setValueAtTime(1800, audioCtx.currentTime);
         oscillator3.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.6);
 
@@ -585,7 +595,7 @@
         const oscillator = audioCtx.createOscillator();
         const gainNode = audioCtx.createGain();
 
-        oscillator.type = 'sine';
+        oscillator.type = "sine";
         oscillator.frequency.setValueAtTime(1200, audioCtx.currentTime);
         oscillator.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.15);
 
@@ -603,7 +613,7 @@
         const oscillator = audioCtx.createOscillator();
         const gainNode = audioCtx.createGain();
 
-        oscillator.type = 'sawtooth';
+        oscillator.type = "sawtooth";
         oscillator.frequency.setValueAtTime(600, audioCtx.currentTime);
         oscillator.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.2);
         oscillator.frequency.exponentialRampToValueAtTime(700, audioCtx.currentTime + 0.4);
@@ -622,7 +632,7 @@
         const oscillator = audioCtx.createOscillator();
         const gainNode = audioCtx.createGain();
 
-        oscillator.type = 'square';
+        oscillator.type = "square";
         oscillator.frequency.setValueAtTime(200, audioCtx.currentTime);
         oscillator.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.3);
 
@@ -673,8 +683,12 @@
       let catActive = false;
       let catBlockingActive = false;
 
-      // 猫の出現頻度（かなり高め）
-      let catAppearanceChance = 0.7;
+      // 犬の邪魔機能
+      let dogActive = false;
+      let dogBlockingActive = false;
+
+      // 邪魔キャラの出現頻度（かなり高め）
+      let interferenceChance = 0.7;
 
       // おみくじデータ
       const omikujiData = [
@@ -688,42 +702,69 @@
 
       // 猫が突然出てきて邪魔をする
       function triggerCatInterference() {
-        if (catActive || !canThrow) return;
+        if (catActive || dogActive || !canThrow) return;
 
         catActive = true;
 
         // ランダムな位置から出現（左側か右側か中央）
-        const positions = ['left', 'center', 'right'];
+        const positions = ["left", "center", "right"];
         const pos = positions[Math.floor(Math.random() * positions.length)];
 
-        if (pos === 'left') {
-          catCharacter.style.left = 'calc(50% - 150px)';
-        } else if (pos === 'right') {
-          catCharacter.style.left = 'calc(50% + 100px)';
+        if (pos === "left") {
+          catCharacter.style.left = "calc(50% - 150px)";
+        } else if (pos === "right") {
+          catCharacter.style.left = "calc(50% + 100px)";
         } else {
-          catCharacter.style.left = 'calc(50% - 20px)';
+          catCharacter.style.left = "calc(50% - 20px)";
         }
 
-        catCharacter.classList.add('active');
+        catCharacter.classList.add("active");
 
         // すぐにブロックモードに
         setTimeout(() => {
           catBlockingActive = true;
-          catCharacter.classList.add('blocking');
+          catCharacter.classList.add("blocking");
         }, 300);
 
         // 猫が去る（短め）
         setTimeout(() => {
-          catCharacter.classList.remove('active', 'blocking');
+          catCharacter.classList.remove("active", "blocking");
           catActive = false;
           catBlockingActive = false;
         }, 2500);
       }
 
-      // 定期的に猫が邪魔しに来る（頻繁に）
+      // 犬が直線的に動いて邪魔をする
+      function triggerDogInterference() {
+        if (dogActive || catActive || !canThrow) return;
+
+        dogActive = true;
+
+        dogCharacter.classList.add("active");
+
+        // すぐにブロックモードに（左右に動く）
+        setTimeout(() => {
+          dogBlockingActive = true;
+          dogCharacter.classList.add("blocking");
+        }, 200);
+
+        // 犬が去る
+        setTimeout(() => {
+          dogCharacter.classList.remove("active", "blocking");
+          dogActive = false;
+          dogBlockingActive = false;
+        }, 3000);
+      }
+
+      // 定期的に猫か犬が邪魔しに来る（頻繁に）
       setInterval(() => {
-        if (canThrow && !throwCooldown && Math.random() < catAppearanceChance) {
-          triggerCatInterference();
+        if (canThrow && !throwCooldown && Math.random() < interferenceChance) {
+          // ランダムで猫か犬
+          if (Math.random() < 0.5) {
+            triggerCatInterference();
+          } else {
+            triggerDogInterference();
+          }
         }
       }, 2000);
 
@@ -757,14 +798,14 @@
 
       // 成功時の光エフェクト
       function triggerSuccessEffect(x, y) {
-        successLight.classList.add('active');
-        setTimeout(() => successLight.classList.remove('active'), 1000);
+        successLight.classList.add("active");
+        setTimeout(() => successLight.classList.remove("active"), 1000);
 
         // 光の粒子を生成
         for (let i = 0; i < 20; i++) {
           setTimeout(() => {
-            const particle = document.createElement('div');
-            particle.className = 'light-particle';
+            const particle = document.createElement("div");
+            particle.className = "light-particle";
             particle.style.left = `${x + (Math.random() - 0.5) * 200}px`;
             particle.style.top = `${y + Math.random() * 50}px`;
             document.body.appendChild(particle);
@@ -822,24 +863,36 @@
         const isOnTarget = isOnTargetX && isOnTargetY;
 
         // 失敗理由を記録
-        let missReason = '';
+        let missReason = "";
         if (!isOnTargetX) {
-          missReason = direction > 0 ? '右にずれた！' : '左にずれた！';
+          missReason = direction > 0 ? "右にずれた！" : "左にずれた！";
         } else if (power < 0.6) {
-          missReason = '弱すぎた！手前に落ちた...';
+          missReason = "弱すぎた！手前に落ちた...";
         } else if (power > 1.4) {
-          missReason = '強すぎた！奥に飛んだ...';
+          missReason = "強すぎた！奥に飛んだ...";
         }
 
-        // 猫が邪魔している場合
-        let hitCat = false;
+        // 猫か犬が邪魔している場合
+        let hitAnimal = false;
+        let hitAnimalName = "";
         if (catBlockingActive) {
           const catRect = catCharacter.getBoundingClientRect();
           // コインが猫の範囲を通過するかチェック
           if (finalLandX >= catRect.left - 50 && finalLandX <= catRect.right + 50) {
             targetX = catRect.left + catRect.width / 2;
             targetY = catRect.top + catRect.height / 2;
-            hitCat = true;
+            hitAnimal = true;
+            hitAnimalName = "猫";
+          }
+        }
+        if (dogBlockingActive && !hitAnimal) {
+          const dogRect = dogCharacter.getBoundingClientRect();
+          // コインが犬の範囲を通過するかチェック
+          if (finalLandX >= dogRect.left - 50 && finalLandX <= dogRect.right + 50) {
+            targetX = dogRect.left + dogRect.width / 2;
+            targetY = dogRect.top + dogRect.height / 2;
+            hitAnimal = true;
+            hitAnimalName = "犬";
           }
         }
 
@@ -854,7 +907,7 @@
 
           // 放物線の計算
           let x, y;
-          if (hitCat) {
+          if (hitAnimal) {
             x = startX + (targetX - startX) * progress;
             y = startY + (targetY - startY) * progress - Math.sin(progress * Math.PI) * arcHeight;
           } else {
@@ -871,10 +924,10 @@
           } else {
             coin.remove();
 
-            if (hitCat) {
-              // 猫に当たった
+            if (hitAnimal) {
+              // 動物に当たった
               showMissEffect(targetX, targetY);
-              status.textContent = "猫に邪魔された！😿";
+              status.textContent = hitAnimalName === "猫" ? "猫に邪魔された！😿" : "犬に邪魔された！🐕";
               status.className = "blocked";
               setTimeout(() => {
                 canThrow = true;
@@ -917,9 +970,9 @@
 
       // 失敗エフェクト
       function showMissEffect(x, y) {
-        const miss = document.createElement('div');
-        miss.className = 'miss-effect';
-        miss.textContent = '❌';
+        const miss = document.createElement("div");
+        miss.className = "miss-effect";
+        miss.textContent = "❌";
         miss.style.left = `${x}px`;
         miss.style.top = `${y}px`;
         document.body.appendChild(miss);
@@ -1020,12 +1073,13 @@
 
           // 手が上にあるとき
           if (handY < window.innerHeight * 0.5 && canThrow) {
-            if (catBlockingActive) {
-              status.textContent = "猫が邪魔してる！タイミングを見て！";
+            if (catBlockingActive || dogBlockingActive) {
+              const animal = catBlockingActive ? "猫" : "犬";
+              status.textContent = `${animal}が邪魔してる！タイミングを見て！`;
               status.className = "blocked";
             } else {
-              const currentMovement = handYHistory.length > 1 ?
-                handYHistory[handYHistory.length - 1] - handYHistory[0] : 0;
+              const currentMovement =
+                handYHistory.length > 1 ? handYHistory[handYHistory.length - 1] - handYHistory[0] : 0;
               status.textContent = `準備OK！振り下ろして！(${Math.max(0, currentMovement).toFixed(0)}px)`;
               status.className = "active";
             }
@@ -1033,7 +1087,6 @@
             status.textContent = "手を上に上げてください";
             status.className = "";
           }
-
         } else {
           handIndicator.style.display = "none";
           if (canThrow) {
@@ -1053,12 +1106,29 @@
         canvasCtx.lineWidth = 2;
 
         const connections = [
-          [0, 1], [1, 2], [2, 3], [3, 4],
-          [0, 5], [5, 6], [6, 7], [7, 8],
-          [0, 9], [9, 10], [10, 11], [11, 12],
-          [0, 13], [13, 14], [14, 15], [15, 16],
-          [0, 17], [17, 18], [18, 19], [19, 20],
-          [5, 9], [9, 13], [13, 17],
+          [0, 1],
+          [1, 2],
+          [2, 3],
+          [3, 4],
+          [0, 5],
+          [5, 6],
+          [6, 7],
+          [7, 8],
+          [0, 9],
+          [9, 10],
+          [10, 11],
+          [11, 12],
+          [0, 13],
+          [13, 14],
+          [14, 15],
+          [15, 16],
+          [0, 17],
+          [17, 18],
+          [18, 19],
+          [19, 20],
+          [5, 9],
+          [9, 13],
+          [13, 17],
         ];
 
         connections.forEach(([start, end]) => {
