@@ -65,14 +65,14 @@
 
       #cursor {
         position: fixed;
-        width: 60px;
-        height: 60px;
+        width: 80px;
+        height: 80px;
         border: 4px solid #ff6b6b;
         border-radius: 50%;
         pointer-events: none;
         z-index: 9999;
         transform: translate(-50%, -50%);
-        transition: all 0.15s ease;
+        transition: all 0.1s ease;
         background: rgba(255, 107, 107, 0.2);
       }
 
@@ -85,8 +85,8 @@
       }
 
       #cursor.grabbing {
-        width: 80px;
-        height: 80px;
+        width: 100px;
+        height: 100px;
         border-color: #ffe66d;
         background: rgba(255, 230, 109, 0.4);
         animation: pulse 0.3s ease-in-out infinite;
@@ -303,7 +303,7 @@
         <h1>馬以外の動物をつまみ出せ！</h1>
         <p>👆 人差し指でカーソルを動かす</p>
         <p>👌 動物をピンチでつまむ</p>
-        <p>⬇️ 下のエリアにドラッグして捕獲！</p>
+        <p>🧺 籠にドラッグして捕獲！</p>
         <div id="score">スコア: 0</div>
         <div id="remaining">残り: 0匹</div>
         <div id="status">待機中...</div>
@@ -316,9 +316,10 @@
 
       <div id="cursor"></div>
 
-      <div id="capture-zone">
+      <!-- 籠がゲームキャンバス上に表示されるため非表示 -->
+      <!-- <div id="capture-zone">
         <p>ここにドロップして捕獲！</p>
-      </div>
+      </div> -->
 
       <div id="captured-animals"></div>
     </div>
@@ -363,10 +364,18 @@
       let hiddenAnimals = [];
       let capturedAnimals = [];
 
+      // 籠の位置とサイズ
+      const kago = {
+        x: 0,
+        y: 0,
+        width: 200,
+        height: 150
+      };
+
       // 画像を読み込み
       const images = {};
       let imagesLoaded = 0;
-      const imageFiles = ['uma', 'ushi', 'saru', 'hebi'];
+      const imageFiles = ['uma', 'ushi', 'saru', 'hebi', 'kago'];
 
       imageFiles.forEach(name => {
         images[name] = new Image();
@@ -428,6 +437,23 @@
         ctx.restore();
       }
 
+      // 籠を描画
+      function drawKago(ctx) {
+        if (!images.kago) return;
+        const img = images.kago;
+        const scale = kago.width / img.width;
+        const h = img.height * scale;
+        kago.height = h;
+        ctx.drawImage(img, kago.x - kago.width / 2, kago.y - h / 2, kago.width, h);
+      }
+
+      // 籠の中にいるか判定
+      function isInKago(x, y) {
+        const dx = Math.abs(x - kago.x);
+        const dy = Math.abs(y - kago.y);
+        return dx < kago.width / 2 - 20 && dy < kago.height / 2 - 10;
+      }
+
       // ゲーム初期化
       function initGame() {
         horses = [];
@@ -440,6 +466,10 @@
 
         const width = gameCanvas.width;
         const height = gameCanvas.height;
+
+        // 籠の位置を設定（画面右下）
+        kago.x = width - 150;
+        kago.y = height - 120;
         const horseSize = 80;
         const spacingX = 120; // 横の間隔
         const spacingY = 100; // 縦の間隔
@@ -552,6 +582,9 @@
           }
         });
 
+        // 籠を描画（最前面）
+        drawKago(gameCtx);
+
         requestAnimationFrame(render);
       }
 
@@ -562,7 +595,7 @@
           const dx = x - animal.x;
           const dy = y - animal.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < animal.size * 0.6) {
+          if (dist < animal.size * 0.9) { // 当たり判定を広げてつまみやすく
             return animal;
           }
         }
@@ -670,7 +703,7 @@
           );
 
           const wasPinching = isPinching;
-          isPinching = distance < 0.06;
+          isPinching = distance < 0.09; // 閾値を緩くしてつまみやすく
 
           if (isPinching && !wasPinching) {
             // ピンチ開始
@@ -691,7 +724,7 @@
 
             if (grabbedAnimal) {
               grabbedAnimal.isGrabbed = false;
-              if (isInCaptureZone(grabbedAnimal.y)) {
+              if (isInKago(grabbedAnimal.x, grabbedAnimal.y)) {
                 captureAnimal(grabbedAnimal);
               }
               // 離したら現在位置からまた動き出す

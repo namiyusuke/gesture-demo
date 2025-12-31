@@ -383,6 +383,102 @@
         z-index: 1000;
         text-shadow: 1px 1px 2px black;
       }
+
+      /* クリアエリア（右下） */
+      #clear-area {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 150px;
+        height: 150px;
+        background: linear-gradient(135deg, rgba(231, 76, 60, 0.3), rgba(192, 57, 43, 0.3));
+        border: 3px dashed #e74c3c;
+        border-radius: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+        transition: all 0.3s;
+      }
+
+      #clear-area.hover {
+        background: linear-gradient(135deg, rgba(231, 76, 60, 0.6), rgba(192, 57, 43, 0.6));
+        transform: scale(1.05);
+        border-style: solid;
+      }
+
+      #clear-area.active {
+        background: linear-gradient(135deg, rgba(231, 76, 60, 0.9), rgba(192, 57, 43, 0.9));
+        transform: scale(1.1);
+      }
+
+      #clear-area-icon {
+        font-size: 50px;
+        margin-bottom: 5px;
+      }
+
+      #clear-area-text {
+        color: white;
+        font-size: 14px;
+        font-weight: bold;
+        text-shadow: 1px 1px 2px black;
+      }
+
+      #clear-progress {
+        width: 80%;
+        height: 8px;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 4px;
+        margin-top: 10px;
+        overflow: hidden;
+      }
+
+      #clear-progress-bar {
+        height: 100%;
+        background: #fff;
+        width: 0%;
+        transition: width 0.1s;
+      }
+
+      /* 紙めくりアニメーション */
+      #paper-container.flipping {
+        animation: flipPaper 0.6s ease-in-out;
+      }
+
+      @keyframes flipPaper {
+        0% {
+          transform: perspective(1000px) rotateY(0deg);
+        }
+        50% {
+          transform: perspective(1000px) rotateY(-90deg);
+        }
+        100% {
+          transform: perspective(1000px) rotateY(0deg);
+        }
+      }
+
+      /* 新しい紙エフェクト */
+      .new-paper-effect {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.8);
+        pointer-events: none;
+        animation: newPaperFlash 0.5s ease-out forwards;
+        border-radius: 4px;
+      }
+
+      @keyframes newPaperFlash {
+        0% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0;
+        }
+      }
     </style>
   </head>
   <body>
@@ -403,6 +499,7 @@
         <p>👌 <strong>親指と人差し指でつまむ</strong>と筆を持てます</p>
         <p>✍️ <strong>つまんだまま動かす</strong>と紙に書けます</p>
         <p>🖌️ <strong>墨汁に触れる</strong>と墨を補充</p>
+        <p>📄 <strong>右下でつまむ</strong>と次の紙へ</p>
         <div id="status">待機中...</div>
       </div>
 
@@ -436,8 +533,16 @@
         <input type="range" id="brush-size" min="5" max="40" value="15" />
       </div>
 
+      <!-- 手でクリアするエリア -->
+      <div id="clear-area">
+        <div id="clear-area-icon">📄</div>
+        <div id="clear-area-text">次の紙へ</div>
+        <div id="clear-progress">
+          <div id="clear-progress-bar"></div>
+        </div>
+      </div>
+
       <div id="button-area">
-        <button id="clear-btn" class="control-btn">クリア</button>
         <button id="save-btn" class="control-btn">保存</button>
       </div>
     </div>
@@ -457,10 +562,11 @@
       const charcoalContainer = document.getElementById("charcoal-container");
       const pinchIndicator = document.getElementById("pinch-indicator");
       const inkLevel = document.getElementById("ink-level");
-      const clearBtn = document.getElementById("clear-btn");
       const saveBtn = document.getElementById("save-btn");
       const brushSizeSlider = document.getElementById("brush-size");
       const sizeValue = document.getElementById("size-value");
+      const clearArea = document.getElementById("clear-area");
+      const clearProgressBar = document.getElementById("clear-progress-bar");
 
       let handLandmarker = null;
       let lastVideoTime = -1;
@@ -516,6 +622,55 @@
         lastDrawY = null;
       }
 
+      // クリアエリア用の変数
+      let clearProgress = 0;
+      const clearThreshold = 100; // この値に達したらクリア
+      let isClearing = false;
+
+      // クリアエリアの上かどうかをチェック
+      function isOverClearArea(screenX, screenY) {
+        const rect = clearArea.getBoundingClientRect();
+        return (
+          screenX >= rect.left &&
+          screenX <= rect.right &&
+          screenY >= rect.top &&
+          screenY <= rect.bottom
+        );
+      }
+
+      // 紙をめくってクリア
+      function flipAndClearPaper() {
+        if (isClearing) return;
+        isClearing = true;
+
+        // 紙めくりアニメーション開始
+        paperContainer.classList.add("flipping");
+
+        // アニメーションの途中（紙が裏返ったタイミング）でクリア
+        setTimeout(() => {
+          drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+          inkAmount = 100;
+          inkLevel.style.width = "100%";
+          resetSmoothing();
+        }, 300);
+
+        // アニメーション終了後
+        setTimeout(() => {
+          paperContainer.classList.remove("flipping");
+
+          // 新しい紙のフラッシュエフェクト
+          const flash = document.createElement("div");
+          flash.className = "new-paper-effect";
+          paperContainer.appendChild(flash);
+          setTimeout(() => flash.remove(), 500);
+
+          isClearing = false;
+          clearProgress = 0;
+          clearProgressBar.style.width = "0%";
+          clearArea.classList.remove("active");
+        }, 600);
+      }
+
       // 描画キャンバスの初期化
       function initDrawingCanvas() {
         const rect = paperContainer.getBoundingClientRect();
@@ -538,14 +693,6 @@
       brushSizeSlider.addEventListener("input", (e) => {
         brushSize = parseInt(e.target.value);
         sizeValue.textContent = brushSize;
-      });
-
-      // クリアボタン
-      clearBtn.addEventListener("click", () => {
-        drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
-        inkAmount = 100;
-        inkLevel.style.width = "100%";
-        resetSmoothing();
       });
 
       // 保存ボタン
@@ -734,8 +881,25 @@
             pinchIndicator.textContent = "つまんでいます！✍️";
             pinchIndicator.classList.add("show", "pinching");
 
+            // クリアエリアの上にいるとき
+            if (isOverClearArea(screenX, screenY) && !isClearing) {
+              clearArea.classList.add("hover");
+              clearProgress += 3;
+              clearProgressBar.style.width = `${Math.min(100, clearProgress)}%`;
+              status.textContent = `次の紙へ... (${Math.min(100, Math.floor(clearProgress))}%)`;
+              status.className = "writing";
+              resetSmoothing();
+
+              if (clearProgress >= clearThreshold) {
+                clearArea.classList.add("active");
+                flipAndClearPaper();
+              }
+            }
             // 墨汁の上にいるとき
-            if (isOverCharcoal(screenX, screenY)) {
+            else if (isOverCharcoal(screenX, screenY)) {
+              clearArea.classList.remove("hover");
+              clearProgress = 0;
+              clearProgressBar.style.width = "0%";
               inkAmount = Math.min(100, inkAmount + 2);
               inkLevel.style.width = `${inkAmount}%`;
               status.textContent = "墨を補充中...";
@@ -744,6 +908,9 @@
             }
             // 紙の上にいるとき
             else if (isOverPaper(screenX, screenY)) {
+              clearArea.classList.remove("hover");
+              clearProgress = 0;
+              clearProgressBar.style.width = "0%";
               const paperCoords = screenToPaperCoords(screenX, screenY);
               drawInk(paperCoords.x, paperCoords.y);
 
@@ -755,6 +922,9 @@
                 status.className = "";
               }
             } else {
+              clearArea.classList.remove("hover");
+              clearProgress = 0;
+              clearProgressBar.style.width = "0%";
               status.textContent = "紙の上に移動してください";
               status.className = "active";
               resetSmoothing();
@@ -765,13 +935,19 @@
             pinchIndicator.classList.add("show");
             pinchIndicator.classList.remove("pinching");
 
-            // つまみを離したらスムージングをリセット
+            // つまみを離したらリセット
             if (isPinching) {
               resetSmoothing();
+              clearArea.classList.remove("hover");
+              clearProgress = 0;
+              clearProgressBar.style.width = "0%";
             }
 
             if (isOverPaper(screenX, screenY)) {
               status.textContent = "つまんで書き始めましょう！";
+              status.className = "";
+            } else if (isOverClearArea(screenX, screenY)) {
+              status.textContent = "つまんで次の紙へ";
               status.className = "";
             } else {
               status.textContent = "紙の上で指をつまむと書けます";
