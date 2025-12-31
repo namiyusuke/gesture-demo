@@ -356,6 +356,13 @@
       let handLandmarker = null;
       let lastVideoTime = -1;
 
+      // スムージング用
+      const smoothing = 0.3; // 小さいほど滑らか（0.1〜0.5）
+
+      // ピンチのヒステリシス（つまんだら離しにくくする）
+      const pinchStartThreshold = 0.09;  // つまむ開始
+      const pinchEndThreshold = 0.13;    // 離す判定（より緩く）
+
       // ゲーム状態
       let score = 0;
       let grabbedAnimal = null;
@@ -454,6 +461,55 @@
         return dx < kago.width / 2 - 20 && dy < kago.height / 2 - 10;
       }
 
+      // 籠の吸引範囲にいるか判定
+      function isNearKago(x, y) {
+        const dx = x - kago.x;
+        const dy = y - kago.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        return dist < kago.width * 0.8; // 籠の近くに来たら吸引開始
+      }
+
+      // 吸引アニメーション中の動物
+      let beingSucked = null;
+
+      // 籠に吸い込むアニメーション
+      function suckIntoKago(animal) {
+        beingSucked = animal;
+        animal.isGrabbed = false;
+        grabbedAnimal = null;
+        cursor.classList.remove("grabbing");
+
+        const startX = animal.x;
+        const startY = animal.y;
+        const startSize = animal.size;
+        let progress = 0;
+
+        function animate() {
+          progress += 0.08; // 吸い込み速度
+
+          if (progress >= 1) {
+            // 吸い込み完了
+            animal.x = kago.x;
+            animal.y = kago.y;
+            animal.size = 0;
+            beingSucked = null;
+            captureAnimal(animal);
+            return;
+          }
+
+          // イージング（加速しながら吸い込まれる）
+          const ease = progress * progress;
+
+          animal.x = startX + (kago.x - startX) * ease;
+          animal.y = startY + (kago.y - startY) * ease;
+          animal.size = startSize * (1 - ease * 0.8); // 小さくなる
+
+          requestAnimationFrame(animate);
+        }
+
+        animate();
+      }
+
       // ゲーム初期化
       function initGame() {
         horses = [];
@@ -461,6 +517,7 @@
         capturedAnimals = [];
         score = 0;
         grabbedAnimal = null;
+        beingSucked = null;
         capturedAnimalsDiv.innerHTML = "";
         clearModal.classList.remove("show");
 
@@ -511,8 +568,10 @@
             id: i,
             x: horse.x,
             y: horse.y,
-            vx: 0, // 動かない
-            vy: 0,
+            vx: (Math.random() - 0.5) * 1.5, // ゆっくりランダムに動く
+            vy: (Math.random() - 0.5) * 1.5,
+            baseX: horse.x, // 初期位置を記憶
+            baseY: horse.y,
             size: horse.size,
             type: animalType.type,
             name: animalType.name,
@@ -551,7 +610,33 @@
           }
         });
 
-        // 隠れ動物は動かない（その場に留まる）
+        // 隠れ動物もゆらゆら動く
+        hiddenAnimals.forEach(animal => {
+          if (animal.isCaptured || animal.isGrabbed || animal === beingSucked) return;
+
+          animal.x += animal.vx;
+          animal.y += animal.vy;
+
+          // 初期位置から離れすぎたら方向転換
+          const wanderRange = 80; // 動き回る範囲
+          const dx = animal.x - animal.baseX;
+          const dy = animal.y - animal.baseY;
+
+          if (Math.abs(dx) > wanderRange) {
+            animal.vx = -animal.vx;
+            animal.x = animal.baseX + (dx > 0 ? wanderRange : -wanderRange);
+          }
+          if (Math.abs(dy) > wanderRange) {
+            animal.vy = -animal.vy;
+            animal.y = animal.baseY + (dy > 0 ? wanderRange : -wanderRange);
+          }
+
+          // 時々方向をランダムに変える
+          if (Math.random() < 0.01) {
+            animal.vx = (Math.random() - 0.5) * 1.5;
+            animal.vy = (Math.random() - 0.5) * 1.5;
+          }
+        });
       }
 
       // レンダリング
@@ -687,8 +772,9 @@
           const targetX = (1.0 - indexFingerTip.x) * window.innerWidth;
           const targetY = indexFingerTip.y * window.innerHeight;
 
-          smoothX = targetX;
-          smoothY = targetY;
+          // スムージング（急な動きを抑制）
+          smoothX += (targetX - smoothX) * smoothing;
+          smoothY += (targetY - smoothY) * smoothing;
 
           cursor.style.left = `${smoothX}px`;
           cursor.style.top = `${smoothY}px`;
@@ -703,7 +789,14 @@
           );
 
           const wasPinching = isPinching;
-          isPinching = distance < 0.09; // 閾値を緩くしてつまみやすく
+          // ヒステリシス: つまんでいる時は離しにくく
+          if (isPinching) {
+            // 動物をつまんでいる時はさらに離しにくく
+            const threshold = grabbedAnimal ? pinchEndThreshold + 0.03 : pinchEndThreshold;
+            isPinching = distance < threshold;
+          } else {
+            isPinching = distance < pinchStartThreshold;
+          }
 
           if (isPinching && !wasPinching) {
             // ピンチ開始
@@ -736,6 +829,11 @@
           if (grabbedAnimal && isPinching) {
             grabbedAnimal.x = smoothX - grabOffset.x;
             grabbedAnimal.y = smoothY - grabOffset.y;
+
+            // 籠の近くに来たら吸い込み開始
+            if (isNearKago(grabbedAnimal.x, grabbedAnimal.y)) {
+              suckIntoKago(grabbedAnimal);
+            }
           }
 
           status.textContent = "手を検出中 ✓";
