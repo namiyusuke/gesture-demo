@@ -1,0 +1,1170 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>餅つきゲーム - 餅をつけ！</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Arial", sans-serif;
+        background: linear-gradient(180deg, #dc143c 0%, #dc143c 50%, #fff 50%, #fff 100%);
+        background-size: 100px 100px;
+        min-height: 100vh;
+        overflow: hidden;
+      }
+
+      #container {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+        background: repeating-linear-gradient(90deg, #dc143c 0px, #dc143c 50px, #fff 50px, #fff 100px);
+      }
+
+      #game-canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+      }
+
+      #video-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        width: 200px;
+        height: 150px;
+        border: 3px solid #8b4513;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        background: #000;
+        z-index: 1000;
+      }
+
+      #input_video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transform: scaleX(-1);
+      }
+
+      #output_canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        transform: scaleX(-1);
+      }
+
+      #loading {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(139, 69, 19, 0.95);
+        padding: 30px;
+        border-radius: 12px;
+        border: 3px solid #ffd700;
+        text-align: center;
+        z-index: 10000;
+        color: white;
+      }
+
+      #loading.hidden {
+        display: none;
+      }
+
+      .spinner {
+        border: 4px solid #654321;
+        border-top: 4px solid #ffd700;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 15px;
+      }
+
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      /* スコア表示 */
+      #score-display {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        background: rgba(139, 69, 19, 0.9);
+        padding: 15px 25px;
+        border-radius: 10px;
+        border: 3px solid #ffd700;
+        color: white;
+        font-size: 18px;
+        font-weight: bold;
+        z-index: 1000;
+        min-width: 180px;
+      }
+
+      /* 完成メッセージ */
+      #complete-message {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 72px;
+        font-weight: bold;
+        color: #8b4513;
+        text-shadow:
+          3px 3px 0 #fff,
+          -3px -3px 0 #fff,
+          3px -3px 0 #fff,
+          -3px 3px 0 #fff,
+          0 5px 20px rgba(0,0,0,0.3);
+        z-index: 5000;
+        animation: completeAppear 0.8s ease-out;
+        white-space: nowrap;
+      }
+
+      #complete-message.hidden {
+        display: none;
+      }
+
+      @keyframes completeAppear {
+        0% {
+          transform: translate(-50%, -50%) scale(0);
+          opacity: 0;
+        }
+        50% {
+          transform: translate(-50%, -50%) scale(1.2);
+        }
+        100% {
+          transform: translate(-50%, -50%) scale(1);
+          opacity: 1;
+        }
+      }
+
+      #growth-bar-container {
+        width: 100%;
+        height: 12px;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 6px;
+        margin-top: 10px;
+        overflow: hidden;
+      }
+
+      #growth-bar {
+        width: 0%;
+        height: 100%;
+        background: linear-gradient(90deg, #fff, #ffd700);
+        border-radius: 6px;
+        transition: width 0.3s ease-out;
+      }
+
+      #growth-text {
+        font-size: 14px;
+        margin-top: 5px;
+        color: rgba(255, 255, 255, 0.8);
+      }
+
+      /* 指示テキスト */
+      #instruction {
+        position: fixed;
+        top: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 48px;
+        font-weight: bold;
+        color: #333;
+        text-shadow: 2px 2px 0 #fff, -2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff;
+        z-index: 100;
+      }
+
+      /* 手の位置インジケーター */
+      #hand-indicator {
+        position: fixed;
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: rgba(255, 215, 0, 0.5);
+        border: 4px solid #ffd700;
+        pointer-events: none;
+        z-index: 999;
+        transform: translate(-50%, -50%);
+        display: none;
+      }
+
+      #hand-indicator.active {
+        display: block;
+      }
+
+      /* ヒットエフェクト */
+      .hit-effect {
+        position: fixed;
+        font-size: 60px;
+        pointer-events: none;
+        z-index: 9000;
+        animation: hitPop 0.6s ease-out forwards;
+      }
+
+      @keyframes hitPop {
+        0% {
+          transform: translate(-50%, -50%) scale(0);
+          opacity: 1;
+        }
+        50% {
+          transform: translate(-50%, -50%) scale(1.5);
+          opacity: 1;
+        }
+        100% {
+          transform: translate(-50%, -80%) scale(1);
+          opacity: 0;
+        }
+      }
+
+      /* チュートリアルモーダル */
+      #tutorial-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        z-index: 20000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      #tutorial-modal.hidden {
+        display: none;
+      }
+
+      .tutorial-content {
+        background: rgba(139, 69, 19, 0.95);
+        border-radius: 15px;
+        padding: 40px;
+        max-width: 500px;
+        width: 90%;
+        text-align: center;
+        color: white;
+        border: 4px solid #ffd700;
+      }
+
+      .tutorial-content h1 {
+        font-size: 36px;
+        color: #ffd700;
+        margin-bottom: 30px;
+      }
+
+      .tutorial-content .emoji {
+        font-size: 80px;
+        margin: 20px 0;
+      }
+
+      .tutorial-content p {
+        font-size: 20px;
+        line-height: 1.8;
+        margin-bottom: 30px;
+      }
+
+      .tutorial-button {
+        padding: 15px 40px;
+        font-size: 20px;
+        font-weight: bold;
+        color: #8b4513;
+        background: #ffd700;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: transform 0.1s;
+      }
+
+      .tutorial-button:hover {
+        transform: scale(1.05);
+      }
+
+      .tutorial-button:active {
+        transform: scale(0.98);
+      }
+
+      /* デバッグ情報 */
+      #debug-info {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        background: rgba(0, 0, 0, 0.7);
+        color: #0f0;
+        padding: 10px;
+        font-family: monospace;
+        font-size: 12px;
+        border-radius: 5px;
+        z-index: 1000;
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- チュートリアルモーダル -->
+    <div id="tutorial-modal">
+      <div class="tutorial-content">
+        <h1>🎍 餅つきゲーム 🎍</h1>
+        <div class="emoji">🤚⬇️</div>
+        <p>
+          手を上から下に振り下ろして<br />
+          餅をつこう！<br /><br />
+          <strong>勢いよく振り下ろすともちもち！</strong>
+        </p>
+        <button id="start-button" class="tutorial-button">ゲームスタート</button>
+      </div>
+    </div>
+
+    <div id="loading" class="hidden">
+      <div class="spinner"></div>
+      <p>カメラを準備中...</p>
+    </div>
+
+    <div id="container">
+      <canvas id="game-canvas"></canvas>
+
+      <div id="video-container">
+        <video id="input_video" autoplay playsinline></video>
+        <canvas id="output_canvas"></canvas>
+      </div>
+
+      <div id="score-display">
+        <div id="growth-bar-container">
+          <div id="growth-bar"></div>
+        </div>
+        <div id="growth-text">餅の成長: 0%</div>
+      </div>
+
+      <!-- 完成表示 -->
+      <div id="complete-message" class="hidden">
+        🎍 出来上がり！ 🎍
+      </div>
+
+      <div id="instruction">餅をつけ！！！</div>
+
+      <div id="hand-indicator"></div>
+
+      <div id="debug-info"></div>
+    </div>
+
+    <script type="module">
+      import { FilesetResolver, HandLandmarker } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest";
+
+      const videoElement = document.getElementById("input_video");
+      const canvasElement = document.getElementById("output_canvas");
+      const canvasCtx = canvasElement.getContext("2d");
+      const loading = document.getElementById("loading");
+      const gameCanvas = document.getElementById("game-canvas");
+      const gameCtx = gameCanvas.getContext("2d");
+      const handIndicator = document.getElementById("hand-indicator");
+      const debugInfo = document.getElementById("debug-info");
+      const completeMessage = document.getElementById("complete-message");
+
+      let handLandmarker = null;
+      let lastVideoTime = -1;
+
+      // ゲーム状態
+      let lastHitTime = 0;
+      let isComplete = false;
+
+      // 手の動き検出用
+      let handYHistory = [];
+      const HISTORY_LENGTH = 10;
+      let canHit = true;
+      let lastHandY = 0;
+
+      // 手の位置（杵を追従させる用）
+      let handScreenX = window.innerWidth / 2;
+      let handScreenY = window.innerHeight * 0.3;
+      let smoothHandX = handScreenX;
+      let smoothHandY = handScreenY;
+
+      // 臼の位置（画面中央下部）
+      const usuPosition = {
+        x: window.innerWidth / 2,
+        y: window.innerHeight * 0.7,
+      };
+
+      // 餅の状態（もちもちアニメーション用）
+      const mochi = {
+        baseWidth: 90,        // 初期サイズ
+        baseHeight: 70,       // より丸く
+        currentWidth: 90,
+        currentHeight: 70,
+        squashAmount: 0,      // 潰れ具合 (0-1)
+        squashVelocity: 0,    // 潰れの速度（バネ用）
+        wobble: 0,            // ぷるぷる揺れ
+        wobbleSpeed: 0,
+        offsetY: 0,           // 上下の跳ね
+        offsetYVelocity: 0,
+        growth: 0,            // 成長度（0〜1、叩くほど増える）
+        targetGrowth: 0,      // 目標成長度
+      };
+
+      // 杵の状態
+      const kine = {
+        x: window.innerWidth / 2,
+        y: window.innerHeight * 0.3,
+        rotation: -30,
+        targetY: window.innerHeight * 0.3,
+        isHitting: false,
+        hitProgress: 0,
+      };
+
+      // パーティクル（もち粒）
+      let particles = [];
+
+      // 画像の読み込み
+      const kineImage = new Image();
+      kineImage.src = "mochitsuki_game-images/kine.png";
+
+      const usuImage = new Image();
+      usuImage.src = "mochitsuki_game-images/usu.png";
+
+      // キャンバスサイズ調整
+      function resizeCanvas() {
+        const dpr = window.devicePixelRatio || 1;
+        gameCanvas.width = window.innerWidth * dpr;
+        gameCanvas.height = window.innerHeight * dpr;
+        gameCanvas.style.width = window.innerWidth + "px";
+        gameCanvas.style.height = window.innerHeight + "px";
+        gameCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        // 臼の位置を更新
+        usuPosition.x = window.innerWidth / 2;
+        usuPosition.y = window.innerHeight * 0.7;
+      }
+
+      // 餅をつくエフェクト
+      function hitMochi(speed) {
+        const now = Date.now();
+        if (now - lastHitTime < 250) return;
+        if (isComplete) return; // 完成後は叩けない
+        lastHitTime = now;
+
+        // 餅を成長させる（叩くほど大きくなる）
+        const growthIncrease = 0.08 + speed * 0.04; // スピードに応じて成長（増加量UP）
+        mochi.targetGrowth = Math.min(mochi.targetGrowth + growthIncrease, 1.0);
+
+        // 餅を強く潰す（スピードに応じて）
+        const squashIntensity = Math.min(speed * 0.4, 0.8);
+        mochi.squashAmount = squashIntensity;
+        mochi.squashVelocity = -squashIntensity * 0.5; // バネの反動
+        mochi.wobbleSpeed = Math.min(speed * 2, 8); // 揺れ（制限付き）
+
+        // 餅が下に沈んでから跳ね返る（控えめに）
+        mochi.offsetY = Math.min(10 + speed * 2, 25);
+        mochi.offsetYVelocity = -Math.min(speed * 2, 8);
+
+        // パーティクル生成（もち粒が飛び散る）- 成長するほど多く
+        const particleCount = Math.floor(speed * 4) + 5 + Math.floor(mochi.growth * 5);
+        createMochiParticles(usuPosition.x, usuPosition.y - 30, particleCount);
+
+        // 粘り気の糸を生成（杵が離れる時に伸びる）
+        createStickyStrings(usuPosition.x, usuPosition.y - 50, speed);
+
+        // 画面揺れ（強め）
+        shakeScreen(Math.min(speed * 5, 20));
+
+        // 杵のヒットアニメーション
+        kine.isHitting = true;
+        kine.hitProgress = 0;
+      }
+
+      // ヒットエフェクト表示
+      function showHitEffect(x, y, emoji) {
+        const effect = document.createElement("div");
+        effect.className = "hit-effect";
+        effect.textContent = emoji;
+        effect.style.left = `${x}px`;
+        effect.style.top = `${y}px`;
+        document.body.appendChild(effect);
+        setTimeout(() => effect.remove(), 600);
+      }
+
+      // 餅パーティクル生成（もちもちした粒）
+      function createMochiParticles(x, y, count) {
+        for (let i = 0; i < count; i++) {
+          const angle = Math.PI + (Math.random() - 0.5) * Math.PI * 0.8;
+          const speed = 3 + Math.random() * 6;
+          particles.push({
+            x: x + (Math.random() - 0.5) * 60,
+            y: y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed - 3,
+            life: 1,
+            size: 8 + Math.random() * 12,
+            stretch: 1,
+            rotation: Math.random() * Math.PI * 2,
+            rotationSpeed: (Math.random() - 0.5) * 0.2,
+          });
+        }
+      }
+
+      // パーティクル更新
+      function updateParticles() {
+        particles = particles.filter((p) => {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.3;
+          p.vx *= 0.98;
+          p.life -= 0.015;
+          p.rotation += p.rotationSpeed;
+          // 伸び縮み（もちもち感）
+          p.stretch = 1 + Math.abs(p.vy) * 0.05;
+          return p.life > 0;
+        });
+      }
+
+      // パーティクル描画（もちもちした形）
+      function drawParticles() {
+        particles.forEach((p) => {
+          gameCtx.save();
+          gameCtx.globalAlpha = p.life;
+          gameCtx.translate(p.x, p.y);
+          gameCtx.rotate(p.rotation);
+          gameCtx.scale(1 / p.stretch, p.stretch);
+
+          // もち粒（グラデーション付き）
+          const gradient = gameCtx.createRadialGradient(0, 0, 0, 0, 0, p.size);
+          gradient.addColorStop(0, "rgba(255, 255, 255, 1)");
+          gradient.addColorStop(0.7, "rgba(250, 245, 235, 1)");
+          gradient.addColorStop(1, "rgba(240, 230, 210, 0.8)");
+
+          gameCtx.fillStyle = gradient;
+          gameCtx.beginPath();
+          gameCtx.ellipse(0, 0, p.size * 0.8, p.size, 0, 0, Math.PI * 2);
+          gameCtx.fill();
+
+          gameCtx.restore();
+        });
+        gameCtx.globalAlpha = 1;
+      }
+
+      // 画面揺れ
+      function shakeScreen(intensity = 10) {
+        const container = document.getElementById("container");
+        const duration = 100;
+        const startTime = Date.now();
+
+        function shake() {
+          const elapsed = Date.now() - startTime;
+          if (elapsed < duration) {
+            const remaining = 1 - elapsed / duration;
+            const offsetX = (Math.random() - 0.5) * intensity * remaining;
+            const offsetY = (Math.random() - 0.5) * intensity * remaining;
+            container.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+            requestAnimationFrame(shake);
+          } else {
+            container.style.transform = "";
+          }
+        }
+        shake();
+      }
+
+      // 成長バーの要素
+      const growthBar = document.getElementById("growth-bar");
+      const growthText = document.getElementById("growth-text");
+
+      // 餅のアニメーション更新
+      function updateMochi() {
+        // 成長アニメーション（じわじわ大きくなる）
+        mochi.growth += (mochi.targetGrowth - mochi.growth) * 0.05;
+
+        // 目標が100%に達していたら、growthも100%にスナップ
+        if (mochi.targetGrowth >= 1.0 && mochi.growth > 0.98) {
+          mochi.growth = 1.0;
+        }
+
+        // 成長バーを更新
+        const growthPercent = Math.floor(mochi.growth * 100);
+        growthBar.style.width = growthPercent + "%";
+        growthText.textContent = `餅の成長: ${growthPercent}%`;
+
+        // 完成判定（100%に達したら）
+        if (mochi.targetGrowth >= 1.0 && mochi.growth >= 1.0 && !isComplete) {
+          isComplete = true;
+          completeMessage.classList.remove("hidden");
+          // UIを非表示
+          document.getElementById("instruction").style.display = "none";
+          document.getElementById("score-display").style.display = "none";
+        }
+
+        // 成長に応じたベースサイズ（最大2倍に）
+        const growthScale = 1 + mochi.growth * 1.0;
+        mochi.baseWidth = 90 * growthScale;
+        mochi.baseHeight = 70 * growthScale;
+
+        // バネ物理：潰れからの復帰（粘り気のある動き）
+        const springK = 0.08;      // バネ定数（遅めに戻る）
+        const damping = 0.88;      // 減衰（ゆっくり収束）
+
+        // バネの力で戻る
+        mochi.squashVelocity += -mochi.squashAmount * springK;
+        mochi.squashVelocity *= damping;
+        mochi.squashAmount += mochi.squashVelocity;
+
+        // 小さくなったら止める
+        if (Math.abs(mochi.squashAmount) < 0.005 && Math.abs(mochi.squashVelocity) < 0.005) {
+          mochi.squashAmount = 0;
+          mochi.squashVelocity = 0;
+        }
+
+        // 上下の跳ね（粘り気のあるバネ）
+        mochi.offsetYVelocity += -mochi.offsetY * 0.12;
+        mochi.offsetYVelocity *= 0.92;
+        mochi.offsetY += mochi.offsetYVelocity;
+
+        if (Math.abs(mochi.offsetY) < 0.5 && Math.abs(mochi.offsetYVelocity) < 0.5) {
+          mochi.offsetY = 0;
+          mochi.offsetYVelocity = 0;
+        }
+
+        // ぷるぷる揺れ（粘り気があるのでゆっくり収まる）
+        mochi.wobble += mochi.wobbleSpeed;
+        mochi.wobbleSpeed *= 0.94;
+
+        const wobbleEffect = Math.sin(mochi.wobble) * mochi.wobbleSpeed * 0.03 * (1 + mochi.growth * 0.5);
+
+        // サイズ計算（潰れると横に広がる）
+        const clampedSquash = Math.max(0, Math.min(mochi.squashAmount, 1));
+        const squashScale = 1 + clampedSquash * 0.6;  // 横への広がり
+        const stretchScale = 1 - clampedSquash * 0.3;  // 縦の潰れ
+
+        const clampedWobble = Math.max(-10, Math.min(wobbleEffect * 20, 10));
+        mochi.currentWidth = mochi.baseWidth * squashScale + clampedWobble;
+        mochi.currentHeight = mochi.baseHeight * stretchScale + Math.abs(clampedWobble) * 0.3;
+      }
+
+      // 臼を描画
+      function drawUsu() {
+        const x = usuPosition.x;
+        const y = usuPosition.y;
+
+        // 臼の画像があれば使用
+        if (usuImage.complete && usuImage.naturalWidth > 0) {
+          // アスペクト比を維持
+          const imgWidth = usuImage.naturalWidth;
+          const imgHeight = usuImage.naturalHeight;
+          const aspectRatio = imgWidth / imgHeight;
+
+          const usuHeight = 280;
+          const usuWidth = usuHeight * aspectRatio;
+
+          // 臼の影
+          gameCtx.fillStyle = "rgba(0, 0, 0, 0.15)";
+          gameCtx.beginPath();
+          gameCtx.ellipse(x, y + usuHeight * 0.35, usuWidth * 0.45, 30, 0, 0, Math.PI * 2);
+          gameCtx.fill();
+
+          // 臼の画像を描画
+          const usuY = y - usuHeight * 0.3;
+          gameCtx.drawImage(
+            usuImage,
+            x - usuWidth / 2,
+            usuY,
+            usuWidth,
+            usuHeight
+          );
+
+          // 餅を描画（臼の中央上部に配置）
+          // 臼の上端から少し下の位置に餅を配置
+          const mochiY = usuY + usuHeight * 0.25;
+          drawMochi(x, mochiY);
+        } else {
+          // フォールバック：Canvas描画
+          // 臼の影
+          gameCtx.fillStyle = "rgba(0, 0, 0, 0.2)";
+          gameCtx.beginPath();
+          gameCtx.ellipse(x, y + 80, 130, 35, 0, 0, Math.PI * 2);
+          gameCtx.fill();
+
+          // 臼（円柱形）- 底面
+          gameCtx.fillStyle = "#a08050";
+          gameCtx.beginPath();
+          gameCtx.ellipse(x, y + 70, 125, 40, 0, 0, Math.PI * 2);
+          gameCtx.fill();
+
+          // 臼の側面（木目風グラデーション）
+          const sideGradient = gameCtx.createLinearGradient(x - 125, 0, x + 125, 0);
+          sideGradient.addColorStop(0, "#8b7355");
+          sideGradient.addColorStop(0.3, "#c4a35a");
+          sideGradient.addColorStop(0.5, "#d4b896");
+          sideGradient.addColorStop(0.7, "#c4a35a");
+          sideGradient.addColorStop(1, "#8b7355");
+          gameCtx.fillStyle = sideGradient;
+          gameCtx.fillRect(x - 125, y - 10, 250, 80);
+
+          // 臼の上面
+          const topGradient = gameCtx.createRadialGradient(x, y - 10, 0, x, y - 10, 125);
+          topGradient.addColorStop(0, "#e8d4b8");
+          topGradient.addColorStop(0.7, "#d4b896");
+          topGradient.addColorStop(1, "#b8956e");
+          gameCtx.fillStyle = topGradient;
+          gameCtx.beginPath();
+          gameCtx.ellipse(x, y - 10, 125, 40, 0, 0, Math.PI * 2);
+          gameCtx.fill();
+
+          // 臼の内側（くぼみ）
+          gameCtx.fillStyle = "#8b7355";
+          gameCtx.beginPath();
+          gameCtx.ellipse(x, y - 5, 90, 28, 0, 0, Math.PI * 2);
+          gameCtx.fill();
+
+          // 餅を描画
+          drawMochi(x, y - 25);
+        }
+      }
+
+      // 粘り気のある糸を描画
+      let stickyStrings = [];
+
+      function createStickyStrings(x, y, intensity) {
+        const count = Math.floor(2 + intensity * 3);
+        for (let i = 0; i < count; i++) {
+          stickyStrings.push({
+            x: x + (Math.random() - 0.5) * 40,
+            y: y,
+            targetY: y - 30 - Math.random() * 40,
+            length: 20 + Math.random() * 30,
+            thickness: 2 + Math.random() * 3,
+            life: 1,
+            wobble: Math.random() * Math.PI * 2,
+            wobbleSpeed: 0.1 + Math.random() * 0.1,
+          });
+        }
+      }
+
+      function updateStickyStrings() {
+        stickyStrings = stickyStrings.filter(s => {
+          s.life -= 0.025;
+          s.wobble += s.wobbleSpeed;
+          s.length *= 0.96; // 徐々に縮む
+          return s.life > 0;
+        });
+      }
+
+      function drawStickyStrings(baseX, baseY) {
+        stickyStrings.forEach(s => {
+          gameCtx.save();
+          gameCtx.globalAlpha = s.life * 0.8;
+
+          const wobbleX = Math.sin(s.wobble) * 3 * s.life;
+
+          // 粘り気のある糸（ベジェ曲線で表現）
+          const gradient = gameCtx.createLinearGradient(s.x, baseY, s.x, s.targetY);
+          gradient.addColorStop(0, "rgba(255, 253, 248, 0.9)");
+          gradient.addColorStop(0.5, "rgba(250, 245, 235, 0.7)");
+          gradient.addColorStop(1, "rgba(245, 240, 230, 0.3)");
+
+          gameCtx.strokeStyle = gradient;
+          gameCtx.lineWidth = s.thickness * s.life;
+          gameCtx.lineCap = "round";
+
+          gameCtx.beginPath();
+          gameCtx.moveTo(s.x, baseY);
+          gameCtx.quadraticCurveTo(
+            s.x + wobbleX,
+            baseY - s.length * 0.5,
+            s.x + wobbleX * 2,
+            baseY - s.length * s.life
+          );
+          gameCtx.stroke();
+
+          gameCtx.restore();
+        });
+      }
+
+      // 餅を描画（もちもちアニメーション付き）
+      function drawMochi(x, baseY) {
+        gameCtx.save();
+
+        // offsetYを適用（叩いた時に沈む）- 制限付き
+        const clampedOffsetY = Math.max(-30, Math.min(mochi.offsetY, 30));
+        const y = baseY + clampedOffsetY;
+
+        // 現在の変形量（制限付き）
+        const squash = Math.max(0, Math.min(mochi.squashAmount, 1));
+        const wobbleAmt = Math.sin(mochi.wobble) * Math.min(mochi.wobbleSpeed, 5) * 0.5;
+
+        // 餅のサイズ（より丸く）
+        const baseW = mochi.currentWidth * 0.45;
+        const baseH = mochi.currentHeight * 0.9; // かなり丸く
+
+        // 伸び縮み（粘り気のある動き）
+        const stretchPhase = Math.sin(mochi.wobble * 0.3) * wobbleAmt * 0.15;
+        const w = baseW * (1 + squash * 0.5 + stretchPhase);
+        const h = baseH * (1 - squash * 0.35 - stretchPhase * 0.3);
+
+        // 粘り気の糸を更新・描画
+        updateStickyStrings();
+        drawStickyStrings(x, y - h * 0.3);
+
+        // 餅本体（グラデーション）
+        const mochiGradient = gameCtx.createRadialGradient(
+          x - w * 0.2, y - h * 0.3,
+          0,
+          x, y,
+          Math.max(w, h) * 1.2
+        );
+        mochiGradient.addColorStop(0, "#ffffff");
+        mochiGradient.addColorStop(0.4, "#fdfcfa");
+        mochiGradient.addColorStop(0.7, "#f8f4ee");
+        mochiGradient.addColorStop(1, "#ebe5da");
+
+        gameCtx.fillStyle = mochiGradient;
+
+        // 丸い餅の形状（ほぼ円形）- ぷにぷに変形
+        gameCtx.beginPath();
+
+        // 有機的な形状のために複数のポイントでベジェ曲線
+        const points = 8;
+        const angleStep = (Math.PI * 2) / points;
+
+        for (let i = 0; i <= points; i++) {
+          const angle = i * angleStep;
+          const wobbleOffset = Math.sin(mochi.wobble + i * 0.8) * wobbleAmt * 2;
+          const rx = w + wobbleOffset;
+          const ry = h * 0.7 + wobbleOffset * 0.5;
+
+          const px = x + Math.cos(angle) * rx;
+          const py = y + Math.sin(angle) * ry * 0.8;
+
+          if (i === 0) {
+            gameCtx.moveTo(px, py);
+          } else {
+            const prevAngle = (i - 1) * angleStep;
+            const cpAngle = prevAngle + angleStep * 0.5;
+            const cpWobble = Math.sin(mochi.wobble + (i - 0.5) * 0.8) * wobbleAmt * 2.5;
+            const cpRx = (w + cpWobble) * 1.1;
+            const cpRy = (h * 0.7 + cpWobble * 0.5) * 1.1;
+            const cpx = x + Math.cos(cpAngle) * cpRx;
+            const cpy = y + Math.sin(cpAngle) * cpRy * 0.8;
+
+            gameCtx.quadraticCurveTo(cpx, cpy, px, py);
+          }
+        }
+        gameCtx.closePath();
+        gameCtx.fill();
+
+        // 餅の輪郭（薄い影）
+        gameCtx.strokeStyle = "rgba(210, 200, 180, 0.25)";
+        gameCtx.lineWidth = 2;
+        gameCtx.stroke();
+
+        // 餅の膨らみ表現（ドーム状）
+        const bulgeH = h * 0.5 * (1 + mochi.growth * 0.4);
+        const bulgeGradient = gameCtx.createRadialGradient(
+          x - w * 0.1, y - h * 0.35,
+          0,
+          x, y - h * 0.2,
+          w * 0.9
+        );
+        bulgeGradient.addColorStop(0, "rgba(255, 255, 255, 0.9)");
+        bulgeGradient.addColorStop(0.5, "rgba(253, 250, 245, 0.5)");
+        bulgeGradient.addColorStop(1, "rgba(248, 244, 238, 0)");
+
+        gameCtx.fillStyle = bulgeGradient;
+        gameCtx.beginPath();
+        gameCtx.ellipse(x, y - h * 0.15, w * 0.8, bulgeH, 0, 0, Math.PI * 2);
+        gameCtx.fill();
+
+        // 餅のハイライト（つやつや感・大きめ）
+        gameCtx.fillStyle = "rgba(255, 255, 255, 0.8)";
+        gameCtx.beginPath();
+        gameCtx.ellipse(x - w * 0.2, y - h * 0.3, w * 0.4, h * 0.2, -0.3, 0, Math.PI * 2);
+        gameCtx.fill();
+
+        // 小さなハイライト
+        gameCtx.fillStyle = "rgba(255, 255, 255, 0.95)";
+        gameCtx.beginPath();
+        gameCtx.ellipse(x - w * 0.35, y - h * 0.35, w * 0.12, h * 0.08, 0, 0, Math.PI * 2);
+        gameCtx.fill();
+
+        // 叩いた時のへこみ表現
+        if (squash > 0.1) {
+          gameCtx.fillStyle = `rgba(230, 220, 200, ${squash * 0.5})`;
+          gameCtx.beginPath();
+          gameCtx.ellipse(x, y - h * 0.05, w * 0.35 * squash, h * 0.2 * squash, 0, 0, Math.PI * 2);
+          gameCtx.fill();
+        }
+
+        // 成長したら餅が盛り上がる表現
+        if (mochi.growth > 0.25) {
+          const riseAmount = (mochi.growth - 0.25) * 0.6;
+          gameCtx.fillStyle = "rgba(255, 253, 250, 0.5)";
+          gameCtx.beginPath();
+          gameCtx.ellipse(x, y - h * 0.25, w * 0.4 * riseAmount, h * 0.35 * riseAmount, 0, 0, Math.PI * 2);
+          gameCtx.fill();
+        }
+
+        gameCtx.restore();
+      }
+
+      // 杵を描画
+      function drawKine() {
+        // 手の位置にスムーズに追従
+        smoothHandX += (handScreenX - smoothHandX) * 0.2;
+        smoothHandY += (handScreenY - smoothHandY) * 0.2;
+
+        kine.x = smoothHandX;
+        kine.y = smoothHandY;
+
+        // ヒットアニメーション
+        if (kine.isHitting) {
+          kine.hitProgress += 0.12;
+          if (kine.hitProgress >= 1) {
+            kine.isHitting = false;
+            kine.hitProgress = 0;
+          }
+        }
+
+        // 杵の角度（手の動きに応じて）
+        const baseRotation = -25;
+        const hitRotation = kine.isHitting ? Math.sin(kine.hitProgress * Math.PI) * 30 : 0;
+        kine.rotation = baseRotation + hitRotation;
+
+        gameCtx.save();
+        gameCtx.translate(kine.x, kine.y);
+        gameCtx.rotate((kine.rotation * Math.PI) / 180);
+
+        // 杵の画像があれば使用、なければ描画
+        if (kineImage.complete && kineImage.naturalWidth > 0) {
+          // アスペクト比を維持して描画
+          const imgWidth = kineImage.naturalWidth;
+          const imgHeight = kineImage.naturalHeight;
+          const aspectRatio = imgWidth / imgHeight;
+
+          // 高さを基準にサイズを決める
+          const kineHeight = 250;
+          const kineWidth = kineHeight * aspectRatio;
+
+          // 杵の先端（下側）を基準に描画
+          gameCtx.drawImage(
+            kineImage,
+            -kineWidth / 2,
+            -kineHeight * 0.15,  // 少し上にオフセット
+            kineWidth,
+            kineHeight
+          );
+        } else {
+          // フォールバック：杵を描画
+          // 杵の頭部分（打つ部分）
+          const headGradient = gameCtx.createLinearGradient(-40, 0, 40, 0);
+          headGradient.addColorStop(0, "#a08060");
+          headGradient.addColorStop(0.3, "#d4b896");
+          headGradient.addColorStop(0.7, "#d4b896");
+          headGradient.addColorStop(1, "#a08060");
+
+          gameCtx.fillStyle = headGradient;
+          gameCtx.beginPath();
+          gameCtx.ellipse(0, 10, 40, 30, 0, 0, Math.PI * 2);
+          gameCtx.fill();
+
+          // 杵の持ち手
+          const handleGradient = gameCtx.createLinearGradient(-15, 0, 15, 0);
+          handleGradient.addColorStop(0, "#8b7355");
+          handleGradient.addColorStop(0.5, "#c49a6c");
+          handleGradient.addColorStop(1, "#8b7355");
+
+          gameCtx.fillStyle = handleGradient;
+          gameCtx.fillRect(-15, -15, 30, -140);
+
+          // 持ち手の端
+          gameCtx.fillStyle = "#d4a574";
+          gameCtx.beginPath();
+          gameCtx.ellipse(0, -155, 18, 12, 0, 0, Math.PI * 2);
+          gameCtx.fill();
+        }
+
+        gameCtx.restore();
+      }
+
+      // レンダリングループ
+      function render() {
+        gameCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+        updateMochi();
+        drawUsu();
+        updateParticles();
+        drawParticles();
+        drawKine();
+
+        requestAnimationFrame(render);
+      }
+
+      // 手の動きを検出
+      function detectHandMotion(landmarks) {
+        const wrist = landmarks[0];
+        const handY = wrist.y;
+        const handX = wrist.x;
+
+        // 画面座標に変換
+        handScreenX = (1 - handX) * window.innerWidth;
+        handScreenY = handY * window.innerHeight;
+
+        // 履歴に追加
+        handYHistory.push({ y: handY, time: Date.now() });
+        if (handYHistory.length > HISTORY_LENGTH) {
+          handYHistory.shift();
+        }
+
+        // 速度を計算
+        let velocity = 0;
+        if (handYHistory.length >= 2) {
+          const recent = handYHistory[handYHistory.length - 1];
+          const old = handYHistory[0];
+          const timeDiff = (recent.time - old.time) / 1000;
+          if (timeDiff > 0) {
+            velocity = (recent.y - old.y) / timeDiff;
+          }
+        }
+
+        // 手の位置インジケーターは使わない（非表示のまま）
+
+        // デバッグ情報
+        debugInfo.innerHTML = `
+          速度: ${velocity.toFixed(2)}<br>
+          ヒット可能: ${canHit ? "YES" : "NO"}
+        `;
+
+        // 振り下ろし判定（臼との距離は撤廃、画面どこでもOK）
+        const VELOCITY_THRESHOLD = 1.2;
+
+        if (velocity > VELOCITY_THRESHOLD && canHit) {
+          hitMochi(velocity);
+          canHit = false;
+        }
+
+        // 手が上に戻ったら再度ヒット可能に
+        if (velocity < -0.3 && !canHit) {
+          canHit = true;
+        }
+
+        lastHandY = handY;
+      }
+
+      // MediaPipe初期化
+      async function initializeHandLandmarker() {
+        const vision = await FilesetResolver.forVisionTasks(
+          "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
+        );
+
+        handLandmarker = await HandLandmarker.createFromOptions(vision, {
+          baseOptions: {
+            modelAssetPath:
+              "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
+            delegate: "GPU",
+          },
+          runningMode: "VIDEO",
+          numHands: 1,
+          minHandDetectionConfidence: 0.5,
+          minHandPresenceConfidence: 0.5,
+          minTrackingConfidence: 0.5,
+        });
+      }
+
+      function processHandLandmarks(results) {
+        canvasElement.width = videoElement.videoWidth;
+        canvasElement.height = videoElement.videoHeight;
+
+        canvasCtx.save();
+        canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+
+        if (results.landmarks && results.landmarks.length > 0) {
+          const landmarks = results.landmarks[0];
+
+          // 手の骨格を描画
+          canvasCtx.strokeStyle = "#ffd700";
+          canvasCtx.lineWidth = 2;
+
+          const connections = [
+            [0, 1], [1, 2], [2, 3], [3, 4],
+            [0, 5], [5, 6], [6, 7], [7, 8],
+            [0, 9], [9, 10], [10, 11], [11, 12],
+            [0, 13], [13, 14], [14, 15], [15, 16],
+            [0, 17], [17, 18], [18, 19], [19, 20],
+            [5, 9], [9, 13], [13, 17],
+          ];
+
+          connections.forEach(([start, end]) => {
+            const startPoint = landmarks[start];
+            const endPoint = landmarks[end];
+            canvasCtx.beginPath();
+            canvasCtx.moveTo(startPoint.x * canvasElement.width, startPoint.y * canvasElement.height);
+            canvasCtx.lineTo(endPoint.x * canvasElement.width, endPoint.y * canvasElement.height);
+            canvasCtx.stroke();
+          });
+
+          detectHandMotion(landmarks);
+        }
+
+        canvasCtx.restore();
+      }
+
+      async function startCamera() {
+        await initializeHandLandmarker();
+
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          loading.querySelector("p").textContent = "カメラAPIに対応していません";
+          return;
+        }
+
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: { width: 1280, height: 720 },
+          });
+          videoElement.srcObject = stream;
+
+          videoElement.addEventListener("loadeddata", () => {
+            loading.classList.add("hidden");
+
+            function onFrame() {
+              if (!handLandmarker) return;
+
+              const startTimeMs = performance.now();
+
+              if (videoElement.currentTime !== lastVideoTime) {
+                lastVideoTime = videoElement.currentTime;
+                const results = handLandmarker.detectForVideo(videoElement, startTimeMs);
+                processHandLandmarks(results);
+              }
+
+              requestAnimationFrame(onFrame);
+            }
+            onFrame();
+          });
+        } catch (error) {
+          loading.querySelector("p").textContent = "カメラの起動に失敗: " + error.message;
+        }
+      }
+
+      // チュートリアルモーダル
+      const tutorialModal = document.getElementById("tutorial-modal");
+      const startButton = document.getElementById("start-button");
+
+      startButton.addEventListener("click", () => {
+        tutorialModal.classList.add("hidden");
+        loading.classList.remove("hidden");
+        startCamera();
+      });
+
+      // 初期化
+      window.addEventListener("resize", resizeCanvas);
+      resizeCanvas();
+      render();
+    </script>
+  </body>
+</html>
