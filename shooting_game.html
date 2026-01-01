@@ -22,11 +22,42 @@
         position: relative;
         width: 100vw;
         height: 100vh;
-        margin-top: 100px;
         background-image: url("shooting_game-images/shooting-bg.png");
-        background-size: calc(1200 / 1440 * 100vw);
-        background-position: center;
+        background-size: contain;
+        background-position: center calc(100 / 1440 * 100vw);
         background-repeat: no-repeat;
+      }
+
+      /* ゲームエリアを固定アスペクト比で表示 */
+      #game-area {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        aspect-ratio: 4 / 3;
+        max-width: 100vw;
+        max-height: 100vh;
+        width: 100%;
+        height: auto;
+      }
+
+      /* スマホ向け調整 */
+      @media (max-width: 768px) {
+        #video-container {
+          width: 80px !important;
+          height: 60px !important;
+        }
+        #crosshair {
+          width: 60px !important;
+          height: 60px !important;
+        }
+      }
+
+      /* 縦長画面（スマホ縦持ち）向け */
+      @media (max-aspect-ratio: 1/1) {
+        #container {
+          background-size: 100% auto;
+        }
       }
 
       #game-canvas {
@@ -96,31 +127,6 @@
         100% {
           transform: translate(-50%, -50%) scale(1);
         }
-      }
-
-      #info {
-        position: fixed;
-        top: 20px;
-        left: 20px;
-        background: rgba(0, 0, 0, 0.8);
-        padding: 20px;
-        border-radius: 12px;
-        border: 2px solid #ffd700;
-        max-width: 280px;
-        z-index: 1000;
-        color: white;
-      }
-
-      #info h1 {
-        font-size: 20px;
-        color: #ffd700;
-        margin-bottom: 10px;
-      }
-
-      #info p {
-        font-size: 14px;
-        color: #ddd;
-        margin: 5px 0;
       }
 
       #score {
@@ -242,25 +248,276 @@
       #pistol-indicator.shooting {
         transform: rotate(-20deg);
       }
+
+      /* チュートリアルモーダル */
+      #tutorial-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        z-index: 20000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      #tutorial-modal.hidden {
+        display: none;
+      }
+
+      .tutorial-content {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 8px;
+        padding: 40px;
+        max-width: 500px;
+        width: 90%;
+        text-align: center;
+        color: white;
+        border: #fff solid 1px;
+      }
+
+      .tutorial-content h1 {
+        font-size: 32px;
+        color: #fff;
+        margin-bottom: 30px;
+      }
+
+      .slides-container {
+        position: relative;
+        width: 100%;
+        height: 320px;
+        overflow: hidden;
+      }
+
+      .slide {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        transform: translateX(100%);
+        transition:
+          opacity 0.5s ease,
+          transform 0.5s ease;
+      }
+
+      .slide.active {
+        opacity: 1;
+        transform: translateX(0);
+      }
+
+      .slide.prev {
+        opacity: 0;
+        transform: translateX(-100%);
+      }
+      .slide-subtitle {
+        font-size: 26px;
+        font-weight: bold;
+        margin-bottom: 20px;
+      }
+
+      .hand-icons {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        margin-bottom: 25px;
+      }
+
+      .hand-icon {
+        width: 100px;
+        height: 120px;
+      }
+
+      .hand-icon svg {
+        width: 100%;
+        height: 100%;
+        fill: white;
+      }
+
+      .arrow-icon {
+        font-size: 30px;
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      .slide-description {
+        font-size: 18px;
+        line-height: 1.8;
+        text-align: center;
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      .slide-note {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.6);
+        margin-top: 15px;
+      }
+
+      .slide .icon {
+        font-size: 80px;
+        margin-bottom: 20px;
+      }
+
+      .slide .text {
+        font-size: 20px;
+        line-height: 1.6;
+        text-align: center;
+      }
+
+      .slide .text strong {
+        color: #ffd700;
+        font-size: 24px;
+      }
+
+      .slide-indicators {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin: 25px 0;
+      }
+
+      .slide-indicator {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transition:
+          background 0.3s,
+          transform 0.3s;
+      }
+
+      .slide-indicator.active {
+        background: #ffd700;
+        transform: scale(1.2);
+      }
+
+      .tutorial-button {
+        padding: 10px 20px;
+        font-size: 16px;
+        font-weight: bold;
+        color: #2a1a0a;
+        background: #fff;
+        border: none;
+        border-radius: 2px;
+        cursor: pointer;
+      }
+
+      .tutorial-button:active {
+        transform: scale(0.98);
+      }
+
+      @media (max-width: 768px) {
+        .tutorial-content {
+          padding: 25px;
+        }
+        .tutorial-content h1 {
+          font-size: 24px;
+        }
+        .slides-container {
+          height: 280px;
+        }
+        .slide-subtitle {
+          font-size: 20px;
+        }
+        .hand-icon {
+          width: 70px;
+          height: 90px;
+        }
+        .slide-description {
+          font-size: 15px;
+        }
+        .slide .icon {
+          font-size: 60px;
+        }
+        .slide .text {
+          font-size: 16px;
+        }
+        .slide .text strong {
+          font-size: 20px;
+        }
+        .tutorial-button {
+          font-size: 20px;
+          padding: 12px 40px;
+        }
+      }
     </style>
   </head>
   <body>
-    <div id="loading">
+    <!-- チュートリアルモーダル -->
+    <div id="tutorial-modal">
+      <div class="tutorial-content">
+        <h1>射的ゲーム</h1>
+        <!-- SVGシンボル定義 -->
+        <svg style="display: none">
+          <symbol id="iconHandPoint" viewBox="0 0 343 462">
+            <path
+              d="M134.481,127.994c17.968-18.744,46.291-12.336,56.471,10.897,21.305-14.465,47.742-1.696,51.531,23.1,13.395-6.933,28.206-2.017,36.962,9.528,9.451,12.46,6.757,41.393,6.984,57.016.628,43.112,1.447,87.798-15.474,128.444-5.608,13.47-14.573,26.124-17.231,40.769-3.612,19.895,1.056,42.323-1.235,61.765-1.043,8.851-11.758,8.477-12.956.919,1.365-24.534-3.597-52.367,3.904-75.97,3.829-12.046,12.009-24.043,16.78-36.22,14.02-35.787,13.476-74.242,13.243-112.242l-6.509,18.976c-7.91,21.438-34.993,24.355-49.119,7.09-14.464,12.716-35.157,11.567-45.895-5.073-10.998,8.723-23.877,11.9-36.789,4.826-5.27-2.887-5.917-5.509-9.384-9.552-.615-.717.035-1.891-2.288-1.266l-2.011,15.992c29.155,3.373,54.41,23.049,63.29,51.219,1.527,4.843,6.125,18.821.695,21.256-11.772,5.28-11.097-11.752-13.708-19.243-7.607-21.826-28.124-35.947-50.03-40.97-5.197-1.192-15.403.671-16.009-6.928-.093-1.169,4.013-12.812,4.513-16.086.712-4.667-.194-13.156,1.76-17.24,1.624-3.393,9.924-3.578,13.297-4.703,18.041-6.022,40.511-17.147,38.192-39.803-.351-3.432-.983-7.443-5.358-6.446-21.376,7.082-46.606,8.381-67.644,15.439-10.198,3.422-12.063,7.658-16.008,16.992-5.171,12.237-20.651,56.611-20.004,67.978.793,13.932,19.66,41.988,27.604,54.453,14.543,22.822,31.762,39.027,33.457,67.543.588,9.883,1.338,43.998-1.286,51.798-1.949,5.796-11.607,5.105-12.693-1.819-2.03-12.944,1.643-30.156.979-43.979-.549-11.41-1.864-21.456-7.621-31.379-17.855-30.779-58.958-72.696-51.977-110.136,4.471-23.979,17.384-54.882,28.501-76.499l.016-162.984c5.326-37.714,54.467-36.138,58.024,2.056l5.026,90.484ZM84.471,34.494v156.5l38.256-7.991,1.568-3.462-8.273-142.598c-3.403-21.805-28.602-20.228-31.551-2.449ZM174.46,183.993c.663-13.151,8.58-34.6.447-45.935-9.055-12.621-30.107-9.858-34.374,5.498-1.621,5.832-2.704,19.48-3.052,25.948-.188,3.485.094,7.011,0,10.49,9.607-2.107,23.701-9.634,32.225-2.016,1.92,1.716,2.294,4.88,4.755,6.015ZM206.204,146.236c-6.278,1.055-12.652,6.431-14.448,12.544-2.572,25.065-10.3,53.885-11.274,78.724-.884,22.537,23.112,27.673,32.04,8.042,2.428-24.048,16.06-54.777,16.96-78.093.506-13.112-10.026-23.442-23.278-21.216ZM252.207,172.234c-6.54,1.062-10.063,4.8-12.21,10.786-4.553,12.694-12.376,47.328-13.413,60.604-1.42,18.178,19.718,22.454,27.439,8.423,3.63-6.597,17.847-53.33,18.386-60.693.838-11.463-8.654-20.994-20.202-19.119ZM168.483,221.002c-3.991,6.952-11.816,13.705-18.97,17.535-2.228,1.193-13.569,4.571-13.03,6.932,10.002,12.139,26.066,8.563,30.505-6.457,1.132-3.831,2.149-10.51,2.47-14.538.087-1.097.738-3.726-.975-3.472Z"
+            ></path>
+          </symbol>
+          <symbol id="iconHandFist" viewBox="0 0 100 100">
+            <path
+              d="M25 35 Q20 40 20 50 L20 65 Q20 80 35 85 L60 85 Q75 85 80 70 L80 50 Q80 35 65 30 L55 30 Q55 25 50 22 Q45 19 40 22 Q35 25 35 30 L30 30 Q25 30 25 35 Z M30 40 Q30 35 35 35 L40 35 Q40 30 45 28 Q50 26 55 28 Q60 30 60 35 L65 35 Q70 35 72 40 Q75 45 75 50 L75 65 Q75 75 65 78 L40 78 Q30 78 27 70 Q25 65 25 55 L25 45 Q25 40 30 40 Z"
+            ></path>
+          </symbol>
+        </svg>
+
+        <div class="slides-container">
+          <!-- スライド1: 照準の動かし方 -->
+          <div class="slide active" data-slide="0">
+            <div class="slide-subtitle">照準の操作</div>
+            <div class="hand-icons">
+              <div class="hand-icon">
+                <svg><use href="#iconHandPoint"></use></svg>
+              </div>
+            </div>
+            <div class="slide-description">人差し指を立てて<br />照準を動かします</div>
+          </div>
+
+          <!-- スライド2: 撃ち方 -->
+          <div class="slide" data-slide="1">
+            <div class="slide-title">ハンドジェスチャーによる</div>
+            <div class="slide-subtitle">発射</div>
+            <div class="hand-icons">
+              <div class="hand-icon">
+                <svg><use href="#iconHandPoint"></use></svg>
+              </div>
+              <div class="arrow-icon">⇨</div>
+              <div class="hand-icon">
+                <svg><use href="#iconHandFist"></use></svg>
+              </div>
+            </div>
+            <div class="slide-description">人差し指を曲げると<br />発射します</div>
+          </div>
+
+          <!-- スライド3: 遊び方 -->
+          <div class="slide" data-slide="2">
+            <div class="slide-subtitle">的を撃って遊ぼう！</div>
+            <div class="icon">🎯</div>
+            <div class="slide-description">棚の上の的を狙って<br />高得点を目指そう！</div>
+          </div>
+        </div>
+        <div class="slide-indicators">
+          <div class="slide-indicator active" data-slide="0"></div>
+          <div class="slide-indicator" data-slide="1"></div>
+          <div class="slide-indicator" data-slide="2"></div>
+        </div>
+        <button id="next-button" class="tutorial-button">次へ</button>
+        <button id="start-button" class="tutorial-button" style="display: none">ゲームスタート</button>
+      </div>
+    </div>
+
+    <div id="loading" class="hidden">
       <div class="spinner"></div>
       <p>カメラとMediaPipeを読み込み中...</p>
     </div>
 
     <div id="container">
       <canvas id="game-canvas"></canvas>
-
-      <div id="info">
-        <h1>的をねらえ！</h1>
-        <p>☝️ 人差し指を伸ばして狙う</p>
-        <p>👆 指を曲げて発射！</p>
-        <div id="score">スコア: 0</div>
-        <div id="ammo">弾数: ∞</div>
-        <div id="gesture-status">待機中...</div>
-      </div>
 
       <div id="video-container">
         <video id="input_video" autoplay playsinline></video>
@@ -327,40 +584,63 @@
         targetImages[type.image] = img;
       });
 
-      // キャンバスサイズ調整
+      // キャンバスサイズ調整（高解像度対応）
+      let currentDpr = 1;
       function resizeCanvas() {
-        gameCanvas.width = window.innerWidth;
-        gameCanvas.height = window.innerHeight;
-        initTargets();
+        currentDpr = window.devicePixelRatio || 1;
+        gameCanvas.width = window.innerWidth * currentDpr;
+        gameCanvas.height = window.innerHeight * currentDpr;
+        gameCanvas.style.width = window.innerWidth + "px";
+        gameCanvas.style.height = window.innerHeight + "px";
+        gameCtx.setTransform(currentDpr, 0, 0, currentDpr, 0, 0);
+        // 画像のスムージング品質を高く設定
+        gameCtx.imageSmoothingEnabled = true;
+        gameCtx.imageSmoothingQuality = "high";
       }
 
-      // 的を初期化（棚の位置に配置）
+      // スケール係数を取得（CSS座標系で計算）
+      function getScale() {
+        const baseWidth = 1440;
+        const baseHeight = 900;
+        const scaleX = window.innerWidth / baseWidth;
+        const scaleY = window.innerHeight / baseHeight;
+        return Math.min(scaleX, scaleY);
+      }
+
+      // 背景画像のYオフセットを取得（CSSの calc(100 / 1440 * 100vw) に対応）
+      function getBgOffsetY() {
+        return (100 / 1440) * window.innerWidth;
+      }
+
+      // 的を初期化（正規化座標で配置）
       function initTargets() {
         targets = [];
 
         const shelfRows = [
-          { y: 0.28, count: 5, size: 140 },
-          { y: 0.48, count: 6, size: 160 },
-          { y: 0.68, count: 4, size: 180 },
+          { y: 0.18, count: 2, baseSize: 160 },
+          { y: 0.35, count: 5, baseSize: 180 },
+          { y: 0.52, count: 5, baseSize: 200 },
         ];
 
-        const marginX = gameCanvas.width * 0.15;
-        const usableWidth = gameCanvas.width * 0.7;
-
         shelfRows.forEach((shelf) => {
-          const spacingX = usableWidth / (shelf.count - 1);
+          // 的の間隔を固定（0.12）して中央揃え
+          const spacingX = 0.12;
+          const totalWidth = spacingX * (shelf.count - 1);
+          const startX = 0.5 - totalWidth / 2; // 中央揃えの開始位置
           for (let i = 0; i < shelf.count; i++) {
             const type = targetTypes[Math.floor(Math.random() * targetTypes.length)];
             targets.push({
-              x: marginX + i * spacingX + (Math.random() - 0.5) * 20,
-              y: gameCanvas.height * shelf.y - shelf.size * 0.5,
-              size: shelf.size,
+              // 正規化座標（0-1）で保持 - 中央揃え
+              nx: startX + i * spacingX + (Math.random() - 0.5) * 0.02,
+              ny: shelf.y,
+              baseSize: shelf.baseSize,
               image: type.image,
               points: type.points,
               isHit: false,
               hitTime: 0,
-              vx: 0,
-              vy: 0,
+              // 物理演算用（正規化速度）
+              nvx: 0,
+              nvy: 0,
               rotation: 0,
               rotationSpeed: 0,
             });
@@ -372,34 +652,43 @@
 
       // 的を描画（アスペクト比を維持）+ 飛んでいくアニメーション
       function drawTargets() {
-        const gravity = 0.5; // 重力
+        const scale = getScale();
+        const gravity = 0.0005; // 正規化された重力
+        const offsetY = getBgOffsetY(); // 背景画像のオフセット
 
         targets.forEach((target) => {
           const img = targetImages[target.image];
           if (!img || !img.complete) return;
 
+          // スケーリングされたサイズ
+          const size = target.baseSize * scale;
+
           // アスペクト比を維持してサイズを計算
           const aspectRatio = img.naturalWidth / img.naturalHeight;
           let drawWidth, drawHeight;
           if (aspectRatio > 1) {
-            drawWidth = target.size;
-            drawHeight = target.size / aspectRatio;
+            drawWidth = size;
+            drawHeight = size / aspectRatio;
           } else {
-            drawHeight = target.size;
-            drawWidth = target.size * aspectRatio;
+            drawHeight = size;
+            drawWidth = size * aspectRatio;
           }
 
           if (target.isHit) {
             const elapsed = Date.now() - target.hitTime;
 
-            // 物理演算：速度を更新
-            target.vy += gravity;
-            target.x += target.vx;
-            target.y += target.vy;
+            // 物理演算：正規化速度を更新
+            target.nvy += gravity;
+            target.nx += target.nvx;
+            target.ny += target.nvy;
             target.rotation += target.rotationSpeed;
 
+            // 正規化座標から実座標に変換（オフセット適用）
+            const x = target.nx * window.innerWidth;
+            const y = target.ny * window.innerHeight + offsetY;
+
             // 画面外に出たら描画しない
-            if (target.y > gameCanvas.height + 200) return;
+            if (y > window.innerHeight + 200) return;
 
             // フェードアウトしながら飛んでいく
             const alpha = Math.max(0, 1 - elapsed / 1500);
@@ -407,19 +696,22 @@
 
             gameCtx.save();
             gameCtx.globalAlpha = alpha;
-            gameCtx.translate(target.x, target.y);
+            gameCtx.translate(x, y);
             gameCtx.rotate(target.rotation);
             gameCtx.drawImage(img, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
             gameCtx.restore();
           } else {
-            gameCtx.drawImage(img, target.x - drawWidth / 2, target.y - drawHeight / 2, drawWidth, drawHeight);
+            // 正規化座標から実座標に変換（オフセット適用）
+            const x = target.nx * window.innerWidth;
+            const y = target.ny * window.innerHeight + offsetY;
+            gameCtx.drawImage(img, x - drawWidth / 2, y - drawHeight / 2, drawWidth, drawHeight);
           }
         });
       }
 
       // レンダリング
       function render() {
-        gameCtx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+        gameCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
         drawTargets();
         updateParticles();
         drawParticles();
@@ -511,37 +803,35 @@
 
         // 当たり判定
         let hit = false;
+        const scale = getScale();
+        const offsetY = getBgOffsetY();
         targets.forEach((target) => {
           if (target.isHit) return;
-          const dx = x - target.x;
-          const dy = y - target.y;
+          // 正規化座標から実座標に変換（オフセット適用）
+          const targetX = target.nx * window.innerWidth;
+          const targetY = target.ny * window.innerHeight + offsetY;
+          const size = target.baseSize * scale;
+
+          const dx = x - targetX;
+          const dy = y - targetY;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < target.size * 0.6) {
+          if (dist < size * 0.8) {
             target.isHit = true;
             target.hitTime = now;
             score += target.points;
-            scoreElement.textContent = `スコア: ${score}`;
+
             hit = true;
 
-            // 的が飛んでいく速度を設定（撃った方向から跳ね返る）
+            // 的が飛んでいく速度を設定（正規化速度）
             const hitAngle = Math.atan2(dy, dx);
-            const knockbackSpeed = 8 + Math.random() * 4;
-            target.vx = -Math.cos(hitAngle) * knockbackSpeed + (Math.random() - 0.5) * 4;
-            target.vy = -Math.abs(Math.sin(hitAngle)) * knockbackSpeed - 5 - Math.random() * 3;
+            const knockbackSpeed = 0.008 + Math.random() * 0.004;
+            target.nvx = -Math.cos(hitAngle) * knockbackSpeed + (Math.random() - 0.5) * 0.004;
+            target.nvy = -Math.abs(Math.sin(hitAngle)) * knockbackSpeed - 0.005 - Math.random() * 0.003;
             target.rotationSpeed = (Math.random() - 0.5) * 0.3;
 
             // ヒットパーティクル（派手に）
-            createParticles(target.x, target.y, "#ff4444", 12);
-            createParticles(target.x, target.y, "#ffff00", 8);
-
-            // ヒットエフェクト（得点表示）
-            const effect = document.createElement("div");
-            effect.className = "hit-effect";
-            effect.textContent = `+${target.points}`;
-            effect.style.left = `${target.x}px`;
-            effect.style.top = `${target.y}px`;
-            document.body.appendChild(effect);
-            setTimeout(() => effect.remove(), 800);
+            createParticles(targetX, targetY, "#ff4444", 12);
+            createParticles(targetX, targetY, "#ffff00", 8);
           }
         });
 
@@ -700,30 +990,24 @@
           const bendPercent = Math.round(gesture.bendAmount * 100);
           const bendBar = "█".repeat(Math.round(bendPercent / 10)) + "░".repeat(10 - Math.round(bendPercent / 10));
 
-          if (gesture.isReady) {
-            pistolIndicator.classList.add("ready");
-            gestureStatus.innerHTML = `☝️ 構え中！<br><small>${bendBar} ${bendPercent}%</small>`;
-            gestureStatus.style.color = "#ffd700";
-          } else if (gesture.indexBent) {
-            gestureStatus.innerHTML = `👆 曲げた！<br><small>${bendBar} ${bendPercent}%</small>`;
-            gestureStatus.style.color = "#ff6b6b";
-          } else {
-            pistolIndicator.classList.remove("ready");
-            gestureStatus.innerHTML = `☝️ 指を伸ばして...<br><small>${bendBar} ${bendPercent}%</small>`;
-            gestureStatus.style.color = "#888";
-          }
+          // if (gesture.isReady) {
+          //   pistolIndicator.classList.add("ready");
+          //   gestureStatus.innerHTML = `☝️ 構え中！<br><small>${bendBar} ${bendPercent}%</small>`;
+          //   gestureStatus.style.color = "#ffd700";
+          // } else if (gesture.indexBent) {
+          //   gestureStatus.innerHTML = `👆 曲げた！<br><small>${bendBar} ${bendPercent}%</small>`;
+          //   gestureStatus.style.color = "#ff6b6b";
+          // } else {
+          //   pistolIndicator.classList.remove("ready");
+          //   gestureStatus.innerHTML = `☝️ 指を伸ばして...<br><small>${bendBar} ${bendPercent}%</small>`;
+          //   gestureStatus.style.color = "#888";
+          // }
 
           // 発射判定
           if (gesture.isTrigger) {
             shoot(smoothX, smoothY);
-            gestureStatus.innerHTML = "💥 発射！";
           }
-        } else {
-          gestureStatus.textContent = "手が見えません...";
-          gestureStatus.style.color = "#ff6b6b";
-          pistolIndicator.classList.remove("ready");
         }
-
         canvasCtx.restore();
       }
 
@@ -764,11 +1048,51 @@
         }
       }
 
+      // チュートリアルモーダル制御
+      const tutorialModal = document.getElementById("tutorial-modal");
+      const startButton = document.getElementById("start-button");
+      const nextButton = document.getElementById("next-button");
+      const slides = document.querySelectorAll(".slide");
+      const indicators = document.querySelectorAll(".slide-indicator");
+      let currentSlide = 0;
+      const totalSlides = slides.length;
+
+      function goToSlide(index) {
+        // 現在のスライドをprevに
+        slides[currentSlide].classList.remove("active");
+        slides[currentSlide].classList.add("prev");
+        indicators[currentSlide].classList.remove("active");
+
+        // 新しいスライドをactiveに
+        currentSlide = index;
+        slides[currentSlide].classList.remove("prev");
+        slides[currentSlide].classList.add("active");
+        indicators[currentSlide].classList.add("active");
+
+        // 最後のスライドならボタンを切り替え
+        if (currentSlide === totalSlides - 1) {
+          nextButton.style.display = "none";
+          startButton.style.display = "inline-block";
+        }
+      }
+
+      nextButton.addEventListener("click", () => {
+        if (currentSlide < totalSlides - 1) {
+          goToSlide(currentSlide + 1);
+        }
+      });
+
+      startButton.addEventListener("click", () => {
+        tutorialModal.classList.add("hidden");
+        loading.classList.remove("hidden");
+        startCamera();
+      });
+
       // 初期化
       window.addEventListener("resize", resizeCanvas);
       resizeCanvas();
+      initTargets();
       render();
-      startCamera();
     </script>
   </body>
 </html>
