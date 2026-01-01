@@ -101,52 +101,58 @@
         position: fixed;
         top: 20px;
         left: 20px;
-        background: rgba(255, 255, 255, 0.95);
-        padding: 20px;
-        border-radius: 12px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 248, 240, 0.95));
+        padding: 20px 24px;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(139, 90, 43, 0.15);
         max-width: 280px;
         z-index: 1000;
+        border: 2px solid rgba(139, 90, 43, 0.1);
       }
 
       #info h1 {
-        font-size: 18px;
-        color: #c9684a;
-        margin-bottom: 10px;
+        font-size: 17px;
+        color: #8B5A2B;
+        margin-bottom: 12px;
+        font-weight: bold;
       }
 
       #info p {
-        font-size: 14px;
-        color: #666;
-        margin: 5px 0;
+        font-size: 13px;
+        color: #6B4423;
+        margin: 6px 0;
+        opacity: 0.9;
       }
 
       #score {
-        font-size: 24px;
+        font-size: 26px;
         font-weight: bold;
-        color: #4ecdc4;
-        margin-top: 10px;
+        color: #2E8B57;
+        margin-top: 14px;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.1);
       }
 
       #remaining {
-        font-size: 16px;
-        color: #ff6b6b;
-        margin-top: 5px;
+        font-size: 15px;
+        color: #CD853F;
+        margin-top: 6px;
+        font-weight: 500;
       }
 
       #status {
-        margin-top: 12px;
-        padding: 8px 12px;
-        background: #f0f0f0;
-        border-radius: 6px;
+        margin-top: 14px;
+        padding: 10px 14px;
+        background: linear-gradient(135deg, #f5f0e8, #ebe5db);
+        border-radius: 12px;
         font-weight: bold;
-        color: #666;
+        color: #8B7355;
         font-size: 12px;
+        text-align: center;
       }
 
       #status.active {
-        background: #d4edda;
-        color: #155724;
+        background: linear-gradient(135deg, #d4edda, #c3e6cb);
+        color: #2E7D32;
       }
 
       #loading {
@@ -379,6 +385,131 @@
         height: 150
       };
 
+      // 砂煙パーティクル
+      let dustParticles = [];
+
+      // 草のディテール位置（固定）
+      let grassDetails = [];
+
+      // キラキラパーティクル
+      let sparkleParticles = [];
+
+      // つかむ時の波紋エフェクト
+      let ripples = [];
+
+      // 効果音を生成
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+      function playSound(type) {
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        if (type === 'grab') {
+          // つかむ音（ぽわん）柔らかく
+          oscillator.type = 'sine';
+          oscillator.frequency.setValueAtTime(330, audioCtx.currentTime);
+          oscillator.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.08);
+          oscillator.frequency.exponentialRampToValueAtTime(350, audioCtx.currentTime + 0.15);
+          gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+          oscillator.start(audioCtx.currentTime);
+          oscillator.stop(audioCtx.currentTime + 0.2);
+        } else if (type === 'capture') {
+          // 捕獲音（キラーン）
+          oscillator.type = 'sine';
+          oscillator.frequency.setValueAtTime(523, audioCtx.currentTime);
+          oscillator.frequency.setValueAtTime(659, audioCtx.currentTime + 0.1);
+          oscillator.frequency.setValueAtTime(784, audioCtx.currentTime + 0.2);
+          gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+          oscillator.start(audioCtx.currentTime);
+          oscillator.stop(audioCtx.currentTime + 0.4);
+        }
+      }
+
+      // 波紋エフェクトを発生
+      function createRipple(x, y, color = '#FFD700') {
+        ripples.push({
+          x: x,
+          y: y,
+          radius: 10,
+          maxRadius: 60,
+          alpha: 0.8,
+          color: color
+        });
+      }
+
+      // 波紋を更新・描画
+      function updateAndDrawRipples(ctx) {
+        for (let i = ripples.length - 1; i >= 0; i--) {
+          const r = ripples[i];
+          r.radius += 3;
+          r.alpha -= 0.04;
+
+          if (r.alpha > 0) {
+            ctx.save();
+            ctx.strokeStyle = r.color;
+            ctx.lineWidth = 3;
+            ctx.globalAlpha = r.alpha;
+            ctx.beginPath();
+            ctx.arc(r.x, r.y, r.radius, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.restore();
+          } else {
+            ripples.splice(i, 1);
+          }
+        }
+      }
+
+      // キラキラを発生
+      function createSparkles(x, y) {
+        for (let i = 0; i < 12; i++) {
+          const angle = (Math.PI * 2 * i) / 12;
+          sparkleParticles.push({
+            x: x,
+            y: y,
+            vx: Math.cos(angle) * (3 + Math.random() * 2),
+            vy: Math.sin(angle) * (3 + Math.random() * 2),
+            size: 4 + Math.random() * 4,
+            color: ['#FFD700', '#FFA500', '#FF69B4', '#00CED1'][Math.floor(Math.random() * 4)],
+            life: 1.0
+          });
+        }
+      }
+
+      // キラキラを更新・描画
+      function updateAndDrawSparkles(ctx) {
+        for (let i = sparkleParticles.length - 1; i >= 0; i--) {
+          const p = sparkleParticles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.1; // 重力
+          p.life -= 0.03;
+          p.vx *= 0.98;
+
+          if (p.life > 0) {
+            ctx.save();
+            ctx.globalAlpha = p.life;
+            ctx.fillStyle = p.color;
+            // 星形を描画
+            ctx.beginPath();
+            for (let j = 0; j < 5; j++) {
+              const angle = (j * Math.PI * 2) / 5 - Math.PI / 2;
+              const r = j % 2 === 0 ? p.size : p.size * 0.4;
+              if (j === 0) ctx.moveTo(p.x + r * Math.cos(angle), p.y + r * Math.sin(angle));
+              else ctx.lineTo(p.x + r * Math.cos(angle), p.y + r * Math.sin(angle));
+            }
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+          } else {
+            sparkleParticles.splice(i, 1);
+          }
+        }
+      }
+
       // 画像を読み込み
       const images = {};
       let imagesLoaded = 0;
@@ -518,6 +649,9 @@
         score = 0;
         grabbedAnimal = null;
         beingSucked = null;
+        dustParticles = [];
+        sparkleParticles = [];
+        ripples = [];
         capturedAnimalsDiv.innerHTML = "";
         clearModal.classList.remove("show");
 
@@ -527,6 +661,15 @@
         // 籠の位置を設定（画面右下）
         kago.x = width - 150;
         kago.y = height - 120;
+
+        // 草のディテールを生成
+        grassDetails = [];
+        for (let i = 0; i < 80; i++) {
+          grassDetails.push({
+            x: Math.random() * width,
+            y: height * 0.5 + Math.random() * (height * 0.4)
+          });
+        }
         const horseSize = 80;
         const spacingX = 120; // 横の間隔
         const spacingY = 100; // 縦の間隔
@@ -639,6 +782,106 @@
         });
       }
 
+      // 牧場背景を描画
+      function drawBackground(ctx) {
+        const w = gameCanvas.width;
+        const h = gameCanvas.height;
+
+        // 空（グラデーション）
+        const skyGradient = ctx.createLinearGradient(0, 0, 0, h * 0.4);
+        skyGradient.addColorStop(0, '#87CEEB');  // 水色
+        skyGradient.addColorStop(1, '#E0F4FF');  // 薄い青
+        ctx.fillStyle = skyGradient;
+        ctx.fillRect(0, 0, w, h * 0.4);
+
+        // 遠くの山
+        ctx.fillStyle = '#8FBC8F';
+        ctx.beginPath();
+        ctx.moveTo(0, h * 0.4);
+        for (let x = 0; x <= w; x += 100) {
+          const mountainHeight = Math.sin(x * 0.01) * 30 + Math.sin(x * 0.02) * 20;
+          ctx.lineTo(x, h * 0.35 - mountainHeight);
+        }
+        ctx.lineTo(w, h * 0.4);
+        ctx.closePath();
+        ctx.fill();
+
+        // 草原（グラデーション）
+        const grassGradient = ctx.createLinearGradient(0, h * 0.35, 0, h);
+        grassGradient.addColorStop(0, '#90EE90');  // 明るい緑
+        grassGradient.addColorStop(0.3, '#7CCD7C');
+        grassGradient.addColorStop(1, '#C4A76C');  // 土色
+        ctx.fillStyle = grassGradient;
+        ctx.fillRect(0, h * 0.35, w, h * 0.65);
+
+        // 柵（奥）
+        ctx.strokeStyle = '#8B4513';
+        ctx.lineWidth = 4;
+        const fenceY = h * 0.38;
+        // 横棒
+        ctx.beginPath();
+        ctx.moveTo(0, fenceY);
+        ctx.lineTo(w, fenceY);
+        ctx.moveTo(0, fenceY + 15);
+        ctx.lineTo(w, fenceY + 15);
+        ctx.stroke();
+        // 縦棒
+        for (let x = 30; x < w; x += 80) {
+          ctx.beginPath();
+          ctx.moveTo(x, fenceY - 10);
+          ctx.lineTo(x, fenceY + 30);
+          ctx.stroke();
+        }
+
+        // 草のディテール（固定位置）
+        ctx.strokeStyle = '#228B22';
+        ctx.lineWidth = 2;
+        grassDetails.forEach(grass => {
+          ctx.beginPath();
+          ctx.moveTo(grass.x, grass.y);
+          ctx.quadraticCurveTo(grass.x + 3, grass.y - 15, grass.x + 6, grass.y);
+          ctx.stroke();
+        });
+      }
+
+      // 砂煙パーティクルを生成
+      function createDustParticle(x, y) {
+        dustParticles.push({
+          x: x + Math.random() * 15 - 7,
+          y: y + Math.random() * 5,
+          vx: Math.random() * 1.5 - 0.75,
+          vy: -Math.random() * 1 - 0.3,
+          size: Math.random() * 8 + 5,  // 小さめ
+          alpha: 0.4 + Math.random() * 0.2,
+          life: 0.6  // 早く消える
+        });
+      }
+
+      // 砂煙パーティクルを更新・描画
+      function updateAndDrawDust(ctx) {
+        for (let i = dustParticles.length - 1; i >= 0; i--) {
+          const p = dustParticles[i];
+
+          // 更新
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.02; // 重力
+          p.life -= 0.02;
+          p.size *= 1.01; // 少し大きくなる
+          p.alpha = p.life * 0.5;
+
+          // 描画
+          if (p.life > 0) {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(210, 180, 140, ${p.alpha})`;
+            ctx.fill();
+          } else {
+            dustParticles.splice(i, 1);
+          }
+        }
+      }
+
       // レンダリング
       function render() {
         // 位置を更新
@@ -646,9 +889,8 @@
 
         gameCtx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
 
-        // 背景
-        gameCtx.fillStyle = "#f5e6d3";
-        gameCtx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
+        // 牧場背景
+        drawBackground(gameCtx);
 
         // 馬と隠れ動物をまとめてY座標でソートして描画（奥から手前へ）
         const allEntities = [
@@ -662,13 +904,26 @@
         allEntities.forEach(entity => {
           if (entity.isHorse) {
             drawHorse(gameCtx, entity.x, entity.y, entity.size, entity.flipped);
+            // 馬の後ろに砂煙を発生（控えめに）
+            if (Math.random() < 0.08) {
+              createDustParticle(entity.x + 30, entity.y + entity.size * 0.3);
+            }
           } else {
             drawAnimal(gameCtx, entity);
           }
         });
 
+        // 砂煙を描画
+        updateAndDrawDust(gameCtx);
+
         // 籠を描画（最前面）
         drawKago(gameCtx);
+
+        // 波紋を描画
+        updateAndDrawRipples(gameCtx);
+
+        // キラキラを描画
+        updateAndDrawSparkles(gameCtx);
 
         requestAnimationFrame(render);
       }
@@ -697,6 +952,10 @@
         animal.isCaptured = true;
         capturedAnimals.push(animal);
         score += 100;
+
+        // 効果音とキラキラ
+        playSound('capture');
+        createSparkles(kago.x, kago.y);
 
         // 捕獲アイコンを追加
         const icon = document.createElement("div");
@@ -809,6 +1068,8 @@
               grabOffset.y = smoothY - animal.y;
               cursor.classList.remove("pinching");
               cursor.classList.add("grabbing");
+              playSound('grab');
+              createRipple(animal.x, animal.y, '#ffe66d'); // 波紋エフェクト
             }
           } else if (!isPinching && wasPinching) {
             // ピンチ終了

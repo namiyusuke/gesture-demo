@@ -13,7 +13,7 @@
 
       body {
         font-family: "Arial", sans-serif;
-        background: #1a1a2e;
+        background: #fff;
         min-height: 100vh;
         overflow: hidden;
       }
@@ -22,6 +22,11 @@
         position: relative;
         width: 100vw;
         height: 100vh;
+        margin-top: 100px;
+        background-image: url("shooting_game-images/shooting-bg.png");
+        background-size: calc(1200 / 1440 * 100vw);
+        background-position: center;
+        background-repeat: no-repeat;
       }
 
       #game-canvas {
@@ -63,46 +68,18 @@
         transform: scaleX(-1);
       }
 
-      /* 照準 */
+      /* 照準（指カーソル） */
       #crosshair {
         position: fixed;
-        width: 80px;
-        height: 80px;
+        width: 100px;
+        height: 100px;
         pointer-events: none;
         z-index: 9999;
         transform: translate(-50%, -50%);
-      }
-
-      #crosshair::before,
-      #crosshair::after {
-        content: "";
-        position: absolute;
-        background: #ff0000;
-      }
-
-      #crosshair::before {
-        width: 2px;
-        height: 100%;
-        left: 50%;
-        transform: translateX(-50%);
-      }
-
-      #crosshair::after {
-        width: 100%;
-        height: 2px;
-        top: 50%;
-        transform: translateY(-50%);
-      }
-
-      #crosshair .circle {
-        position: absolute;
-        width: 40px;
-        height: 40px;
-        border: 2px solid #ff0000;
-        border-radius: 50%;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
+        background-image: url("shooting_game-images/target-mouse.png");
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
       }
 
       #crosshair.shooting {
@@ -278,8 +255,8 @@
 
       <div id="info">
         <h1>的をねらえ！</h1>
-        <p>🔫 手をピストル型にする</p>
-        <p>⬆️ 手首を跳ね上げて発射！</p>
+        <p>☝️ 人差し指を伸ばして狙う</p>
+        <p>👆 指を曲げて発射！</p>
         <div id="score">スコア: 0</div>
         <div id="ammo">弾数: ∞</div>
         <div id="gesture-status">待機中...</div>
@@ -290,12 +267,10 @@
         <canvas id="output_canvas"></canvas>
       </div>
 
-      <div id="crosshair">
-        <div class="circle"></div>
-      </div>
+      <div id="crosshair"></div>
 
       <div id="muzzle-flash"></div>
-      <div id="pistol-indicator">🔫</div>
+      <div id="pistol-indicator">☝️</div>
     </div>
 
     <script type="module">
@@ -323,19 +298,34 @@
       let targets = [];
       let lastShootTime = 0;
 
-      // 発射検出用（手首の上下動き）
-      let prevWristY = 0;
-      let isRecoiling = false;
+      // 発射検出用（人差し指を曲げて発射）
+      let indexExtendedHistory = []; // 人差し指の状態履歴
+      const HISTORY_LENGTH = 5; // 履歴の長さ
+      let canShoot = true; // 発射可能フラグ（デバウンス用）
 
-      // 的の種類
+      // 的の種類（画像を使用）
       const targetTypes = [
-        { emoji: "🎯", points: 100, size: 60 },
-        { emoji: "🧸", points: 150, size: 70 },
-        { emoji: "🤖", points: 200, size: 80 },
-        { emoji: "🎮", points: 250, size: 50 },
-        { emoji: "🚗", points: 180, size: 60 },
-        { emoji: "🍭", points: 120, size: 40 },
+        { image: "shooting_game-images/target01.png", points: 100, size: 80 },
+        { image: "shooting_game-images/target02.png", points: 120, size: 80 },
+        { image: "shooting_game-images/target03.png", points: 150, size: 80 },
+        { image: "shooting_game-images/target04.png", points: 180, size: 80 },
+        { image: "shooting_game-images/target05.png", points: 200, size: 80 },
+        { image: "shooting_game-images/target06.png", points: 220, size: 80 },
+        { image: "shooting_game-images/target07.png", points: 250, size: 80 },
+        { image: "shooting_game-images/target08.png", points: 280, size: 80 },
+        { image: "shooting_game-images/target09.png", points: 300, size: 80 },
+        { image: "shooting_game-images/target10.png", points: 350, size: 80 },
+        { image: "shooting_game-images/target11.png", points: 400, size: 80 },
+        { image: "shooting_game-images/target12.png", points: 500, size: 80 },
       ];
+
+      // 的画像をプリロード
+      const targetImages = {};
+      targetTypes.forEach((type) => {
+        const img = new Image();
+        img.src = type.image;
+        targetImages[type.image] = img;
+      });
 
       // キャンバスサイズ調整
       function resizeCanvas() {
@@ -344,114 +334,85 @@
         initTargets();
       }
 
-      // 的を初期化
+      // 的を初期化（棚の位置に配置）
       function initTargets() {
         targets = [];
-        const rows = 3;
-        const cols = 5;
-        const marginX = 150;
-        const marginY = 150;
-        const spacingX = (gameCanvas.width - marginX * 2) / (cols - 1);
-        const spacingY = (gameCanvas.height - marginY * 2) / (rows - 1);
 
-        for (let row = 0; row < rows; row++) {
-          for (let col = 0; col < cols; col++) {
+        const shelfRows = [
+          { y: 0.28, count: 5, size: 140 },
+          { y: 0.48, count: 6, size: 160 },
+          { y: 0.68, count: 4, size: 180 },
+        ];
+
+        const marginX = gameCanvas.width * 0.15;
+        const usableWidth = gameCanvas.width * 0.7;
+
+        shelfRows.forEach((shelf) => {
+          const spacingX = usableWidth / (shelf.count - 1);
+          for (let i = 0; i < shelf.count; i++) {
             const type = targetTypes[Math.floor(Math.random() * targetTypes.length)];
             targets.push({
-              x: marginX + col * spacingX + (Math.random() - 0.5) * 40,
-              y: marginY + row * spacingY + (Math.random() - 0.5) * 30,
-              size: type.size,
-              emoji: type.emoji,
+              x: marginX + i * spacingX + (Math.random() - 0.5) * 20,
+              y: gameCanvas.height * shelf.y - shelf.size * 0.5,
+              size: shelf.size,
+              image: type.image,
               points: type.points,
               isHit: false,
               hitTime: 0,
+              vx: 0,
+              vy: 0,
+              rotation: 0,
+              rotationSpeed: 0,
             });
-          }
-        }
-      }
-
-      // 背景を描画（お祭りの射的屋台風）
-      function drawBackground() {
-        // 背景色
-        const gradient = gameCtx.createLinearGradient(0, 0, 0, gameCanvas.height);
-        gradient.addColorStop(0, "#2c1810");
-        gradient.addColorStop(1, "#1a0f0a");
-        gameCtx.fillStyle = gradient;
-        gameCtx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
-
-        // 赤白の縦縞（屋台の装飾）
-        const stripeWidth = 80;
-        for (let i = 0; i < gameCanvas.width / stripeWidth; i++) {
-          if (i % 2 === 0) {
-            gameCtx.fillStyle = "#cc0000";
-          } else {
-            gameCtx.fillStyle = "#ffffff";
-          }
-          gameCtx.fillRect(i * stripeWidth, 0, stripeWidth, 60);
-          gameCtx.fillRect(i * stripeWidth, gameCanvas.height - 60, stripeWidth, 60);
-        }
-
-        // 提灯を描画
-        const lanternSpacing = 150;
-        for (let x = 75; x < gameCanvas.width; x += lanternSpacing) {
-          drawLantern(x, 90);
-        }
-
-        // 棚を描画
-        gameCtx.fillStyle = "#8B4513";
-        const shelfY = [200, 350, 500];
-        shelfY.forEach((y) => {
-          if (y < gameCanvas.height - 100) {
-            gameCtx.fillRect(50, y, gameCanvas.width - 100, 15);
           }
         });
       }
 
-      // 提灯を描画
-      function drawLantern(x, y) {
-        gameCtx.fillStyle = "#ff3333";
-        gameCtx.beginPath();
-        gameCtx.ellipse(x, y, 25, 35, 0, 0, Math.PI * 2);
-        gameCtx.fill();
+      // 背景は画像で表示（CSSで設定済み）
 
-        // 提灯の縞模様
-        gameCtx.strokeStyle = "#cc0000";
-        gameCtx.lineWidth = 2;
-        for (let i = -20; i <= 20; i += 10) {
-          gameCtx.beginPath();
-          gameCtx.moveTo(x - 20, y + i);
-          gameCtx.lineTo(x + 20, y + i);
-          gameCtx.stroke();
-        }
-
-        // 紐
-        gameCtx.strokeStyle = "#333";
-        gameCtx.lineWidth = 2;
-        gameCtx.beginPath();
-        gameCtx.moveTo(x, y - 35);
-        gameCtx.lineTo(x, y - 55);
-        gameCtx.stroke();
-      }
-
-      // 的を描画
+      // 的を描画（アスペクト比を維持）+ 飛んでいくアニメーション
       function drawTargets() {
+        const gravity = 0.5; // 重力
+
         targets.forEach((target) => {
-          if (target.isHit) {
-            // ヒット後のフェードアウト
-            const elapsed = Date.now() - target.hitTime;
-            if (elapsed < 500) {
-              gameCtx.globalAlpha = 1 - elapsed / 500;
-              gameCtx.font = `${target.size}px Arial`;
-              gameCtx.textAlign = "center";
-              gameCtx.textBaseline = "middle";
-              gameCtx.fillText(target.emoji, target.x, target.y);
-              gameCtx.globalAlpha = 1;
-            }
+          const img = targetImages[target.image];
+          if (!img || !img.complete) return;
+
+          // アスペクト比を維持してサイズを計算
+          const aspectRatio = img.naturalWidth / img.naturalHeight;
+          let drawWidth, drawHeight;
+          if (aspectRatio > 1) {
+            drawWidth = target.size;
+            drawHeight = target.size / aspectRatio;
           } else {
-            gameCtx.font = `${target.size}px Arial`;
-            gameCtx.textAlign = "center";
-            gameCtx.textBaseline = "middle";
-            gameCtx.fillText(target.emoji, target.x, target.y);
+            drawHeight = target.size;
+            drawWidth = target.size * aspectRatio;
+          }
+
+          if (target.isHit) {
+            const elapsed = Date.now() - target.hitTime;
+
+            // 物理演算：速度を更新
+            target.vy += gravity;
+            target.x += target.vx;
+            target.y += target.vy;
+            target.rotation += target.rotationSpeed;
+
+            // 画面外に出たら描画しない
+            if (target.y > gameCanvas.height + 200) return;
+
+            // フェードアウトしながら飛んでいく
+            const alpha = Math.max(0, 1 - elapsed / 1500);
+            if (alpha <= 0) return;
+
+            gameCtx.save();
+            gameCtx.globalAlpha = alpha;
+            gameCtx.translate(target.x, target.y);
+            gameCtx.rotate(target.rotation);
+            gameCtx.drawImage(img, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
+            gameCtx.restore();
+          } else {
+            gameCtx.drawImage(img, target.x - drawWidth / 2, target.y - drawHeight / 2, drawWidth, drawHeight);
           }
         });
       }
@@ -459,9 +420,71 @@
       // レンダリング
       function render() {
         gameCtx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
-        drawBackground();
         drawTargets();
+        updateParticles();
+        drawParticles();
         requestAnimationFrame(render);
+      }
+
+      // パーティクルエフェクト
+      let particles = [];
+
+      function createParticles(x, y, color, count) {
+        for (let i = 0; i < count; i++) {
+          const angle = (Math.PI * 2 * i) / count + Math.random() * 0.5;
+          const speed = 3 + Math.random() * 5;
+          particles.push({
+            x: x,
+            y: y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            life: 1,
+            color: color,
+            size: 3 + Math.random() * 4,
+          });
+        }
+      }
+
+      function updateParticles() {
+        particles = particles.filter((p) => {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.2; // 重力
+          p.life -= 0.03;
+          return p.life > 0;
+        });
+      }
+
+      function drawParticles() {
+        particles.forEach((p) => {
+          gameCtx.globalAlpha = p.life;
+          gameCtx.fillStyle = p.color;
+          gameCtx.beginPath();
+          gameCtx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+          gameCtx.fill();
+        });
+        gameCtx.globalAlpha = 1;
+      }
+
+      // 画面揺れエフェクト
+      function shakeScreen(intensity = 10) {
+        const container = document.getElementById("container");
+        const duration = 150;
+        const startTime = Date.now();
+
+        function shake() {
+          const elapsed = Date.now() - startTime;
+          if (elapsed < duration) {
+            const remaining = 1 - elapsed / duration;
+            const offsetX = (Math.random() - 0.5) * intensity * remaining;
+            const offsetY = (Math.random() - 0.5) * intensity * remaining;
+            container.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+            requestAnimationFrame(shake);
+          } else {
+            container.style.transform = "";
+          }
+        }
+        shake();
       }
 
       // 発射処理
@@ -470,12 +493,15 @@
         if (now - lastShootTime < 300) return; // 連射制限
         lastShootTime = now;
 
-        // マズルフラッシュ
+        // マズルフラッシュ（強化版）
         muzzleFlash.style.left = `${x}px`;
         muzzleFlash.style.top = `${y}px`;
         muzzleFlash.classList.add("flash");
         crosshair.classList.add("shooting");
         pistolIndicator.classList.add("shooting");
+
+        // 発射パーティクル
+        createParticles(x, y, "#ffaa00", 8);
 
         setTimeout(() => {
           muzzleFlash.classList.remove("flash");
@@ -497,69 +523,92 @@
             scoreElement.textContent = `スコア: ${score}`;
             hit = true;
 
-            // ヒットエフェクト
+            // 的が飛んでいく速度を設定（撃った方向から跳ね返る）
+            const hitAngle = Math.atan2(dy, dx);
+            const knockbackSpeed = 8 + Math.random() * 4;
+            target.vx = -Math.cos(hitAngle) * knockbackSpeed + (Math.random() - 0.5) * 4;
+            target.vy = -Math.abs(Math.sin(hitAngle)) * knockbackSpeed - 5 - Math.random() * 3;
+            target.rotationSpeed = (Math.random() - 0.5) * 0.3;
+
+            // ヒットパーティクル（派手に）
+            createParticles(target.x, target.y, "#ff4444", 12);
+            createParticles(target.x, target.y, "#ffff00", 8);
+
+            // ヒットエフェクト（得点表示）
             const effect = document.createElement("div");
             effect.className = "hit-effect";
             effect.textContent = `+${target.points}`;
             effect.style.left = `${target.x}px`;
             effect.style.top = `${target.y}px`;
             document.body.appendChild(effect);
-            setTimeout(() => effect.remove(), 500);
+            setTimeout(() => effect.remove(), 800);
           }
         });
 
         // 全部倒したら再生成
         if (targets.every((t) => t.isHit)) {
-          setTimeout(initTargets, 1000);
+          setTimeout(initTargets, 1500);
         }
       }
 
-      // ピストルジェスチャー検出
-      function detectPistolGesture(landmarks) {
-        // 手首
-        const wrist = landmarks[0];
+      // ジェスチャー検出（人差し指を曲げて発射）- 安定化版
+      function detectGesture(landmarks) {
+        // 人差し指のランドマーク
+        const indexTip = landmarks[8]; // 先端
+        const indexDip = landmarks[7]; // 第一関節
+        const indexPip = landmarks[6]; // 第二関節
+        const indexMcp = landmarks[5]; // 付け根
 
-        // 人差し指の先端と根元
-        const indexTip = landmarks[8];
-        const indexMcp = landmarks[5];
+        // 指の曲げ具合を数値化（0=完全に伸びている、1=完全に曲がっている）
+        const bendAmount = (indexTip.y - indexPip.y) / 0.1; // 正規化
+        const clampedBend = Math.max(0, Math.min(1, bendAmount + 0.5));
 
-        // 親指
-        const thumbTip = landmarks[4];
+        // 履歴に追加
+        indexExtendedHistory.push(clampedBend);
+        if (indexExtendedHistory.length > HISTORY_LENGTH) {
+          indexExtendedHistory.shift();
+        }
 
-        // 中指、薬指、小指（曲がっているか）
-        const middleTip = landmarks[12];
-        const middleMcp = landmarks[9];
-        const ringTip = landmarks[16];
-        const ringMcp = landmarks[13];
-        const pinkyTip = landmarks[20];
-        const pinkyMcp = landmarks[17];
+        // 履歴の平均を計算（スムージング）
+        const avgBend = indexExtendedHistory.reduce((a, b) => a + b, 0) / indexExtendedHistory.length;
 
-        // 人差し指が伸びているか
-        const indexExtended = indexTip.y < indexMcp.y - 0.03;
+        // 閾値で判定
+        const isExtended = avgBend < 0.3; // 伸びている
+        const isBent = avgBend > 0.6; // 曲がっている
 
-        // 中指、薬指、小指が曲がっているか
-        const middleBent = middleTip.y > middleMcp.y - 0.02;
-        const ringBent = ringTip.y > ringMcp.y - 0.02;
-        const pinkyBent = pinkyTip.y > pinkyMcp.y - 0.02;
+        // 構え状態：人差し指が伸びている
+        const isReady = isExtended;
 
-        // ピストル型の判定
-        const isPistolShape = indexExtended && middleBent && ringBent && pinkyBent;
+        // 発射判定：伸びている状態から曲がった状態への遷移を検出
+        let isTrigger = false;
+        if (canShoot && indexExtendedHistory.length >= HISTORY_LENGTH) {
+          // 履歴の前半と後半を比較
+          const firstHalf = indexExtendedHistory.slice(0, Math.floor(HISTORY_LENGTH / 2));
+          const secondHalf = indexExtendedHistory.slice(Math.floor(HISTORY_LENGTH / 2));
+          const firstAvg = firstHalf.reduce((a, b) => a + b, 0) / firstHalf.length;
+          const secondAvg = secondHalf.reduce((a, b) => a + b, 0) / secondHalf.length;
 
-        // 発射検出：手首を上に跳ね上げる（Y座標が急に小さくなる＝上に動く）
-        const currentWristY = wrist.y;
-        const yVelocity = prevWristY - currentWristY; // 正の値 = 上に動いている
+          // 前半が伸びていて、後半が曲がっている場合に発射
+          if (firstAvg < 0.35 && secondAvg > 0.55) {
+            isTrigger = true;
+            canShoot = false;
+            // 発射後、指を伸ばすまで再発射不可
+            setTimeout(() => {
+              if (avgBend < 0.3) canShoot = true;
+            }, 200);
+          }
+        }
 
-        // 前フレームの位置を保存
-        prevWristY = currentWristY;
-
-        // 撃つ動作：手首を素早く上に跳ね上げる
-        const shootThreshold = 0.02; // この値を調整して感度を変える
-        const isShooting = yVelocity > shootThreshold && isPistolShape;
+        // 指が伸びたら再発射可能に
+        if (isExtended && !canShoot) {
+          canShoot = true;
+        }
 
         return {
-          isPistol: isPistolShape,
-          isTrigger: isShooting,
-          yVelocity: yVelocity,
+          isReady: isReady,
+          isTrigger: isTrigger,
+          indexBent: isBent,
+          bendAmount: avgBend, // デバッグ用
         };
       }
 
@@ -644,23 +693,30 @@
           crosshair.style.top = `${smoothY}px`;
           crosshair.style.display = "block";
 
-          // ピストルジェスチャー検出
-          const gesture = detectPistolGesture(landmarks);
+          // ジェスチャー検出（人差し指を曲げて発射）
+          const gesture = detectGesture(landmarks);
 
-          if (gesture.isPistol) {
+          // 曲げ具合のバー表示
+          const bendPercent = Math.round(gesture.bendAmount * 100);
+          const bendBar = "█".repeat(Math.round(bendPercent / 10)) + "░".repeat(10 - Math.round(bendPercent / 10));
+
+          if (gesture.isReady) {
             pistolIndicator.classList.add("ready");
-            gestureStatus.textContent = `🔫 構え中... (跳ね上げて発射！)`;
+            gestureStatus.innerHTML = `☝️ 構え中！<br><small>${bendBar} ${bendPercent}%</small>`;
             gestureStatus.style.color = "#ffd700";
-
-            // 撃つ動作を検出したら発射
-            if (gesture.isTrigger) {
-              shoot(smoothX, smoothY);
-              gestureStatus.textContent = "💥 発射！";
-            }
+          } else if (gesture.indexBent) {
+            gestureStatus.innerHTML = `👆 曲げた！<br><small>${bendBar} ${bendPercent}%</small>`;
+            gestureStatus.style.color = "#ff6b6b";
           } else {
             pistolIndicator.classList.remove("ready");
-            gestureStatus.textContent = "手をピストル型に...";
+            gestureStatus.innerHTML = `☝️ 指を伸ばして...<br><small>${bendBar} ${bendPercent}%</small>`;
             gestureStatus.style.color = "#888";
+          }
+
+          // 発射判定
+          if (gesture.isTrigger) {
+            shoot(smoothX, smoothY);
+            gestureStatus.innerHTML = "💥 発射！";
           }
         } else {
           gestureStatus.textContent = "手が見えません...";
