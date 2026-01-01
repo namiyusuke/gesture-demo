@@ -411,6 +411,106 @@
         transform: scale(0.98);
       }
 
+      /* ゲームUI（タイマー・スコア） */
+      #game-ui {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 1000;
+        display: none;
+      }
+
+      #timer-display {
+        font-size: 28px;
+        font-weight: bold;
+        color: #212121;
+        margin-bottom: 10px;
+      }
+
+      #timer-display.warning {
+        color: #ff4444;
+        animation: pulse 0.5s infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.1);
+        }
+      }
+
+      #score-display {
+        font-size: 22px;
+        font-weight: bold;
+        color: #212121;
+      }
+
+      /* 結果画面 */
+      #result-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        z-index: 20000;
+        display: none;
+        justify-content: center;
+        align-items: center;
+      }
+
+      #result-modal.show {
+        display: flex;
+      }
+
+      .result-content {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 8px;
+        padding: 40px;
+        max-width: 500px;
+        width: 90%;
+        text-align: center;
+        color: white;
+        border: #fff solid 1px;
+      }
+
+      .result-content h1 {
+        font-size: 36px;
+        color: #ffd700;
+        margin-bottom: 30px;
+      }
+
+      .result-score {
+        font-size: 72px;
+        font-weight: bold;
+        color: #fff;
+        margin-bottom: 20px;
+      }
+
+      .result-label {
+        font-size: 24px;
+        color: rgba(255, 255, 255, 0.7);
+        margin-bottom: 40px;
+      }
+
+      .result-button {
+        padding: 15px 40px;
+        font-size: 20px;
+        font-weight: bold;
+        color: #2a1a0a;
+        background: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      .result-button:active {
+        transform: scale(0.98);
+      }
+
       @media (max-width: 768px) {
         .tutorial-content {
           padding: 25px;
@@ -528,6 +628,22 @@
 
       <div id="muzzle-flash"></div>
       <div id="pistol-indicator">☝️</div>
+
+      <!-- ゲームUI -->
+      <div id="game-ui">
+        <div id="timer-display">60</div>
+        <div id="score-display">スコア: 0</div>
+      </div>
+    </div>
+
+    <!-- 結果画面 -->
+    <div id="result-modal">
+      <div class="result-content">
+        <h1>タイムアップ！</h1>
+        <div class="result-label">あなたのスコア</div>
+        <div class="result-score" id="final-score">0</div>
+        <button class="result-button" id="retry-button">もう一度遊ぶ</button>
+      </div>
     </div>
 
     <script type="module">
@@ -554,26 +670,131 @@
       let score = 0;
       let targets = [];
       let lastShootTime = 0;
+      let gameTime = 60; // 制限時間（秒）
+      let gameTimerId = null;
+      let isGameRunning = false;
+
+      // UI要素
+      const gameUI = document.getElementById("game-ui");
+      const timerDisplay = document.getElementById("timer-display");
+      const scoreDisplay = document.getElementById("score-display");
+      const resultModal = document.getElementById("result-modal");
+      const finalScoreElement = document.getElementById("final-score");
+      const retryButton = document.getElementById("retry-button");
+
+      // スコア更新
+      function updateScoreDisplay() {
+        scoreDisplay.textContent = `スコア: ${score}`;
+      }
+
+      // タイマー更新
+      function updateTimerDisplay() {
+        timerDisplay.textContent = gameTime;
+        if (gameTime <= 10) {
+          timerDisplay.classList.add("warning");
+        } else {
+          timerDisplay.classList.remove("warning");
+        }
+      }
+
+      // ゲーム開始
+      function startGame() {
+        score = 0;
+        gameTime = 60;
+        isGameRunning = true;
+        gameUI.style.display = "block";
+        resultModal.classList.remove("show");
+        updateScoreDisplay();
+        updateTimerDisplay();
+        initTargets();
+
+        // タイマー開始
+        gameTimerId = setInterval(() => {
+          gameTime--;
+          updateTimerDisplay();
+          if (gameTime <= 0) {
+            endGame();
+          }
+        }, 1000);
+      }
+
+      // ゲーム終了
+      function endGame() {
+        isGameRunning = false;
+        if (gameTimerId) {
+          clearInterval(gameTimerId);
+          gameTimerId = null;
+        }
+        // 結果画面を表示
+        finalScoreElement.textContent = score;
+        resultModal.classList.add("show");
+      }
+
+      // リトライボタン
+      retryButton.addEventListener("click", () => {
+        startGame();
+      });
 
       // 発射検出用（人差し指を曲げて発射）
       let indexExtendedHistory = []; // 人差し指の状態履歴
       const HISTORY_LENGTH = 5; // 履歴の長さ
       let canShoot = true; // 発射可能フラグ（デバウンス用）
 
-      // 的の種類（画像を使用）
+      // 効果音用AudioContext
+      let audioContext = null;
+
+      // 「ぱん」という効果音を生成・再生
+      function playHitSound() {
+        if (!audioContext) {
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        // ノイズを生成
+        const bufferSize = audioContext.sampleRate * 0.6; // 0.1秒
+        const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+        const data = buffer.getChannelData(0);
+
+        for (let i = 0; i < bufferSize; i++) {
+          // 減衰するノイズで「ぱん」という音を表現
+          const decay = Math.exp(-i / (bufferSize * 0.1));
+          data[i] = (Math.random() * 2 - 1) * decay;
+        }
+
+        const source = audioContext.createBufferSource();
+        source.buffer = buffer;
+
+        // フィルターで音質を調整
+        const filter = audioContext.createBiquadFilter();
+        filter.type = "bandpass";
+        filter.frequency.value = 2000;
+        filter.Q.value = 1;
+
+        // ゲイン（音量）
+        const gainNode = audioContext.createGain();
+        gainNode.gain.value = 0.2;
+
+        source.connect(filter);
+        filter.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        source.start();
+      }
+
+      // 的の種類（画像を使用）- サイズが小さいほど高得点（基準: 200px）
       const targetTypes = [
-        { image: "shooting_game-images/target01.png", points: 100, size: 80 },
-        { image: "shooting_game-images/target02.png", points: 120, size: 80 },
-        { image: "shooting_game-images/target03.png", points: 150, size: 80 },
-        { image: "shooting_game-images/target04.png", points: 180, size: 80 },
-        { image: "shooting_game-images/target05.png", points: 200, size: 80 },
-        { image: "shooting_game-images/target06.png", points: 220, size: 80 },
-        { image: "shooting_game-images/target07.png", points: 250, size: 80 },
-        { image: "shooting_game-images/target08.png", points: 280, size: 80 },
-        { image: "shooting_game-images/target09.png", points: 300, size: 80 },
-        { image: "shooting_game-images/target10.png", points: 350, size: 80 },
-        { image: "shooting_game-images/target11.png", points: 400, size: 80 },
-        { image: "shooting_game-images/target12.png", points: 500, size: 80 },
+        { image: "shooting_game-images/target01.png", points: 300, size: 440 },
+        { image: "shooting_game-images/target02.png", points: 120, size: 320 },
+        { image: "shooting_game-images/target03.png", points: 150, size: 300 },
+        { image: "shooting_game-images/target04.png", points: 180, size: 290 },
+        { image: "shooting_game-images/target05.png", points: 200, size: 280 },
+        { image: "shooting_game-images/target06.png", points: 220, size: 270 },
+        { image: "shooting_game-images/target07.png", points: 250, size: 260 },
+        { image: "shooting_game-images/target08.png", points: 280, size: 250 },
+        { image: "shooting_game-images/target09.png", points: 300, size: 240 },
+        { image: "shooting_game-images/target10.png", points: 350, size: 230 },
+        { image: "shooting_game-images/target11.png", points: 400, size: 180 },
+        { image: "shooting_game-images/target12.png", points: 500, size: 200 },
+        { image: "shooting_game-images/target13.png", points: 500, size: 200 },
       ];
 
       // 的画像をプリロード
@@ -612,28 +833,40 @@
         return (100 / 1440) * window.innerWidth;
       }
 
-      // 的を初期化（正規化座標で配置）
+      // 的を初期化（固定配置）
       function initTargets() {
         targets = [];
 
-        const shelfRows = [
-          { y: 0.18, count: 2, baseSize: 160 },
-          { y: 0.35, count: 5, baseSize: 180 },
-          { y: 0.52, count: 5, baseSize: 200 },
+        // 固定配置: 画像の通りに並べる
+        const fixedLayout = [
+          // 上段（2個）: トラック、犬
+          { y: 0.15, sizeMultiplier: 1, items: [9, 8, 11] }, // target01, target02
+          // 中段（5個）: 福袋、羽子板、クマ、赤べこ、お菓子
+          { y: 0.25, sizeMultiplier: 1, items: [5, 6] }, // target03-07
+          // 下段（5個）: 人形、ゲーム機、鏡餅、コマ、スノードーム
+          { y: 0.4, sizeMultiplier: 1.0, items: [4, 0, 7] }, // target08-12
+          { y: 0.5, sizeMultiplier: 1.0, items: [2, 12, 3, 10, 1] }, // target08-12
         ];
 
-        shelfRows.forEach((shelf) => {
-          // 的の間隔を固定（0.12）して中央揃え
-          const spacingX = 0.12;
-          const totalWidth = spacingX * (shelf.count - 1);
+        fixedLayout.forEach((shelf, shelfIndex) => {
+          const count = shelf.items.length;
+          // 的の間隔を固定（0.16）して中央揃え
+          const spacingX = 0.16;
+          const totalWidth = spacingX * (count - 1);
           const startX = 0.5 - totalWidth / 2; // 中央揃えの開始位置
-          for (let i = 0; i < shelf.count; i++) {
-            const type = targetTypes[Math.floor(Math.random() * targetTypes.length)];
+
+          shelf.items.forEach((typeIndex, i) => {
+            const type = targetTypes[typeIndex];
+            // 動きのパラメータ（上段ほど速く動く）
+            const moveSpeed = (0.002 + Math.random() * 0.002) * (3 - shelfIndex);
+            const moveRange = 0.02 + Math.random() * 0.02;
+            const xPos = startX + i * spacingX;
             targets.push({
               // 正規化座標（0-1）で保持 - 中央揃え
-              nx: startX + i * spacingX + (Math.random() - 0.5) * 0.02,
+              nx: xPos,
               ny: shelf.y,
-              baseSize: shelf.baseSize,
+              baseX: xPos, // 元の位置
+              baseSize: type.size * shelf.sizeMultiplier,
               image: type.image,
               points: type.points,
               isHit: false,
@@ -643,18 +876,23 @@
               nvy: 0,
               rotation: 0,
               rotationSpeed: 0,
+              // 左右揺れ用
+              moveSpeed: moveSpeed,
+              moveRange: moveRange,
+              movePhase: Math.random() * Math.PI * 2, // ランダムな初期位相
             });
-          }
+          });
         });
       }
 
       // 背景は画像で表示（CSSで設定済み）
 
-      // 的を描画（アスペクト比を維持）+ 飛んでいくアニメーション
+      // 的を描画（アスペクト比を維持）+ 飛んでいくアニメーション + 左右揺れ
       function drawTargets() {
         const scale = getScale();
         const gravity = 0.0005; // 正規化された重力
         const offsetY = getBgOffsetY(); // 背景画像のオフセット
+        const time = Date.now() * 0.001; // 秒単位の時間
 
         targets.forEach((target) => {
           const img = targetImages[target.image];
@@ -701,10 +939,15 @@
             gameCtx.drawImage(img, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
             gameCtx.restore();
           } else {
+            // 左右揺れを適用
+            const swayOffset = Math.sin(time * target.moveSpeed * 50 + target.movePhase) * target.moveRange;
+            target.nx = target.baseX + swayOffset;
+
             // 正規化座標から実座標に変換（オフセット適用）
             const x = target.nx * window.innerWidth;
             const y = target.ny * window.innerHeight + offsetY;
-            gameCtx.drawImage(img, x - drawWidth / 2, y - drawHeight / 2, drawWidth, drawHeight);
+            // 下揃え: 的の下端を基準y座標に揃える
+            gameCtx.drawImage(img, x - drawWidth / 2, y - drawHeight, drawWidth, drawHeight);
           }
         });
       }
@@ -781,6 +1024,7 @@
 
       // 発射処理
       function shoot(x, y) {
+        if (!isGameRunning) return; // ゲームが終了している場合は発射不可
         const now = Date.now();
         if (now - lastShootTime < 300) return; // 連射制限
         lastShootTime = now;
@@ -809,18 +1053,24 @@
           if (target.isHit) return;
           // 正規化座標から実座標に変換（オフセット適用）
           const targetX = target.nx * window.innerWidth;
-          const targetY = target.ny * window.innerHeight + offsetY;
+          const baseY = target.ny * window.innerHeight + offsetY;
           const size = target.baseSize * scale;
+          // 下揃えなので、的の中心は baseY - size/2
+          const targetY = baseY - size / 2;
 
           const dx = x - targetX;
           const dy = y - targetY;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < size * 0.8) {
+          if (dist < size * 0.4) {
             target.isHit = true;
             target.hitTime = now;
             score += target.points;
+            updateScoreDisplay();
 
             hit = true;
+
+            // 「ぱん」という効果音を再生
+            playHitSound();
 
             // 的が飛んでいく速度を設定（正規化速度）
             const hitAngle = Math.atan2(dy, dx);
@@ -1027,6 +1277,7 @@
 
           videoElement.addEventListener("loadeddata", () => {
             loading.classList.add("hidden");
+            startGame(); // ゲーム開始
 
             function onFrame() {
               if (!handLandmarker) return;
