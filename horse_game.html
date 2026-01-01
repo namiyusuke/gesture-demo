@@ -334,6 +334,7 @@
       <div id="clear-content">
         <h2>🎉 クリア！</h2>
         <p>全ての動物を見つけました！</p>
+        <p id="clear-time" style="font-size: 28px; color: #ff6b6b; font-weight: bold; margin: 16px 0;">タイム: 0.00秒</p>
         <button id="restart-btn">もう一度遊ぶ</button>
       </div>
     </div>
@@ -376,6 +377,8 @@
       let horses = [];
       let hiddenAnimals = [];
       let capturedAnimals = [];
+      let gameStartTime = 0;  // ゲーム開始時刻
+      let clearTime = 0;      // クリアタイム（秒）
 
       // 籠の位置とサイズ
       const kago = {
@@ -655,6 +658,10 @@
         capturedAnimalsDiv.innerHTML = "";
         clearModal.classList.remove("show");
 
+        // タイマー開始
+        gameStartTime = Date.now();
+        clearTime = 0;
+
         const width = gameCanvas.width;
         const height = gameCanvas.height;
 
@@ -662,25 +669,30 @@
         kago.x = width - 150;
         kago.y = height - 120;
 
-        // 草のディテールを生成
+        // 草原エリアの開始位置（空と柵の下から）
+        const grassStartY = height * (SKY_RATIO + 0.1);
+        const grassEndY = height - 150; // 籠エリアの上
+
+        // 草のディテールを生成（草原エリアのみ）
         grassDetails = [];
         for (let i = 0; i < 80; i++) {
           grassDetails.push({
             x: Math.random() * width,
-            y: height * 0.5 + Math.random() * (height * 0.4)
+            y: grassStartY + Math.random() * (grassEndY - grassStartY)
           });
         }
         const horseSize = 80;
         const spacingX = 120; // 横の間隔
         const spacingY = 100; // 縦の間隔
         const cols = Math.ceil(width / spacingX);
-        const rows = Math.ceil((height - 120) / spacingY); // 下の捕獲エリアを除く
+        const availableHeight = grassEndY - grassStartY;
+        const rows = Math.ceil(availableHeight / spacingY);
 
-        // 馬を配置（右から左へ走る）
+        // 馬を配置（草原エリアのみ、右から左へ走る）
         for (let row = 0; row < rows; row++) {
           for (let col = 0; col < cols; col++) {
             const x = col * spacingX + (row % 2) * (spacingX / 2) + 60 + Math.random() * 30 - 15;
-            const y = row * spacingY + 80 + Math.random() * 20 - 10;
+            const y = grassStartY + row * spacingY + Math.random() * 20 - 10;
             const speed = 2 + Math.random() * 2; // 移動速度（速め）
             horses.push({
               x: x,
@@ -782,42 +794,45 @@
         });
       }
 
+      // 空の高さ割合（25%に縮小）
+      const SKY_RATIO = 0.25;
+
       // 牧場背景を描画
       function drawBackground(ctx) {
         const w = gameCanvas.width;
         const h = gameCanvas.height;
 
-        // 空（グラデーション）
-        const skyGradient = ctx.createLinearGradient(0, 0, 0, h * 0.4);
+        // 空（グラデーション）- 縮小
+        const skyGradient = ctx.createLinearGradient(0, 0, 0, h * SKY_RATIO);
         skyGradient.addColorStop(0, '#87CEEB');  // 水色
         skyGradient.addColorStop(1, '#E0F4FF');  // 薄い青
         ctx.fillStyle = skyGradient;
-        ctx.fillRect(0, 0, w, h * 0.4);
+        ctx.fillRect(0, 0, w, h * SKY_RATIO);
 
         // 遠くの山
         ctx.fillStyle = '#8FBC8F';
         ctx.beginPath();
-        ctx.moveTo(0, h * 0.4);
+        ctx.moveTo(0, h * SKY_RATIO);
         for (let x = 0; x <= w; x += 100) {
           const mountainHeight = Math.sin(x * 0.01) * 30 + Math.sin(x * 0.02) * 20;
-          ctx.lineTo(x, h * 0.35 - mountainHeight);
+          ctx.lineTo(x, h * (SKY_RATIO - 0.05) - mountainHeight);
         }
-        ctx.lineTo(w, h * 0.4);
+        ctx.lineTo(w, h * SKY_RATIO);
         ctx.closePath();
         ctx.fill();
 
         // 草原（グラデーション）
-        const grassGradient = ctx.createLinearGradient(0, h * 0.35, 0, h);
+        const grassGradient = ctx.createLinearGradient(0, h * (SKY_RATIO - 0.05), 0, h);
         grassGradient.addColorStop(0, '#90EE90');  // 明るい緑
         grassGradient.addColorStop(0.3, '#7CCD7C');
         grassGradient.addColorStop(1, '#C4A76C');  // 土色
         ctx.fillStyle = grassGradient;
-        ctx.fillRect(0, h * 0.35, w, h * 0.65);
+        ctx.fillRect(0, h * (SKY_RATIO - 0.05), w, h * (1 - SKY_RATIO + 0.05));
 
         // 柵（奥）
         ctx.strokeStyle = '#8B4513';
         ctx.lineWidth = 4;
-        const fenceY = h * 0.38;
+        const fenceY = h * (SKY_RATIO + 0.03);
         // 横棒
         ctx.beginPath();
         ctx.moveTo(0, fenceY);
@@ -968,6 +983,11 @@
         // 全部捕獲したらクリア
         const remaining = hiddenAnimals.filter(a => !a.isCaptured).length;
         if (remaining === 0) {
+          // クリアタイムを計算
+          clearTime = (Date.now() - gameStartTime) / 1000;
+          const clearTimeElement = document.getElementById("clear-time");
+          clearTimeElement.textContent = `タイム: ${clearTime.toFixed(2)}秒`;
+
           setTimeout(() => {
             clearModal.classList.add("show");
           }, 500);

@@ -94,8 +94,12 @@
       }
 
       @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
       }
 
       /* スコア表示 */
@@ -128,7 +132,7 @@
           -3px -3px 0 #fff,
           3px -3px 0 #fff,
           -3px 3px 0 #fff,
-          0 5px 20px rgba(0,0,0,0.3);
+          0 5px 20px rgba(0, 0, 0, 0.3);
         z-index: 5000;
         animation: completeAppear 0.8s ease-out;
         white-space: nowrap;
@@ -184,7 +188,11 @@
         font-size: 48px;
         font-weight: bold;
         color: #333;
-        text-shadow: 2px 2px 0 #fff, -2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff;
+        text-shadow:
+          2px 2px 0 #fff,
+          -2px -2px 0 #fff,
+          2px -2px 0 #fff,
+          -2px 2px 0 #fff;
         z-index: 100;
       }
 
@@ -348,7 +356,8 @@
       }
 
       @keyframes handSwing {
-        0%, 100% {
+        0%,
+        100% {
           transform: translateY(0);
         }
         50% {
@@ -357,7 +366,8 @@
       }
 
       @keyframes arrowBounce {
-        0%, 100% {
+        0%,
+        100% {
           opacity: 0.5;
           transform: translateY(0);
         }
@@ -486,10 +496,14 @@
         <!-- SVGシンボル定義 -->
         <svg style="display: none">
           <symbol id="iconHandOpen" viewBox="0 0 100 100">
-            <path d="M50 10 L50 35 M35 15 L35 40 M65 15 L65 40 M25 25 L25 45 M75 25 L75 45 M20 45 Q15 50 15 60 L15 75 Q15 85 25 90 L75 90 Q85 85 85 75 L85 60 Q85 50 80 45 L80 25 Q80 20 75 20 L75 45 L65 45 L65 15 Q65 10 60 10 L60 35 L50 35 L50 10 Q50 5 45 5 L45 35 L35 35 L35 15 Q35 10 30 10 L30 40 L25 40 L25 25 Q25 20 20 20 L20 45 Z"></path>
+            <path
+              d="M50 10 L50 35 M35 15 L35 40 M65 15 L65 40 M25 25 L25 45 M75 25 L75 45 M20 45 Q15 50 15 60 L15 75 Q15 85 25 90 L75 90 Q85 85 85 75 L85 60 Q85 50 80 45 L80 25 Q80 20 75 20 L75 45 L65 45 L65 15 Q65 10 60 10 L60 35 L50 35 L50 10 Q50 5 45 5 L45 35 L35 35 L35 15 Q35 10 30 10 L30 40 L25 40 L25 25 Q25 20 20 20 L20 45 Z"
+            ></path>
           </symbol>
           <symbol id="iconHandDown" viewBox="0 0 100 100">
-            <path d="M30 20 Q25 20 25 25 L25 55 Q25 60 30 60 L70 60 Q75 60 75 55 L75 25 Q75 20 70 20 L30 20 Z M35 25 L35 55 M45 25 L45 55 M55 25 L55 55 M65 25 L65 55 M50 60 L50 70 M40 70 L60 70 L50 85 Z"></path>
+            <path
+              d="M30 20 Q25 20 25 25 L25 55 Q25 60 30 60 L70 60 Q75 60 75 55 L75 25 Q75 20 70 20 L30 20 Z M35 25 L35 55 M45 25 L45 55 M55 25 L55 55 M65 25 L65 55 M50 60 L50 70 M40 70 L60 70 L50 85 Z"
+            ></path>
           </symbol>
         </svg>
 
@@ -508,7 +522,9 @@
           <div class="slide" data-slide="1">
             <div class="slide-subtitle">餅を完成させよう！</div>
             <div class="icon">🍡</div>
-            <div class="slide-description">餅をつくと成長していきます<br />100%になったら完成！<br />おしるこかお雑煮になります</div>
+            <div class="slide-description">
+              餅をつくと成長していきます<br />100%になったら完成！<br />おしるこかお雑煮になります
+            </div>
           </div>
         </div>
         <div class="slide-indicators">
@@ -541,9 +557,7 @@
       </div>
 
       <!-- 完成表示 -->
-      <div id="complete-message" class="hidden">
-        🎍 出来上がり！ 🎍
-      </div>
+      <div id="complete-message" class="hidden">🎍 出来上がり！ 🎍</div>
 
       <div id="instruction">餅をつけ！！！</div>
 
@@ -593,18 +607,18 @@
 
       // 餅の状態（もちもちアニメーション用）
       const mochi = {
-        baseWidth: 90,        // 初期サイズ
-        baseHeight: 70,       // より丸く
+        baseWidth: 90, // 初期サイズ
+        baseHeight: 70, // より丸く
         currentWidth: 90,
         currentHeight: 70,
-        squashAmount: 0,      // 潰れ具合 (0-1)
-        squashVelocity: 0,    // 潰れの速度（バネ用）
-        wobble: 0,            // ぷるぷる揺れ
+        squashAmount: 0, // 潰れ具合 (0-1)
+        squashVelocity: 0, // 潰れの速度（バネ用）
+        wobble: 0, // ぷるぷる揺れ
         wobbleSpeed: 0,
-        offsetY: 0,           // 上下の跳ね
+        offsetY: 0, // 上下の跳ね
         offsetYVelocity: 0,
-        growth: 0,            // 成長度（0〜1、叩くほど増える）
-        targetGrowth: 0,      // 目標成長度
+        growth: 0, // 成長度（0〜1、叩くほど増える）
+        targetGrowth: 0, // 目標成長度
       };
 
       // 杵の状態
@@ -628,7 +642,7 @@
           offsetY: (Math.random() - 0.5) * 30,
           sizeX: 4 + Math.random() * 3,
           sizeY: 3 + Math.random() * 2,
-          rotation: Math.random()
+          rotation: Math.random(),
         });
       }
 
@@ -820,8 +834,8 @@
         mochi.baseHeight = 70 * growthScale;
 
         // バネ物理：潰れからの復帰（大きく跳ね返る）
-        const springK = 0.12;      // バネ定数（しっかり戻る）
-        const damping = 0.85;      // 減衰
+        const springK = 0.12; // バネ定数（しっかり戻る）
+        const damping = 0.85; // 減衰
 
         // バネの力で戻る
         mochi.squashVelocity += -mochi.squashAmount * springK;
@@ -852,8 +866,8 @@
 
         // サイズ計算（潰れると横に広がる）
         const clampedSquash = Math.max(0, Math.min(mochi.squashAmount, 1));
-        const squashScale = 1 + clampedSquash * 0.6;  // 横への広がり
-        const stretchScale = 1 - clampedSquash * 0.3;  // 縦の潰れ
+        const squashScale = 1 + clampedSquash * 0.6; // 横への広がり
+        const stretchScale = 1 - clampedSquash * 0.3; // 縦の潰れ
 
         const clampedWobble = Math.max(-10, Math.min(wobbleEffect * 20, 10));
         mochi.currentWidth = mochi.baseWidth * squashScale + clampedWobble;
@@ -883,13 +897,7 @@
 
           // 臼の画像を描画
           const usuY = y - usuHeight * 0.3;
-          gameCtx.drawImage(
-            usuImage,
-            x - usuWidth / 2,
-            usuY,
-            usuWidth,
-            usuHeight
-          );
+          gameCtx.drawImage(usuImage, x - usuWidth / 2, usuY, usuWidth, usuHeight);
 
           // 餅を描画（臼の中央上部に配置）
           // 臼の上端から少し下の位置に餅を配置
@@ -960,7 +968,7 @@
       }
 
       function updateStickyStrings() {
-        stickyStrings = stickyStrings.filter(s => {
+        stickyStrings = stickyStrings.filter((s) => {
           s.life -= 0.025;
           s.wobble += s.wobbleSpeed;
           s.length *= 0.96; // 徐々に縮む
@@ -969,7 +977,7 @@
       }
 
       function drawStickyStrings(baseX, baseY) {
-        stickyStrings.forEach(s => {
+        stickyStrings.forEach((s) => {
           gameCtx.save();
           gameCtx.globalAlpha = s.life * 0.8;
 
@@ -987,12 +995,7 @@
 
           gameCtx.beginPath();
           gameCtx.moveTo(s.x, baseY);
-          gameCtx.quadraticCurveTo(
-            s.x + wobbleX,
-            baseY - s.length * 0.5,
-            s.x + wobbleX * 2,
-            baseY - s.length * s.life
-          );
+          gameCtx.quadraticCurveTo(s.x + wobbleX, baseY - s.length * 0.5, s.x + wobbleX * 2, baseY - s.length * s.life);
           gameCtx.stroke();
 
           gameCtx.restore();
@@ -1017,8 +1020,8 @@
 
         // 伸び縮み（大きく変形して叩いている感を出す）
         const stretchPhase = Math.sin(mochi.wobble * 0.3) * wobbleAmt * 0.25;
-        const w = baseW * (1 + squash * 0.8 + stretchPhase);  // 横に大きく広がる
-        const h = baseH * (1 - squash * 0.4 - stretchPhase * 0.3);  // 縦に潰れる
+        const w = baseW * (1 + squash * 0.8 + stretchPhase); // 横に大きく広がる
+        const h = baseH * (1 - squash * 0.4 - stretchPhase * 0.3); // 縦に潰れる
 
         // 粘り気の糸を更新・描画
         updateStickyStrings();
@@ -1028,15 +1031,10 @@
         // 最初はくすんだ色 → 叩くほど白くツヤが出る
         const colorProgress = mochi.growth;
         const baseColor = Math.floor(245 + colorProgress * 10); // 245→255
-        const midColor = Math.floor(235 + colorProgress * 15);  // 235→250
+        const midColor = Math.floor(235 + colorProgress * 15); // 235→250
         const edgeColor = Math.floor(220 + colorProgress * 20); // 220→240
 
-        const mochiGradient = gameCtx.createRadialGradient(
-          x - w * 0.2, y - h * 0.3,
-          0,
-          x, y,
-          Math.max(w, h) * 1.2
-        );
+        const mochiGradient = gameCtx.createRadialGradient(x - w * 0.2, y - h * 0.3, 0, x, y, Math.max(w, h) * 1.2);
         mochiGradient.addColorStop(0, `rgb(${baseColor}, ${baseColor}, ${baseColor})`);
         mochiGradient.addColorStop(0.4, `rgb(${midColor}, ${midColor - 2}, ${midColor - 5})`);
         mochiGradient.addColorStop(0.7, `rgb(${edgeColor}, ${edgeColor - 5}, ${edgeColor - 12})`);
@@ -1103,12 +1101,7 @@
 
         // 餅の膨らみ表現（ドーム状）
         const bulgeH = h * 0.5 * (1 + mochi.growth * 0.4);
-        const bulgeGradient = gameCtx.createRadialGradient(
-          x - w * 0.1, y - h * 0.35,
-          0,
-          x, y - h * 0.2,
-          w * 0.9
-        );
+        const bulgeGradient = gameCtx.createRadialGradient(x - w * 0.1, y - h * 0.35, 0, x, y - h * 0.2, w * 0.9);
         bulgeGradient.addColorStop(0, "rgba(255, 255, 255, 0.9)");
         bulgeGradient.addColorStop(0.5, "rgba(253, 250, 245, 0.5)");
         bulgeGradient.addColorStop(1, "rgba(248, 244, 238, 0)");
@@ -1192,7 +1185,7 @@
           gameCtx.drawImage(
             kineImage,
             -kineWidth / 2,
-            -kineHeight * 0.15,  // 少し上にオフセット
+            -kineHeight * 0.15, // 少し上にオフセット
             kineWidth,
             kineHeight
           );
@@ -1239,13 +1232,7 @@
           const displayHeight = 300;
           const displayWidth = displayHeight * aspectRatio;
 
-          gameCtx.drawImage(
-            oshirukoImage,
-            x - displayWidth / 2,
-            y - displayHeight / 2,
-            displayWidth,
-            displayHeight
-          );
+          gameCtx.drawImage(oshirukoImage, x - displayWidth / 2, y - displayHeight / 2, displayWidth, displayHeight);
         }
       }
 
@@ -1259,13 +1246,7 @@
           const displayHeight = 300;
           const displayWidth = displayHeight * aspectRatio;
 
-          gameCtx.drawImage(
-            zouniImage,
-            x - displayWidth / 2,
-            y - displayHeight / 2,
-            displayWidth,
-            displayHeight
-          );
+          gameCtx.drawImage(zouniImage, x - displayWidth / 2, y - displayHeight / 2, displayWidth, displayHeight);
         }
       }
 
@@ -1278,7 +1259,7 @@
         // 完成後は料理を表示、それ以外は餅つき
         if (isComplete && completeDish) {
           const dishX = window.innerWidth / 2;
-          const dishY = window.innerHeight * 0.7;  // メッセージの下に表示
+          const dishY = window.innerHeight * 0.7; // メッセージの下に表示
           if (completeDish === "oshiruko") {
             drawOshiruko(dishX, dishY);
           } else {
@@ -1378,12 +1359,29 @@
           canvasCtx.lineWidth = 2;
 
           const connections = [
-            [0, 1], [1, 2], [2, 3], [3, 4],
-            [0, 5], [5, 6], [6, 7], [7, 8],
-            [0, 9], [9, 10], [10, 11], [11, 12],
-            [0, 13], [13, 14], [14, 15], [15, 16],
-            [0, 17], [17, 18], [18, 19], [19, 20],
-            [5, 9], [9, 13], [13, 17],
+            [0, 1],
+            [1, 2],
+            [2, 3],
+            [3, 4],
+            [0, 5],
+            [5, 6],
+            [6, 7],
+            [7, 8],
+            [0, 9],
+            [9, 10],
+            [10, 11],
+            [11, 12],
+            [0, 13],
+            [13, 14],
+            [14, 15],
+            [15, 16],
+            [0, 17],
+            [17, 18],
+            [18, 19],
+            [19, 20],
+            [5, 9],
+            [9, 13],
+            [13, 17],
           ];
 
           connections.forEach(([start, end]) => {
