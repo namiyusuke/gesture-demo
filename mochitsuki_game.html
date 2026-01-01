@@ -249,51 +249,217 @@
       }
 
       .tutorial-content {
-        background: rgba(139, 69, 19, 0.95);
-        border-radius: 15px;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 8px;
         padding: 40px;
         max-width: 500px;
         width: 90%;
         text-align: center;
         color: white;
-        border: 4px solid #ffd700;
+        border: #fff solid 1px;
       }
 
       .tutorial-content h1 {
-        font-size: 36px;
-        color: #ffd700;
+        font-size: 32px;
+        color: #fff;
         margin-bottom: 30px;
       }
 
-      .tutorial-content .emoji {
+      .slides-container {
+        position: relative;
+        width: 100%;
+        height: 320px;
+        overflow: hidden;
+      }
+
+      .slide {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        transform: translateX(100%);
+        transition:
+          opacity 0.5s ease,
+          transform 0.5s ease;
+      }
+
+      .slide.active {
+        opacity: 1;
+        transform: translateX(0);
+      }
+
+      .slide.prev {
+        opacity: 0;
+        transform: translateX(-100%);
+      }
+
+      .slide-subtitle {
+        font-size: 26px;
+        font-weight: bold;
+        margin-bottom: 20px;
+      }
+
+      .hand-icons {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        margin-bottom: 25px;
+      }
+
+      .hand-icon {
+        width: 100px;
+        height: 120px;
+      }
+
+      .hand-icon svg {
+        width: 100%;
+        height: 100%;
+        fill: white;
+      }
+
+      .arrow-icon {
+        font-size: 30px;
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      .gesture-demo {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 25px;
+      }
+
+      .gesture-hand {
         font-size: 80px;
-        margin: 20px 0;
+        animation: handSwing 1.5s ease-in-out infinite;
       }
 
-      .tutorial-content p {
-        font-size: 20px;
+      .gesture-arrow {
+        font-size: 40px;
+        color: rgba(255, 255, 255, 0.8);
+        margin-top: -10px;
+        animation: arrowBounce 1.5s ease-in-out infinite;
+      }
+
+      @keyframes handSwing {
+        0%, 100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(40px);
+        }
+      }
+
+      @keyframes arrowBounce {
+        0%, 100% {
+          opacity: 0.5;
+          transform: translateY(0);
+        }
+        50% {
+          opacity: 1;
+          transform: translateY(20px);
+        }
+      }
+
+      .slide-description {
+        font-size: 18px;
         line-height: 1.8;
-        margin-bottom: 30px;
+        text-align: center;
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      .slide .icon {
+        font-size: 80px;
+        margin-bottom: 20px;
+      }
+
+      .slide .text {
+        font-size: 20px;
+        line-height: 1.6;
+        text-align: center;
+      }
+
+      .slide .text strong {
+        color: #ffd700;
+        font-size: 24px;
+      }
+
+      .slide-indicators {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin: 25px 0;
+      }
+
+      .slide-indicator {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transition:
+          background 0.3s,
+          transform 0.3s;
+      }
+
+      .slide-indicator.active {
+        background: #ffd700;
+        transform: scale(1.2);
       }
 
       .tutorial-button {
-        padding: 15px 40px;
-        font-size: 20px;
+        padding: 10px 20px;
+        font-size: 16px;
         font-weight: bold;
-        color: #8b4513;
-        background: #ffd700;
+        color: #2a1a0a;
+        background: #fff;
         border: none;
-        border-radius: 10px;
+        border-radius: 2px;
         cursor: pointer;
-        transition: transform 0.1s;
-      }
-
-      .tutorial-button:hover {
-        transform: scale(1.05);
       }
 
       .tutorial-button:active {
         transform: scale(0.98);
+      }
+
+      @media (max-width: 768px) {
+        .tutorial-content {
+          padding: 25px;
+        }
+        .tutorial-content h1 {
+          font-size: 24px;
+        }
+        .slides-container {
+          height: 280px;
+        }
+        .slide-subtitle {
+          font-size: 20px;
+        }
+        .hand-icon {
+          width: 70px;
+          height: 90px;
+        }
+        .slide-description {
+          font-size: 15px;
+        }
+        .slide .icon {
+          font-size: 60px;
+        }
+        .slide .text {
+          font-size: 16px;
+        }
+        .slide .text strong {
+          font-size: 20px;
+        }
+        .tutorial-button {
+          font-size: 20px;
+          padding: 12px 40px;
+        }
       }
 
       /* デバッグ情報 */
@@ -316,14 +482,41 @@
     <!-- チュートリアルモーダル -->
     <div id="tutorial-modal">
       <div class="tutorial-content">
-        <h1>🎍 餅つきゲーム 🎍</h1>
-        <div class="emoji">🤚⬇️</div>
-        <p>
-          手を上から下に振り下ろして<br />
-          餅をつこう！<br /><br />
-          <strong>勢いよく振り下ろすともちもち！</strong>
-        </p>
-        <button id="start-button" class="tutorial-button">ゲームスタート</button>
+        <h1>餅つきゲーム</h1>
+        <!-- SVGシンボル定義 -->
+        <svg style="display: none">
+          <symbol id="iconHandOpen" viewBox="0 0 100 100">
+            <path d="M50 10 L50 35 M35 15 L35 40 M65 15 L65 40 M25 25 L25 45 M75 25 L75 45 M20 45 Q15 50 15 60 L15 75 Q15 85 25 90 L75 90 Q85 85 85 75 L85 60 Q85 50 80 45 L80 25 Q80 20 75 20 L75 45 L65 45 L65 15 Q65 10 60 10 L60 35 L50 35 L50 10 Q50 5 45 5 L45 35 L35 35 L35 15 Q35 10 30 10 L30 40 L25 40 L25 25 Q25 20 20 20 L20 45 Z"></path>
+          </symbol>
+          <symbol id="iconHandDown" viewBox="0 0 100 100">
+            <path d="M30 20 Q25 20 25 25 L25 55 Q25 60 30 60 L70 60 Q75 60 75 55 L75 25 Q75 20 70 20 L30 20 Z M35 25 L35 55 M45 25 L45 55 M55 25 L55 55 M65 25 L65 55 M50 60 L50 70 M40 70 L60 70 L50 85 Z"></path>
+          </symbol>
+        </svg>
+
+        <div class="slides-container">
+          <!-- スライド1: 操作方法 -->
+          <div class="slide active" data-slide="0">
+            <div class="slide-subtitle">餅のつき方</div>
+            <div class="gesture-demo">
+              <div class="gesture-hand">🖐️</div>
+              <div class="gesture-arrow">↓</div>
+            </div>
+            <div class="slide-description">手を上から下に<br />勢いよく振り下ろします</div>
+          </div>
+
+          <!-- スライド2: ゲームルール -->
+          <div class="slide" data-slide="1">
+            <div class="slide-subtitle">餅を完成させよう！</div>
+            <div class="icon">🍡</div>
+            <div class="slide-description">餅をつくと成長していきます<br />100%になったら完成！<br />おしるこかお雑煮になります</div>
+          </div>
+        </div>
+        <div class="slide-indicators">
+          <div class="slide-indicator active" data-slide="0"></div>
+          <div class="slide-indicator" data-slide="1"></div>
+        </div>
+        <button id="next-button" class="tutorial-button">次へ</button>
+        <button id="start-button" class="tutorial-button" style="display: none">ゲームスタート</button>
       </div>
     </div>
 
@@ -445,6 +638,12 @@
 
       const usuImage = new Image();
       usuImage.src = "mochitsuki_game-images/usu.png";
+
+      const oshirukoImage = new Image();
+      oshirukoImage.src = "mochitsuki_game-images/oshiruko.png";
+
+      const zouniImage = new Image();
+      zouniImage.src = "mochitsuki_game-images/zouni.png";
 
       // キャンバスサイズ調整
       function resizeCanvas() {
@@ -1030,180 +1229,44 @@
         gameCtx.restore();
       }
 
-      // おしるこを描画（赤い小豆の汁にお餅）
+      // おしるこを描画（画像使用）
       function drawOshiruko(x, y) {
-        gameCtx.save();
+        if (oshirukoImage.complete && oshirukoImage.naturalWidth > 0) {
+          const imgWidth = oshirukoImage.naturalWidth;
+          const imgHeight = oshirukoImage.naturalHeight;
+          const aspectRatio = imgWidth / imgHeight;
 
-        // お椀の影
-        gameCtx.fillStyle = "rgba(0, 0, 0, 0.2)";
-        gameCtx.beginPath();
-        gameCtx.ellipse(x, y + 80, 120, 30, 0, 0, Math.PI * 2);
-        gameCtx.fill();
+          const displayHeight = 300;
+          const displayWidth = displayHeight * aspectRatio;
 
-        // お椀（朱色の漆器風）
-        const bowlGradient = gameCtx.createLinearGradient(x - 110, y - 40, x + 110, y + 60);
-        bowlGradient.addColorStop(0, "#8b0000");
-        bowlGradient.addColorStop(0.3, "#cc2222");
-        bowlGradient.addColorStop(0.5, "#dd3333");
-        bowlGradient.addColorStop(0.7, "#cc2222");
-        bowlGradient.addColorStop(1, "#8b0000");
-
-        gameCtx.fillStyle = bowlGradient;
-        gameCtx.beginPath();
-        gameCtx.ellipse(x, y + 50, 110, 35, 0, 0, Math.PI);
-        gameCtx.ellipse(x, y - 30, 110, 35, 0, Math.PI, 0);
-        gameCtx.fill();
-
-        // 椀の内側（おしるこの汁）
-        const shirukoGradient = gameCtx.createRadialGradient(x, y, 0, x, y, 100);
-        shirukoGradient.addColorStop(0, "#6b2222");
-        shirukoGradient.addColorStop(0.5, "#5a1a1a");
-        shirukoGradient.addColorStop(1, "#4a1515");
-
-        gameCtx.fillStyle = shirukoGradient;
-        gameCtx.beginPath();
-        gameCtx.ellipse(x, y - 20, 95, 30, 0, 0, Math.PI * 2);
-        gameCtx.fill();
-
-        // 小豆のつぶつぶ（事前生成した位置を使用）
-        gameCtx.fillStyle = "#3a1010";
-        for (const bean of azukiBeans) {
-          const beanX = x + bean.offsetX;
-          const beanY = y - 20 + bean.offsetY;
-          gameCtx.beginPath();
-          gameCtx.ellipse(beanX, beanY, bean.sizeX, bean.sizeY, bean.rotation, 0, Math.PI * 2);
-          gameCtx.fill();
+          gameCtx.drawImage(
+            oshirukoImage,
+            x - displayWidth / 2,
+            y - displayHeight / 2,
+            displayWidth,
+            displayHeight
+          );
         }
-
-        // お餅（汁に浮いている）
-        const mochiGradient = gameCtx.createRadialGradient(x - 10, y - 35, 0, x, y - 25, 50);
-        mochiGradient.addColorStop(0, "#ffffff");
-        mochiGradient.addColorStop(0.5, "#f8f5f0");
-        mochiGradient.addColorStop(1, "#e8e0d5");
-
-        gameCtx.fillStyle = mochiGradient;
-        gameCtx.beginPath();
-        gameCtx.ellipse(x, y - 25, 45, 25, 0, 0, Math.PI * 2);
-        gameCtx.fill();
-
-        // 餅のハイライト
-        gameCtx.fillStyle = "rgba(255, 255, 255, 0.8)";
-        gameCtx.beginPath();
-        gameCtx.ellipse(x - 15, y - 32, 15, 8, -0.3, 0, Math.PI * 2);
-        gameCtx.fill();
-
-        // 椀の縁（金色の装飾）
-        gameCtx.strokeStyle = "#d4a017";
-        gameCtx.lineWidth = 3;
-        gameCtx.beginPath();
-        gameCtx.ellipse(x, y - 30, 110, 35, 0, 0, Math.PI * 2);
-        gameCtx.stroke();
-
-        gameCtx.restore();
       }
 
-      // お雑煮を描画（澄まし汁に餅と具材）
+      // お雑煮を描画（画像使用）
       function drawOzoni(x, y) {
-        gameCtx.save();
+        if (zouniImage.complete && zouniImage.naturalWidth > 0) {
+          const imgWidth = zouniImage.naturalWidth;
+          const imgHeight = zouniImage.naturalHeight;
+          const aspectRatio = imgWidth / imgHeight;
 
-        // お椀の影
-        gameCtx.fillStyle = "rgba(0, 0, 0, 0.2)";
-        gameCtx.beginPath();
-        gameCtx.ellipse(x, y + 80, 120, 30, 0, 0, Math.PI * 2);
-        gameCtx.fill();
+          const displayHeight = 300;
+          const displayWidth = displayHeight * aspectRatio;
 
-        // お椀（黒漆器風）
-        const bowlGradient = gameCtx.createLinearGradient(x - 110, y - 40, x + 110, y + 60);
-        bowlGradient.addColorStop(0, "#1a1a1a");
-        bowlGradient.addColorStop(0.3, "#333333");
-        bowlGradient.addColorStop(0.5, "#444444");
-        bowlGradient.addColorStop(0.7, "#333333");
-        bowlGradient.addColorStop(1, "#1a1a1a");
-
-        gameCtx.fillStyle = bowlGradient;
-        gameCtx.beginPath();
-        gameCtx.ellipse(x, y + 50, 110, 35, 0, 0, Math.PI);
-        gameCtx.ellipse(x, y - 30, 110, 35, 0, Math.PI, 0);
-        gameCtx.fill();
-
-        // 椀の内側（澄まし汁 - 透明感のある薄い黄金色）
-        const suimashiGradient = gameCtx.createRadialGradient(x, y, 0, x, y, 100);
-        suimashiGradient.addColorStop(0, "#e8d8a8");
-        suimashiGradient.addColorStop(0.5, "#d4c494");
-        suimashiGradient.addColorStop(1, "#c4b484");
-
-        gameCtx.fillStyle = suimashiGradient;
-        gameCtx.beginPath();
-        gameCtx.ellipse(x, y - 20, 95, 30, 0, 0, Math.PI * 2);
-        gameCtx.fill();
-
-        // 三つ葉（緑の葉っぱ）
-        gameCtx.fillStyle = "#228b22";
-        // 葉っぱ1
-        gameCtx.beginPath();
-        gameCtx.ellipse(x + 35, y - 30, 12, 6, 0.5, 0, Math.PI * 2);
-        gameCtx.fill();
-        // 葉っぱ2
-        gameCtx.beginPath();
-        gameCtx.ellipse(x + 45, y - 25, 10, 5, 1.0, 0, Math.PI * 2);
-        gameCtx.fill();
-        // 葉っぱ3
-        gameCtx.beginPath();
-        gameCtx.ellipse(x + 30, y - 20, 11, 5, 0.2, 0, Math.PI * 2);
-        gameCtx.fill();
-        // 茎
-        gameCtx.strokeStyle = "#196619";
-        gameCtx.lineWidth = 2;
-        gameCtx.beginPath();
-        gameCtx.moveTo(x + 35, y - 15);
-        gameCtx.lineTo(x + 38, y - 28);
-        gameCtx.stroke();
-
-        // かまぼこ（ピンクと白）
-        gameCtx.fillStyle = "#ffb6c1";
-        gameCtx.beginPath();
-        gameCtx.ellipse(x - 40, y - 15, 20, 8, 0, 0, Math.PI);
-        gameCtx.fill();
-        gameCtx.fillStyle = "#fff5f5";
-        gameCtx.beginPath();
-        gameCtx.ellipse(x - 40, y - 15, 20, 8, 0, Math.PI, 0);
-        gameCtx.fill();
-
-        // にんじん（花形）
-        gameCtx.fillStyle = "#ff6347";
-        gameCtx.beginPath();
-        gameCtx.arc(x + 50, y - 5, 12, 0, Math.PI * 2);
-        gameCtx.fill();
-        gameCtx.fillStyle = "#ff8c69";
-        gameCtx.beginPath();
-        gameCtx.arc(x + 50, y - 5, 6, 0, Math.PI * 2);
-        gameCtx.fill();
-
-        // お餅（汁に浮いている）
-        const mochiGradient = gameCtx.createRadialGradient(x - 5, y - 35, 0, x, y - 25, 50);
-        mochiGradient.addColorStop(0, "#ffffff");
-        mochiGradient.addColorStop(0.5, "#f8f5f0");
-        mochiGradient.addColorStop(1, "#e8e0d5");
-
-        gameCtx.fillStyle = mochiGradient;
-        gameCtx.beginPath();
-        gameCtx.ellipse(x - 5, y - 25, 40, 22, 0, 0, Math.PI * 2);
-        gameCtx.fill();
-
-        // 餅のハイライト
-        gameCtx.fillStyle = "rgba(255, 255, 255, 0.8)";
-        gameCtx.beginPath();
-        gameCtx.ellipse(x - 18, y - 32, 14, 7, -0.3, 0, Math.PI * 2);
-        gameCtx.fill();
-
-        // 椀の縁（金色の装飾）
-        gameCtx.strokeStyle = "#d4a017";
-        gameCtx.lineWidth = 3;
-        gameCtx.beginPath();
-        gameCtx.ellipse(x, y - 30, 110, 35, 0, 0, Math.PI * 2);
-        gameCtx.stroke();
-
-        gameCtx.restore();
+          gameCtx.drawImage(
+            zouniImage,
+            x - displayWidth / 2,
+            y - displayHeight / 2,
+            displayWidth,
+            displayHeight
+          );
+        }
       }
 
       // レンダリングループ
@@ -1375,9 +1438,39 @@
         }
       }
 
-      // チュートリアルモーダル
+      // チュートリアルモーダル制御
       const tutorialModal = document.getElementById("tutorial-modal");
       const startButton = document.getElementById("start-button");
+      const nextButton = document.getElementById("next-button");
+      const slides = document.querySelectorAll(".slide");
+      const indicators = document.querySelectorAll(".slide-indicator");
+      let currentSlide = 0;
+      const totalSlides = slides.length;
+
+      function goToSlide(index) {
+        // 現在のスライドをprevに
+        slides[currentSlide].classList.remove("active");
+        slides[currentSlide].classList.add("prev");
+        indicators[currentSlide].classList.remove("active");
+
+        // 新しいスライドをactiveに
+        currentSlide = index;
+        slides[currentSlide].classList.remove("prev");
+        slides[currentSlide].classList.add("active");
+        indicators[currentSlide].classList.add("active");
+
+        // 最後のスライドならボタンを切り替え
+        if (currentSlide === totalSlides - 1) {
+          nextButton.style.display = "none";
+          startButton.style.display = "inline-block";
+        }
+      }
+
+      nextButton.addEventListener("click", () => {
+        if (currentSlide < totalSlides - 1) {
+          goToSlide(currentSlide + 1);
+        }
+      });
 
       startButton.addEventListener("click", () => {
         tutorialModal.classList.add("hidden");
