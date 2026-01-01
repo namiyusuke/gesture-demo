@@ -458,19 +458,15 @@
         const growthIncrease = 0.08 + speed * 0.04; // スピードに応じて成長（増加量UP）
         mochi.targetGrowth = Math.min(mochi.targetGrowth + growthIncrease, 1.0);
 
-        // 餅を強く潰す（スピードに応じて）
-        const squashIntensity = Math.min(speed * 0.4, 0.8);
+        // 餅を強く潰す（スピードに応じて・大きく変形）
+        const squashIntensity = Math.min(speed * 0.6, 1.0);
         mochi.squashAmount = squashIntensity;
-        mochi.squashVelocity = -squashIntensity * 0.5; // バネの反動
-        mochi.wobbleSpeed = Math.min(speed * 2, 8); // 揺れ（制限付き）
+        mochi.squashVelocity = -squashIntensity * 0.8; // バネの反動（強め）
+        mochi.wobbleSpeed = Math.min(speed * 3, 12); // 揺れ（大きく）
 
-        // 餅が下に沈んでから跳ね返る（控えめに）
-        mochi.offsetY = Math.min(10 + speed * 2, 25);
-        mochi.offsetYVelocity = -Math.min(speed * 2, 8);
-
-        // パーティクル生成（もち粒が飛び散る）- 成長するほど多く
-        const particleCount = Math.floor(speed * 4) + 5 + Math.floor(mochi.growth * 5);
-        createMochiParticles(usuPosition.x, usuPosition.y - 30, particleCount);
+        // 餅が下に沈んでから跳ね返る（大きく）
+        mochi.offsetY = Math.min(15 + speed * 4, 40);
+        mochi.offsetYVelocity = -Math.min(speed * 4, 15);
 
         // 粘り気の糸を生成（杵が離れる時に伸びる）
         createStickyStrings(usuPosition.x, usuPosition.y - 50, speed);
@@ -607,9 +603,9 @@
         mochi.baseWidth = 90 * growthScale;
         mochi.baseHeight = 70 * growthScale;
 
-        // バネ物理：潰れからの復帰（粘り気のある動き）
-        const springK = 0.08;      // バネ定数（遅めに戻る）
-        const damping = 0.88;      // 減衰（ゆっくり収束）
+        // バネ物理：潰れからの復帰（大きく跳ね返る）
+        const springK = 0.12;      // バネ定数（しっかり戻る）
+        const damping = 0.85;      // 減衰
 
         // バネの力で戻る
         mochi.squashVelocity += -mochi.squashAmount * springK;
@@ -791,72 +787,97 @@
       function drawMochi(x, baseY) {
         gameCtx.save();
 
-        // offsetYを適用（叩いた時に沈む）- 制限付き
-        const clampedOffsetY = Math.max(-30, Math.min(mochi.offsetY, 30));
+        // offsetYを適用（叩いた時に沈む）- 大きく動く
+        const clampedOffsetY = Math.max(-50, Math.min(mochi.offsetY, 50));
         const y = baseY + clampedOffsetY;
 
-        // 現在の変形量（制限付き）
+        // 現在の変形量（大きく変形）
         const squash = Math.max(0, Math.min(mochi.squashAmount, 1));
-        const wobbleAmt = Math.sin(mochi.wobble) * Math.min(mochi.wobbleSpeed, 5) * 0.5;
+        const wobbleAmt = Math.sin(mochi.wobble) * Math.min(mochi.wobbleSpeed, 10) * 0.8;
 
-        // 餅のサイズ（より丸く）
-        const baseW = mochi.currentWidth * 0.45;
-        const baseH = mochi.currentHeight * 0.9; // かなり丸く
+        // 餅のサイズ（横長の丸餅）
+        const baseW = mochi.currentWidth * 0.5;
+        const baseH = mochi.currentWidth * 0.28; // 横幅基準で高さを決める（常に横長）
 
-        // 伸び縮み（粘り気のある動き）
-        const stretchPhase = Math.sin(mochi.wobble * 0.3) * wobbleAmt * 0.15;
-        const w = baseW * (1 + squash * 0.5 + stretchPhase);
-        const h = baseH * (1 - squash * 0.35 - stretchPhase * 0.3);
+        // 伸び縮み（大きく変形して叩いている感を出す）
+        const stretchPhase = Math.sin(mochi.wobble * 0.3) * wobbleAmt * 0.25;
+        const w = baseW * (1 + squash * 0.8 + stretchPhase);  // 横に大きく広がる
+        const h = baseH * (1 - squash * 0.4 - stretchPhase * 0.3);  // 縦に潰れる
 
         // 粘り気の糸を更新・描画
         updateStickyStrings();
         drawStickyStrings(x, y - h * 0.3);
 
-        // 餅本体（グラデーション）
+        // 餅本体（グラデーション）- 成長で色が変化
+        // 最初はくすんだ色 → 叩くほど白くツヤが出る
+        const colorProgress = mochi.growth;
+        const baseColor = Math.floor(245 + colorProgress * 10); // 245→255
+        const midColor = Math.floor(235 + colorProgress * 15);  // 235→250
+        const edgeColor = Math.floor(220 + colorProgress * 20); // 220→240
+
         const mochiGradient = gameCtx.createRadialGradient(
           x - w * 0.2, y - h * 0.3,
           0,
           x, y,
           Math.max(w, h) * 1.2
         );
-        mochiGradient.addColorStop(0, "#ffffff");
-        mochiGradient.addColorStop(0.4, "#fdfcfa");
-        mochiGradient.addColorStop(0.7, "#f8f4ee");
-        mochiGradient.addColorStop(1, "#ebe5da");
+        mochiGradient.addColorStop(0, `rgb(${baseColor}, ${baseColor}, ${baseColor})`);
+        mochiGradient.addColorStop(0.4, `rgb(${midColor}, ${midColor - 2}, ${midColor - 5})`);
+        mochiGradient.addColorStop(0.7, `rgb(${edgeColor}, ${edgeColor - 5}, ${edgeColor - 12})`);
+        mochiGradient.addColorStop(1, `rgb(${edgeColor - 15}, ${edgeColor - 20}, ${edgeColor - 30})`);
 
         gameCtx.fillStyle = mochiGradient;
 
-        // 丸い餅の形状（ほぼ円形）- ぷにぷに変形
+        // 餅の形状（成長に応じて変化）
+        // 最初はゴツゴツ → 叩くほど滑らかできれいな丸に
         gameCtx.beginPath();
 
-        // 有機的な形状のために複数のポイントでベジェ曲線
-        const points = 8;
-        const angleStep = (Math.PI * 2) / points;
+        // 成長度に応じた形状の変化
+        const roughness = Math.max(0, 1 - mochi.growth * 1.8); // 成長で急速に滑らかに
 
-        for (let i = 0; i <= points; i++) {
-          const angle = i * angleStep;
-          const wobbleOffset = Math.sin(mochi.wobble + i * 0.8) * wobbleAmt * 2;
-          const rx = w + wobbleOffset;
-          const ry = h * 0.7 + wobbleOffset * 0.5;
+        // 完成に近づくほどきれいな丸餅に
+        if (mochi.growth > 0.85) {
+          // 完成時はきれいな丸餅（横長楕円）
+          const finalW = w * (1 + squash * 0.3);
+          const finalH = h * (1 - squash * 0.2);
+          gameCtx.ellipse(x, y, finalW, finalH, 0, 0, Math.PI * 2);
+        } else {
+          // 成長中は少しゴツゴツ（でも横長）
+          const points = 16;
+          const angleStep = (Math.PI * 2) / points;
 
-          const px = x + Math.cos(angle) * rx;
-          const py = y + Math.sin(angle) * ry * 0.8;
+          for (let i = 0; i <= points; i++) {
+            const angle = i * angleStep;
 
-          if (i === 0) {
-            gameCtx.moveTo(px, py);
-          } else {
-            const prevAngle = (i - 1) * angleStep;
-            const cpAngle = prevAngle + angleStep * 0.5;
-            const cpWobble = Math.sin(mochi.wobble + (i - 0.5) * 0.8) * wobbleAmt * 2.5;
-            const cpRx = (w + cpWobble) * 1.1;
-            const cpRy = (h * 0.7 + cpWobble * 0.5) * 1.1;
-            const cpx = x + Math.cos(cpAngle) * cpRx;
-            const cpy = y + Math.sin(cpAngle) * cpRy * 0.8;
+            // ゴツゴツ感（成長で減少）
+            const bumpiness = Math.sin(angle * 4) * roughness * 5;
+            const irregularity = Math.cos(angle * 7 + i * 0.5) * roughness * 3;
 
-            gameCtx.quadraticCurveTo(cpx, cpy, px, py);
+            // 揺れ効果（成長で減少）
+            const wobbleOffset = Math.sin(mochi.wobble + i * 0.5) * wobbleAmt * (1 - mochi.growth * 0.5);
+
+            // サイズ（横長を維持）
+            const rx = w + wobbleOffset + bumpiness + irregularity;
+            const ry = h + wobbleOffset * 0.3 + bumpiness * 0.3;
+
+            const px = x + Math.cos(angle) * rx;
+            const py = y + Math.sin(angle) * ry;
+
+            if (i === 0) {
+              gameCtx.moveTo(px, py);
+            } else {
+              const prevAngle = (i - 1) * angleStep;
+              const cpAngle = prevAngle + angleStep * 0.5;
+              const cpRx = w + Math.sin(cpAngle * 4) * roughness * 3;
+              const cpRy = h;
+              const cpx = x + Math.cos(cpAngle) * cpRx * 1.02;
+              const cpy = y + Math.sin(cpAngle) * cpRy * 1.02;
+
+              gameCtx.quadraticCurveTo(cpx, cpy, px, py);
+            }
           }
+          gameCtx.closePath();
         }
-        gameCtx.closePath();
         gameCtx.fill();
 
         // 餅の輪郭（薄い影）
@@ -998,8 +1019,6 @@
 
         updateMochi();
         drawUsu();
-        updateParticles();
-        drawParticles();
         drawKine();
 
         requestAnimationFrame(render);
