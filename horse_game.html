@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
@@ -74,15 +74,15 @@
         font-size: 50px;
         text-align: center;
         line-height: 60px;
-        filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+        filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
       }
 
       #cursor::after {
-        content: '👆';
+        content: "👆";
       }
 
       #cursor.pinching::after {
-        content: '👌';
+        content: "👌";
       }
 
       #cursor.grabbing {
@@ -90,70 +90,50 @@
       }
 
       #cursor.grabbing::after {
-        content: '✊';
+        content: "✊";
       }
 
       @keyframes pulse {
-        0%, 100% { transform: translate(-50%, -50%) scale(1); }
-        50% { transform: translate(-50%, -50%) scale(1.2); }
+        0%,
+        100% {
+          transform: translate(-50%, -50%) scale(1);
+        }
+        50% {
+          transform: translate(-50%, -50%) scale(1.2);
+        }
       }
 
       #info {
         position: fixed;
         top: 20px;
         left: 20px;
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 248, 240, 0.95));
+        background: #fff;
         padding: 20px 24px;
-        border-radius: 20px;
-        box-shadow: 0 10px 40px rgba(139, 90, 43, 0.15);
+        border-radius: 4px;
         max-width: 280px;
         z-index: 1000;
-        border: 2px solid rgba(139, 90, 43, 0.1);
+        border: 1px solid rgba(139, 90, 43, 1);
       }
 
       #info h1 {
         font-size: 17px;
-        color: #8B5A2B;
+        color: #8b5a2b;
         margin-bottom: 12px;
         font-weight: bold;
       }
 
       #info p {
         font-size: 13px;
-        color: #6B4423;
+        color: #6b4423;
         margin: 6px 0;
         opacity: 0.9;
       }
 
-      #score {
-        font-size: 26px;
-        font-weight: bold;
-        color: #2E8B57;
-        margin-top: 14px;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.1);
-      }
-
       #remaining {
         font-size: 15px;
-        color: #CD853F;
+        color: #cd853f;
         margin-top: 6px;
         font-weight: 500;
-      }
-
-      #status {
-        margin-top: 14px;
-        padding: 10px 14px;
-        background: linear-gradient(135deg, #f5f0e8, #ebe5db);
-        border-radius: 12px;
-        font-weight: bold;
-        color: #8B7355;
-        font-size: 12px;
-        text-align: center;
-      }
-
-      #status.active {
-        background: linear-gradient(135deg, #d4edda, #c3e6cb);
-        color: #2E7D32;
       }
 
       #loading {
@@ -184,8 +164,12 @@
       }
 
       @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
       }
 
       #clear-modal {
@@ -214,9 +198,15 @@
       }
 
       @keyframes bounceIn {
-        0% { transform: scale(0); }
-        50% { transform: scale(1.1); }
-        100% { transform: scale(1); }
+        0% {
+          transform: scale(0);
+        }
+        50% {
+          transform: scale(1.1);
+        }
+        100% {
+          transform: scale(1);
+        }
       }
 
       #clear-content h2 {
@@ -292,17 +282,21 @@
       }
 
       @keyframes popIn {
-        0% { transform: scale(0) rotate(-180deg); }
-        100% { transform: scale(1) rotate(0deg); }
+        0% {
+          transform: scale(0) rotate(-180deg);
+        }
+        100% {
+          transform: scale(1) rotate(0deg);
+        }
       }
 
       /* タイマー表示 */
       #timer {
         font-size: 20px;
         font-weight: bold;
-        color: #FF6347;
+        color: #ff6347;
         margin-top: 10px;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
       }
 
       /* チュートリアルモーダル */
@@ -324,21 +318,20 @@
       }
 
       .tutorial-content {
-        background: linear-gradient(135deg, rgba(245, 230, 211, 0.98), rgba(255, 248, 240, 0.98));
-        border-radius: 20px;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 8px;
         padding: 40px;
         max-width: 500px;
         width: 90%;
         text-align: center;
-        color: #6B4423;
-        border: 3px solid #8B5A2B;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        color: white;
+        border: #fff solid 1px;
       }
 
       .tutorial-content h1 {
-        font-size: 28px;
-        color: #8B5A2B;
-        margin-bottom: 25px;
+        font-size: 32px;
+        color: #fff;
+        margin-bottom: 30px;
       }
 
       .slides-container {
@@ -358,7 +351,9 @@
         align-items: center;
         opacity: 0;
         transform: translateX(100%);
-        transition: opacity 0.5s ease, transform 0.5s ease;
+        transition:
+          opacity 0.5s ease,
+          transform 0.5s ease;
       }
 
       .slide.active {
@@ -372,10 +367,10 @@
       }
 
       .slide-subtitle {
-        font-size: 22px;
+        font-size: 26px;
         font-weight: bold;
         margin-bottom: 20px;
-        color: #8B5A2B;
+        color: #fff;
       }
 
       .slide .icon {
@@ -387,7 +382,7 @@
         font-size: 18px;
         line-height: 1.8;
         text-align: center;
-        color: #6B4423;
+        color: rgba(255, 255, 255, 0.9);
       }
 
       .slide-indicators {
@@ -401,30 +396,26 @@
         width: 12px;
         height: 12px;
         border-radius: 50%;
-        background: rgba(139, 90, 43, 0.3);
-        transition: background 0.3s, transform 0.3s;
+        background: rgba(255, 255, 255, 0.3);
+        transition:
+          background 0.3s,
+          transform 0.3s;
       }
 
       .slide-indicator.active {
-        background: #8B5A2B;
+        background: #ffd700;
         transform: scale(1.2);
       }
 
       .tutorial-button {
-        padding: 12px 30px;
-        font-size: 18px;
+        padding: 10px 20px;
+        font-size: 16px;
         font-weight: bold;
-        color: white;
-        background: linear-gradient(135deg, #8B5A2B, #CD853F);
+        color: #2a1a0a;
+        background: #fff;
         border: none;
-        border-radius: 30px;
+        border-radius: 2px;
         cursor: pointer;
-        box-shadow: 0 4px 12px rgba(139, 90, 43, 0.3);
-        transition: transform 0.2s;
-      }
-
-      .tutorial-button:hover {
-        transform: scale(1.05);
       }
 
       .tutorial-button:active {
@@ -436,19 +427,23 @@
           padding: 25px;
         }
         .tutorial-content h1 {
-          font-size: 22px;
+          font-size: 24px;
         }
         .slides-container {
-          height: 240px;
+          height: 280px;
         }
         .slide-subtitle {
-          font-size: 18px;
+          font-size: 20px;
         }
         .slide .icon {
           font-size: 60px;
         }
         .slide-description {
           font-size: 15px;
+        }
+        .tutorial-button {
+          font-size: 20px;
+          padding: 12px 40px;
         }
       }
     </style>
@@ -503,9 +498,7 @@
       <div id="info">
         <h1>馬以外の動物をつまみ出せ！</h1>
         <div id="timer">⏱️ 0.00秒</div>
-        <div id="score">スコア: 0</div>
         <div id="remaining">残り: 0匹</div>
-        <div id="status">待機中...</div>
       </div>
 
       <div id="video-container">
@@ -527,7 +520,7 @@
       <div id="clear-content">
         <h2>🎉 クリア！</h2>
         <p>全ての動物を見つけました！</p>
-        <p id="clear-time" style="font-size: 28px; color: #ff6b6b; font-weight: bold; margin: 16px 0;">タイム: 0.00秒</p>
+        <p id="clear-time" style="font-size: 28px; color: #ff6b6b; font-weight: bold; margin: 16px 0">タイム: 0.00秒</p>
         <button id="restart-btn">もう一度遊ぶ</button>
       </div>
     </div>
@@ -539,11 +532,9 @@
       const canvasElement = document.getElementById("output_canvas");
       const canvasCtx = canvasElement.getContext("2d");
       const cursor = document.getElementById("cursor");
-      const status = document.getElementById("status");
       const loading = document.getElementById("loading");
       const gameCanvas = document.getElementById("game-canvas");
       const gameCtx = gameCanvas.getContext("2d");
-      const scoreElement = document.getElementById("score");
       const remainingElement = document.getElementById("remaining");
       const clearModal = document.getElementById("clear-modal");
       const restartBtn = document.getElementById("restart-btn");
@@ -566,8 +557,8 @@
       const smoothing = 0.3; // 小さいほど滑らか（0.1〜0.5）
 
       // ピンチのヒステリシス（つまんだら離しにくくする）
-      const pinchStartThreshold = 0.09;  // つまむ開始
-      const pinchEndThreshold = 0.13;    // 離す判定（より緩く）
+      const pinchStartThreshold = 0.09; // つまむ開始
+      const pinchEndThreshold = 0.13; // 離す判定（より緩く）
 
       // ゲーム状態
       let score = 0;
@@ -576,17 +567,17 @@
       let horses = [];
       let hiddenAnimals = [];
       let capturedAnimals = [];
-      let gameStartTime = 0;  // ゲーム開始時刻
-      let clearTime = 0;      // クリアタイム（秒）
+      let gameStartTime = 0; // ゲーム開始時刻
+      let clearTime = 0; // クリアタイム（秒）
       let isGameRunning = false; // ゲーム進行中フラグ
-      let timerInterval = null;  // タイマー更新用
+      let timerInterval = null; // タイマー更新用
 
       // 籠の位置とサイズ
       const kago = {
-        x: 0,
+        x: 50,
         y: 0,
         width: 200,
-        height: 150
+        height: 150,
       };
 
       // 砂煙パーティクル
@@ -610,9 +601,9 @@
         oscillator.connect(gainNode);
         gainNode.connect(audioCtx.destination);
 
-        if (type === 'grab') {
+        if (type === "grab") {
           // つかむ音（ぽわん）柔らかく
-          oscillator.type = 'sine';
+          oscillator.type = "sine";
           oscillator.frequency.setValueAtTime(330, audioCtx.currentTime);
           oscillator.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.08);
           oscillator.frequency.exponentialRampToValueAtTime(350, audioCtx.currentTime + 0.15);
@@ -620,9 +611,9 @@
           gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
           oscillator.start(audioCtx.currentTime);
           oscillator.stop(audioCtx.currentTime + 0.2);
-        } else if (type === 'capture') {
+        } else if (type === "capture") {
           // 捕獲音（キラーン）
-          oscillator.type = 'sine';
+          oscillator.type = "sine";
           oscillator.frequency.setValueAtTime(523, audioCtx.currentTime);
           oscillator.frequency.setValueAtTime(659, audioCtx.currentTime + 0.1);
           oscillator.frequency.setValueAtTime(784, audioCtx.currentTime + 0.2);
@@ -634,14 +625,14 @@
       }
 
       // 波紋エフェクトを発生
-      function createRipple(x, y, color = '#FFD700') {
+      function createRipple(x, y, color = "#FFD700") {
         ripples.push({
           x: x,
           y: y,
           radius: 10,
           maxRadius: 60,
           alpha: 0.8,
-          color: color
+          color: color,
         });
       }
 
@@ -677,8 +668,8 @@
             vx: Math.cos(angle) * (3 + Math.random() * 2),
             vy: Math.sin(angle) * (3 + Math.random() * 2),
             size: 4 + Math.random() * 4,
-            color: ['#FFD700', '#FFA500', '#FF69B4', '#00CED1'][Math.floor(Math.random() * 4)],
-            life: 1.0
+            color: ["#FFD700", "#FFA500", "#FF69B4", "#00CED1"][Math.floor(Math.random() * 4)],
+            life: 1.0,
           });
         }
       }
@@ -717,14 +708,14 @@
       // 画像を読み込み
       const images = {};
       let imagesLoaded = 0;
-      const imageFiles = ['uma', 'ushi', 'saru', 'hebi', 'kago'];
+      const imageFiles = ["uma", "ushi", "saru", "hebi", "kago"];
 
-      imageFiles.forEach(name => {
+      imageFiles.forEach((name) => {
         images[name] = new Image();
         images[name].onload = () => {
           imagesLoaded++;
           if (imagesLoaded === imageFiles.length) {
-            console.log('全画像読み込み完了');
+            console.log("全画像読み込み完了");
             resizeCanvas();
           }
         };
@@ -859,16 +850,19 @@
         capturedAnimalsDiv.innerHTML = "";
         clearModal.classList.remove("show");
 
-        // タイマー開始
+        // タイマーリセット
         timerElement.textContent = `⏱️ 0.00秒`;
-        startTimer();
         clearTime = 0;
+        // カメラが既に起動している場合はタイマー開始（リスタート時）
+        if (handLandmarker) {
+          startTimer();
+        }
 
         const width = gameCanvas.width;
         const height = gameCanvas.height;
 
-        // 籠の位置を設定（画面右下）
-        kago.x = width - 150;
+        // 籠の位置を設定（画面中央下）
+        kago.x = width / 2;
         kago.y = height - 120;
 
         // 草原エリアの開始位置（空と柵の下から）
@@ -880,7 +874,7 @@
         for (let i = 0; i < 80; i++) {
           grassDetails.push({
             x: Math.random() * width,
-            y: grassStartY + Math.random() * (grassEndY - grassStartY)
+            y: grassStartY + Math.random() * (grassEndY - grassStartY),
           });
         }
         const horseSize = 80;
@@ -902,7 +896,7 @@
               vx: -speed, // 左方向へ
               vy: 0,
               size: horseSize + Math.random() * 20 - 10,
-              flipped: false // 全て左向き
+              flipped: false, // 全て左向き
             });
           }
         }
@@ -934,7 +928,7 @@
             name: animalType.name,
             emoji: animalType.emoji,
             isGrabbed: false,
-            isCaptured: false
+            isCaptured: false,
           });
 
           // 馬のリストから削除
@@ -947,8 +941,7 @@
 
       // UI更新
       function updateUI() {
-        const remaining = hiddenAnimals.filter(a => !a.isCaptured).length;
-        scoreElement.textContent = `スコア: ${score}`;
+        const remaining = hiddenAnimals.filter((a) => !a.isCaptured).length;
         remainingElement.textContent = `残り: ${remaining}匹`;
       }
 
@@ -983,7 +976,7 @@
         const maxY = gameCanvas.height - 150; // 捕獲エリアの上
 
         // 馬を動かす（右から左へループ）
-        horses.forEach(horse => {
+        horses.forEach((horse) => {
           horse.x += horse.vx;
 
           // 左端を超えたら右端から出てくる
@@ -993,7 +986,7 @@
         });
 
         // 隠れ動物もゆらゆら動く
-        hiddenAnimals.forEach(animal => {
+        hiddenAnimals.forEach((animal) => {
           if (animal.isCaptured || animal.isGrabbed || animal === beingSucked) return;
 
           animal.x += animal.vx;
@@ -1031,13 +1024,13 @@
 
         // 空（グラデーション）- 縮小
         const skyGradient = ctx.createLinearGradient(0, 0, 0, h * SKY_RATIO);
-        skyGradient.addColorStop(0, '#87CEEB');  // 水色
-        skyGradient.addColorStop(1, '#E0F4FF');  // 薄い青
+        skyGradient.addColorStop(0, "#87CEEB"); // 水色
+        skyGradient.addColorStop(1, "#E0F4FF"); // 薄い青
         ctx.fillStyle = skyGradient;
         ctx.fillRect(0, 0, w, h * SKY_RATIO);
 
         // 遠くの山
-        ctx.fillStyle = '#8FBC8F';
+        ctx.fillStyle = "#8FBC8F";
         ctx.beginPath();
         ctx.moveTo(0, h * SKY_RATIO);
         for (let x = 0; x <= w; x += 100) {
@@ -1050,14 +1043,14 @@
 
         // 草原（グラデーション）
         const grassGradient = ctx.createLinearGradient(0, h * (SKY_RATIO - 0.05), 0, h);
-        grassGradient.addColorStop(0, '#90EE90');  // 明るい緑
-        grassGradient.addColorStop(0.3, '#7CCD7C');
-        grassGradient.addColorStop(1, '#C4A76C');  // 土色
+        grassGradient.addColorStop(0, "#90EE90"); // 明るい緑
+        grassGradient.addColorStop(0.3, "#7CCD7C");
+        grassGradient.addColorStop(1, "#C4A76C"); // 土色
         ctx.fillStyle = grassGradient;
         ctx.fillRect(0, h * (SKY_RATIO - 0.05), w, h * (1 - SKY_RATIO + 0.05));
 
         // 柵（奥）
-        ctx.strokeStyle = '#8B4513';
+        ctx.strokeStyle = "#8B4513";
         ctx.lineWidth = 4;
         const fenceY = h * (SKY_RATIO + 0.03);
         // 横棒
@@ -1076,9 +1069,9 @@
         }
 
         // 草のディテール（固定位置）
-        ctx.strokeStyle = '#228B22';
+        ctx.strokeStyle = "#228B22";
         ctx.lineWidth = 2;
-        grassDetails.forEach(grass => {
+        grassDetails.forEach((grass) => {
           ctx.beginPath();
           ctx.moveTo(grass.x, grass.y);
           ctx.quadraticCurveTo(grass.x + 3, grass.y - 15, grass.x + 6, grass.y);
@@ -1093,9 +1086,9 @@
           y: y + Math.random() * 5,
           vx: Math.random() * 1.5 - 0.75,
           vy: -Math.random() * 1 - 0.3,
-          size: Math.random() * 8 + 5,  // 小さめ
+          size: Math.random() * 8 + 5, // 小さめ
           alpha: 0.4 + Math.random() * 0.2,
-          life: 0.6  // 早く消える
+          life: 0.6, // 早く消える
         });
       }
 
@@ -1136,14 +1129,14 @@
 
         // 馬と隠れ動物をまとめてY座標でソートして描画（奥から手前へ）
         const allEntities = [
-          ...horses.map(h => ({ ...h, isHorse: true })),
-          ...hiddenAnimals.filter(a => !a.isCaptured).map(a => ({ ...a, isHorse: false }))
+          ...horses.map((h) => ({ ...h, isHorse: true })),
+          ...hiddenAnimals.filter((a) => !a.isCaptured).map((a) => ({ ...a, isHorse: false })),
         ];
 
         // Y座標でソート（小さい＝奥のものを先に描画）
         allEntities.sort((a, b) => a.y - b.y);
 
-        allEntities.forEach(entity => {
+        allEntities.forEach((entity) => {
           if (entity.isHorse) {
             drawHorse(gameCtx, entity.x, entity.y, entity.size, entity.flipped);
             // 馬の後ろに砂煙を発生（控えめに）
@@ -1177,7 +1170,8 @@
           const dx = x - animal.x;
           const dy = y - animal.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < animal.size * 0.9) { // 当たり判定を広げてつまみやすく
+          if (dist < animal.size * 0.9) {
+            // 当たり判定を広げてつまみやすく
             return animal;
           }
         }
@@ -1196,7 +1190,7 @@
         score += 100;
 
         // 効果音とキラキラ
-        playSound('capture');
+        playSound("capture");
         createSparkles(kago.x, kago.y);
 
         // 捕獲アイコンを追加
@@ -1208,7 +1202,7 @@
         updateUI();
 
         // 全部捕獲したらクリア
-        const remaining = hiddenAnimals.filter(a => !a.isCaptured).length;
+        const remaining = hiddenAnimals.filter((a) => !a.isCaptured).length;
         if (remaining === 0) {
           // タイマー停止
           stopTimer();
@@ -1259,12 +1253,29 @@
           canvasCtx.lineWidth = 2;
 
           const connections = [
-            [0, 1], [1, 2], [2, 3], [3, 4],
-            [0, 5], [5, 6], [6, 7], [7, 8],
-            [0, 9], [9, 10], [10, 11], [11, 12],
-            [0, 13], [13, 14], [14, 15], [15, 16],
-            [0, 17], [17, 18], [18, 19], [19, 20],
-            [5, 9], [9, 13], [13, 17],
+            [0, 1],
+            [1, 2],
+            [2, 3],
+            [3, 4],
+            [0, 5],
+            [5, 6],
+            [6, 7],
+            [7, 8],
+            [0, 9],
+            [9, 10],
+            [10, 11],
+            [11, 12],
+            [0, 13],
+            [13, 14],
+            [14, 15],
+            [15, 16],
+            [0, 17],
+            [17, 18],
+            [18, 19],
+            [19, 20],
+            [5, 9],
+            [9, 13],
+            [13, 17],
           ];
 
           connections.forEach(([start, end]) => {
@@ -1293,8 +1304,8 @@
           const thumbTip = landmarks[4];
           const distance = Math.sqrt(
             Math.pow(indexFingerTip.x - thumbTip.x, 2) +
-            Math.pow(indexFingerTip.y - thumbTip.y, 2) +
-            Math.pow(indexFingerTip.z - thumbTip.z, 2)
+              Math.pow(indexFingerTip.y - thumbTip.y, 2) +
+              Math.pow(indexFingerTip.z - thumbTip.z, 2)
           );
 
           const wasPinching = isPinching;
@@ -1318,8 +1329,8 @@
               grabOffset.y = smoothY - animal.y;
               cursor.classList.remove("pinching");
               cursor.classList.add("grabbing");
-              playSound('grab');
-              createRipple(animal.x, animal.y, '#ffe66d'); // 波紋エフェクト
+              playSound("grab");
+              createRipple(animal.x, animal.y, "#ffe66d"); // 波紋エフェクト
             }
           } else if (!isPinching && wasPinching) {
             // ピンチ終了
@@ -1346,12 +1357,6 @@
               suckIntoKago(grabbedAnimal);
             }
           }
-
-          status.textContent = "手を検出中 ✓";
-          status.classList.add("active");
-        } else {
-          status.textContent = "手が見えません...";
-          status.classList.remove("active");
         }
 
         canvasCtx.restore();
@@ -1373,6 +1378,8 @@
 
           videoElement.addEventListener("loadeddata", () => {
             loading.classList.add("hidden");
+            // カメラ起動後にタイマー開始
+            startTimer();
 
             function onFrame() {
               if (!handLandmarker) return;
