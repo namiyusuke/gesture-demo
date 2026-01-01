@@ -65,36 +65,37 @@
 
       #cursor {
         position: fixed;
-        width: 80px;
-        height: 80px;
-        border: 4px solid #ff6b6b;
-        border-radius: 50%;
+        width: 60px;
+        height: 60px;
         pointer-events: none;
         z-index: 9999;
         transform: translate(-50%, -50%);
         transition: all 0.1s ease;
-        background: rgba(255, 107, 107, 0.2);
+        font-size: 50px;
+        text-align: center;
+        line-height: 60px;
+        filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
       }
 
-      #cursor.pinching {
-        width: 40px;
-        height: 40px;
-        border-color: #4ecdc4;
-        background: rgba(78, 205, 196, 0.4);
-        box-shadow: 0 0 20px rgba(78, 205, 196, 0.6);
+      #cursor::after {
+        content: '👆';
+      }
+
+      #cursor.pinching::after {
+        content: '👌';
       }
 
       #cursor.grabbing {
-        width: 100px;
-        height: 100px;
-        border-color: #ffe66d;
-        background: rgba(255, 230, 109, 0.4);
         animation: pulse 0.3s ease-in-out infinite;
+      }
+
+      #cursor.grabbing::after {
+        content: '✊';
       }
 
       @keyframes pulse {
         0%, 100% { transform: translate(-50%, -50%) scale(1); }
-        50% { transform: translate(-50%, -50%) scale(1.1); }
+        50% { transform: translate(-50%, -50%) scale(1.2); }
       }
 
       #info {
@@ -294,10 +295,204 @@
         0% { transform: scale(0) rotate(-180deg); }
         100% { transform: scale(1) rotate(0deg); }
       }
+
+      /* タイマー表示 */
+      #timer {
+        font-size: 20px;
+        font-weight: bold;
+        color: #FF6347;
+        margin-top: 10px;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      }
+
+      /* チュートリアルモーダル */
+      #tutorial-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        z-index: 20000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      #tutorial-modal.hidden {
+        display: none;
+      }
+
+      .tutorial-content {
+        background: linear-gradient(135deg, rgba(245, 230, 211, 0.98), rgba(255, 248, 240, 0.98));
+        border-radius: 20px;
+        padding: 40px;
+        max-width: 500px;
+        width: 90%;
+        text-align: center;
+        color: #6B4423;
+        border: 3px solid #8B5A2B;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      }
+
+      .tutorial-content h1 {
+        font-size: 28px;
+        color: #8B5A2B;
+        margin-bottom: 25px;
+      }
+
+      .slides-container {
+        position: relative;
+        width: 100%;
+        height: 280px;
+        overflow: hidden;
+      }
+
+      .slide {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        transform: translateX(100%);
+        transition: opacity 0.5s ease, transform 0.5s ease;
+      }
+
+      .slide.active {
+        opacity: 1;
+        transform: translateX(0);
+      }
+
+      .slide.prev {
+        opacity: 0;
+        transform: translateX(-100%);
+      }
+
+      .slide-subtitle {
+        font-size: 22px;
+        font-weight: bold;
+        margin-bottom: 20px;
+        color: #8B5A2B;
+      }
+
+      .slide .icon {
+        font-size: 80px;
+        margin-bottom: 20px;
+      }
+
+      .slide-description {
+        font-size: 18px;
+        line-height: 1.8;
+        text-align: center;
+        color: #6B4423;
+      }
+
+      .slide-indicators {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin: 25px 0;
+      }
+
+      .slide-indicator {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: rgba(139, 90, 43, 0.3);
+        transition: background 0.3s, transform 0.3s;
+      }
+
+      .slide-indicator.active {
+        background: #8B5A2B;
+        transform: scale(1.2);
+      }
+
+      .tutorial-button {
+        padding: 12px 30px;
+        font-size: 18px;
+        font-weight: bold;
+        color: white;
+        background: linear-gradient(135deg, #8B5A2B, #CD853F);
+        border: none;
+        border-radius: 30px;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(139, 90, 43, 0.3);
+        transition: transform 0.2s;
+      }
+
+      .tutorial-button:hover {
+        transform: scale(1.05);
+      }
+
+      .tutorial-button:active {
+        transform: scale(0.98);
+      }
+
+      @media (max-width: 768px) {
+        .tutorial-content {
+          padding: 25px;
+        }
+        .tutorial-content h1 {
+          font-size: 22px;
+        }
+        .slides-container {
+          height: 240px;
+        }
+        .slide-subtitle {
+          font-size: 18px;
+        }
+        .slide .icon {
+          font-size: 60px;
+        }
+        .slide-description {
+          font-size: 15px;
+        }
+      }
     </style>
   </head>
   <body>
-    <div id="loading">
+    <!-- チュートリアルモーダル -->
+    <div id="tutorial-modal">
+      <div class="tutorial-content">
+        <h1>🐴 馬以外の動物をつまみ出せ！</h1>
+
+        <div class="slides-container">
+          <!-- スライド1: カーソルの動かし方 -->
+          <div class="slide active" data-slide="0">
+            <div class="slide-subtitle">カーソルの操作</div>
+            <div class="icon">👆</div>
+            <div class="slide-description">人差し指を立てて<br />カーソルを動かします</div>
+          </div>
+
+          <!-- スライド2: つまみ方 -->
+          <div class="slide" data-slide="1">
+            <div class="slide-subtitle">動物をつまむ</div>
+            <div class="icon">👌</div>
+            <div class="slide-description">親指と人差し指でピンチして<br />動物をつまみます</div>
+          </div>
+
+          <!-- スライド3: 捕まえ方 -->
+          <div class="slide" data-slide="2">
+            <div class="slide-subtitle">籠に入れて捕獲！</div>
+            <div class="icon">🧺</div>
+            <div class="slide-description">馬以外の動物をつまんで<br />右下の籠にドラッグして捕獲！</div>
+          </div>
+        </div>
+
+        <div class="slide-indicators">
+          <div class="slide-indicator active" data-slide="0"></div>
+          <div class="slide-indicator" data-slide="1"></div>
+          <div class="slide-indicator" data-slide="2"></div>
+        </div>
+        <button id="next-button" class="tutorial-button">次へ</button>
+        <button id="start-button" class="tutorial-button" style="display: none">ゲームスタート</button>
+      </div>
+    </div>
+
+    <div id="loading" class="hidden">
       <div class="spinner"></div>
       <p>カメラとMediaPipeを読み込み中...</p>
     </div>
@@ -307,9 +502,7 @@
 
       <div id="info">
         <h1>馬以外の動物をつまみ出せ！</h1>
-        <p>👆 人差し指でカーソルを動かす</p>
-        <p>👌 動物をピンチでつまむ</p>
-        <p>🧺 籠にドラッグして捕獲！</p>
+        <div id="timer">⏱️ 0.00秒</div>
         <div id="score">スコア: 0</div>
         <div id="remaining">残り: 0匹</div>
         <div id="status">待機中...</div>
@@ -356,6 +549,12 @@
       const restartBtn = document.getElementById("restart-btn");
       const capturedAnimalsDiv = document.getElementById("captured-animals");
       const captureZone = document.getElementById("capture-zone");
+      const timerElement = document.getElementById("timer");
+      const tutorialModal = document.getElementById("tutorial-modal");
+      const startButton = document.getElementById("start-button");
+      const nextButton = document.getElementById("next-button");
+      const slides = document.querySelectorAll(".slide");
+      const indicators = document.querySelectorAll(".slide-indicator");
 
       let smoothX = window.innerWidth / 2;
       let smoothY = window.innerHeight / 2;
@@ -379,6 +578,8 @@
       let capturedAnimals = [];
       let gameStartTime = 0;  // ゲーム開始時刻
       let clearTime = 0;      // クリアタイム（秒）
+      let isGameRunning = false; // ゲーム進行中フラグ
+      let timerInterval = null;  // タイマー更新用
 
       // 籠の位置とサイズ
       const kago = {
@@ -659,7 +860,8 @@
         clearModal.classList.remove("show");
 
         // タイマー開始
-        gameStartTime = Date.now();
+        timerElement.textContent = `⏱️ 0.00秒`;
+        startTimer();
         clearTime = 0;
 
         const width = gameCanvas.width;
@@ -748,6 +950,31 @@
         const remaining = hiddenAnimals.filter(a => !a.isCaptured).length;
         scoreElement.textContent = `スコア: ${score}`;
         remainingElement.textContent = `残り: ${remaining}匹`;
+      }
+
+      // タイマー更新
+      function updateTimer() {
+        if (isGameRunning && gameStartTime > 0) {
+          const elapsed = (Date.now() - gameStartTime) / 1000;
+          timerElement.textContent = `⏱️ ${elapsed.toFixed(2)}秒`;
+        }
+      }
+
+      // タイマー開始
+      function startTimer() {
+        if (timerInterval) clearInterval(timerInterval);
+        gameStartTime = Date.now();
+        isGameRunning = true;
+        timerInterval = setInterval(updateTimer, 50);
+      }
+
+      // タイマー停止
+      function stopTimer() {
+        isGameRunning = false;
+        if (timerInterval) {
+          clearInterval(timerInterval);
+          timerInterval = null;
+        }
       }
 
       // 動物の移動更新
@@ -983,10 +1210,13 @@
         // 全部捕獲したらクリア
         const remaining = hiddenAnimals.filter(a => !a.isCaptured).length;
         if (remaining === 0) {
+          // タイマー停止
+          stopTimer();
           // クリアタイムを計算
           clearTime = (Date.now() - gameStartTime) / 1000;
           const clearTimeElement = document.getElementById("clear-time");
           clearTimeElement.textContent = `タイム: ${clearTime.toFixed(2)}秒`;
+          timerElement.textContent = `⏱️ ${clearTime.toFixed(2)}秒`;
 
           setTimeout(() => {
             clearModal.classList.add("show");
@@ -1164,13 +1394,47 @@
         }
       }
 
+      // チュートリアルモーダル制御
+      let currentSlide = 0;
+      const totalSlides = slides.length;
+
+      function goToSlide(index) {
+        // 現在のスライドをprevに
+        slides[currentSlide].classList.remove("active");
+        slides[currentSlide].classList.add("prev");
+        indicators[currentSlide].classList.remove("active");
+
+        // 新しいスライドをactiveに
+        currentSlide = index;
+        slides[currentSlide].classList.remove("prev");
+        slides[currentSlide].classList.add("active");
+        indicators[currentSlide].classList.add("active");
+
+        // 最後のスライドならボタンを切り替え
+        if (currentSlide === totalSlides - 1) {
+          nextButton.style.display = "none";
+          startButton.style.display = "inline-block";
+        }
+      }
+
+      nextButton.addEventListener("click", () => {
+        if (currentSlide < totalSlides - 1) {
+          goToSlide(currentSlide + 1);
+        }
+      });
+
+      startButton.addEventListener("click", () => {
+        tutorialModal.classList.add("hidden");
+        loading.classList.remove("hidden");
+        startCamera();
+      });
+
       // イベントリスナー
       window.addEventListener("resize", resizeCanvas);
       restartBtn.addEventListener("click", initGame);
 
-      // 初期化
+      // 初期化（チュートリアル表示中は待機）
       resizeCanvas();
-      startCamera();
     </script>
   </body>
 </html>
