@@ -378,6 +378,7 @@
       // ゲーム状態
       let lastHitTime = 0;
       let isComplete = false;
+      let completeDish = ""; // "oshiruko" or "ozoni"
 
       // 手の動き検出用
       let handYHistory = [];
@@ -425,6 +426,18 @@
 
       // パーティクル（もち粒）
       let particles = [];
+
+      // おしるこ用の小豆位置（事前生成）
+      const azukiBeans = [];
+      for (let i = 0; i < 12; i++) {
+        azukiBeans.push({
+          offsetX: (Math.random() - 0.5) * 140,
+          offsetY: (Math.random() - 0.5) * 30,
+          sizeX: 4 + Math.random() * 3,
+          sizeY: 3 + Math.random() * 2,
+          rotation: Math.random()
+        });
+      }
 
       // 画像の読み込み
       const kineImage = new Image();
@@ -592,6 +605,10 @@
         // 完成判定（100%に達したら）
         if (mochi.targetGrowth >= 1.0 && mochi.growth >= 1.0 && !isComplete) {
           isComplete = true;
+          // ランダムでおしるこかお雑煮を選択
+          completeDish = Math.random() < 0.5 ? "oshiruko" : "ozoni";
+          const dishName = completeDish === "oshiruko" ? "おしるこ" : "お雑煮";
+          completeMessage.innerHTML = `🎍 ${dishName}の出来上がり！ 🎍`;
           completeMessage.classList.remove("hidden");
           // UIを非表示
           document.getElementById("instruction").style.display = "none";
@@ -1013,13 +1030,201 @@
         gameCtx.restore();
       }
 
+      // おしるこを描画（赤い小豆の汁にお餅）
+      function drawOshiruko(x, y) {
+        gameCtx.save();
+
+        // お椀の影
+        gameCtx.fillStyle = "rgba(0, 0, 0, 0.2)";
+        gameCtx.beginPath();
+        gameCtx.ellipse(x, y + 80, 120, 30, 0, 0, Math.PI * 2);
+        gameCtx.fill();
+
+        // お椀（朱色の漆器風）
+        const bowlGradient = gameCtx.createLinearGradient(x - 110, y - 40, x + 110, y + 60);
+        bowlGradient.addColorStop(0, "#8b0000");
+        bowlGradient.addColorStop(0.3, "#cc2222");
+        bowlGradient.addColorStop(0.5, "#dd3333");
+        bowlGradient.addColorStop(0.7, "#cc2222");
+        bowlGradient.addColorStop(1, "#8b0000");
+
+        gameCtx.fillStyle = bowlGradient;
+        gameCtx.beginPath();
+        gameCtx.ellipse(x, y + 50, 110, 35, 0, 0, Math.PI);
+        gameCtx.ellipse(x, y - 30, 110, 35, 0, Math.PI, 0);
+        gameCtx.fill();
+
+        // 椀の内側（おしるこの汁）
+        const shirukoGradient = gameCtx.createRadialGradient(x, y, 0, x, y, 100);
+        shirukoGradient.addColorStop(0, "#6b2222");
+        shirukoGradient.addColorStop(0.5, "#5a1a1a");
+        shirukoGradient.addColorStop(1, "#4a1515");
+
+        gameCtx.fillStyle = shirukoGradient;
+        gameCtx.beginPath();
+        gameCtx.ellipse(x, y - 20, 95, 30, 0, 0, Math.PI * 2);
+        gameCtx.fill();
+
+        // 小豆のつぶつぶ（事前生成した位置を使用）
+        gameCtx.fillStyle = "#3a1010";
+        for (const bean of azukiBeans) {
+          const beanX = x + bean.offsetX;
+          const beanY = y - 20 + bean.offsetY;
+          gameCtx.beginPath();
+          gameCtx.ellipse(beanX, beanY, bean.sizeX, bean.sizeY, bean.rotation, 0, Math.PI * 2);
+          gameCtx.fill();
+        }
+
+        // お餅（汁に浮いている）
+        const mochiGradient = gameCtx.createRadialGradient(x - 10, y - 35, 0, x, y - 25, 50);
+        mochiGradient.addColorStop(0, "#ffffff");
+        mochiGradient.addColorStop(0.5, "#f8f5f0");
+        mochiGradient.addColorStop(1, "#e8e0d5");
+
+        gameCtx.fillStyle = mochiGradient;
+        gameCtx.beginPath();
+        gameCtx.ellipse(x, y - 25, 45, 25, 0, 0, Math.PI * 2);
+        gameCtx.fill();
+
+        // 餅のハイライト
+        gameCtx.fillStyle = "rgba(255, 255, 255, 0.8)";
+        gameCtx.beginPath();
+        gameCtx.ellipse(x - 15, y - 32, 15, 8, -0.3, 0, Math.PI * 2);
+        gameCtx.fill();
+
+        // 椀の縁（金色の装飾）
+        gameCtx.strokeStyle = "#d4a017";
+        gameCtx.lineWidth = 3;
+        gameCtx.beginPath();
+        gameCtx.ellipse(x, y - 30, 110, 35, 0, 0, Math.PI * 2);
+        gameCtx.stroke();
+
+        gameCtx.restore();
+      }
+
+      // お雑煮を描画（澄まし汁に餅と具材）
+      function drawOzoni(x, y) {
+        gameCtx.save();
+
+        // お椀の影
+        gameCtx.fillStyle = "rgba(0, 0, 0, 0.2)";
+        gameCtx.beginPath();
+        gameCtx.ellipse(x, y + 80, 120, 30, 0, 0, Math.PI * 2);
+        gameCtx.fill();
+
+        // お椀（黒漆器風）
+        const bowlGradient = gameCtx.createLinearGradient(x - 110, y - 40, x + 110, y + 60);
+        bowlGradient.addColorStop(0, "#1a1a1a");
+        bowlGradient.addColorStop(0.3, "#333333");
+        bowlGradient.addColorStop(0.5, "#444444");
+        bowlGradient.addColorStop(0.7, "#333333");
+        bowlGradient.addColorStop(1, "#1a1a1a");
+
+        gameCtx.fillStyle = bowlGradient;
+        gameCtx.beginPath();
+        gameCtx.ellipse(x, y + 50, 110, 35, 0, 0, Math.PI);
+        gameCtx.ellipse(x, y - 30, 110, 35, 0, Math.PI, 0);
+        gameCtx.fill();
+
+        // 椀の内側（澄まし汁 - 透明感のある薄い黄金色）
+        const suimashiGradient = gameCtx.createRadialGradient(x, y, 0, x, y, 100);
+        suimashiGradient.addColorStop(0, "#e8d8a8");
+        suimashiGradient.addColorStop(0.5, "#d4c494");
+        suimashiGradient.addColorStop(1, "#c4b484");
+
+        gameCtx.fillStyle = suimashiGradient;
+        gameCtx.beginPath();
+        gameCtx.ellipse(x, y - 20, 95, 30, 0, 0, Math.PI * 2);
+        gameCtx.fill();
+
+        // 三つ葉（緑の葉っぱ）
+        gameCtx.fillStyle = "#228b22";
+        // 葉っぱ1
+        gameCtx.beginPath();
+        gameCtx.ellipse(x + 35, y - 30, 12, 6, 0.5, 0, Math.PI * 2);
+        gameCtx.fill();
+        // 葉っぱ2
+        gameCtx.beginPath();
+        gameCtx.ellipse(x + 45, y - 25, 10, 5, 1.0, 0, Math.PI * 2);
+        gameCtx.fill();
+        // 葉っぱ3
+        gameCtx.beginPath();
+        gameCtx.ellipse(x + 30, y - 20, 11, 5, 0.2, 0, Math.PI * 2);
+        gameCtx.fill();
+        // 茎
+        gameCtx.strokeStyle = "#196619";
+        gameCtx.lineWidth = 2;
+        gameCtx.beginPath();
+        gameCtx.moveTo(x + 35, y - 15);
+        gameCtx.lineTo(x + 38, y - 28);
+        gameCtx.stroke();
+
+        // かまぼこ（ピンクと白）
+        gameCtx.fillStyle = "#ffb6c1";
+        gameCtx.beginPath();
+        gameCtx.ellipse(x - 40, y - 15, 20, 8, 0, 0, Math.PI);
+        gameCtx.fill();
+        gameCtx.fillStyle = "#fff5f5";
+        gameCtx.beginPath();
+        gameCtx.ellipse(x - 40, y - 15, 20, 8, 0, Math.PI, 0);
+        gameCtx.fill();
+
+        // にんじん（花形）
+        gameCtx.fillStyle = "#ff6347";
+        gameCtx.beginPath();
+        gameCtx.arc(x + 50, y - 5, 12, 0, Math.PI * 2);
+        gameCtx.fill();
+        gameCtx.fillStyle = "#ff8c69";
+        gameCtx.beginPath();
+        gameCtx.arc(x + 50, y - 5, 6, 0, Math.PI * 2);
+        gameCtx.fill();
+
+        // お餅（汁に浮いている）
+        const mochiGradient = gameCtx.createRadialGradient(x - 5, y - 35, 0, x, y - 25, 50);
+        mochiGradient.addColorStop(0, "#ffffff");
+        mochiGradient.addColorStop(0.5, "#f8f5f0");
+        mochiGradient.addColorStop(1, "#e8e0d5");
+
+        gameCtx.fillStyle = mochiGradient;
+        gameCtx.beginPath();
+        gameCtx.ellipse(x - 5, y - 25, 40, 22, 0, 0, Math.PI * 2);
+        gameCtx.fill();
+
+        // 餅のハイライト
+        gameCtx.fillStyle = "rgba(255, 255, 255, 0.8)";
+        gameCtx.beginPath();
+        gameCtx.ellipse(x - 18, y - 32, 14, 7, -0.3, 0, Math.PI * 2);
+        gameCtx.fill();
+
+        // 椀の縁（金色の装飾）
+        gameCtx.strokeStyle = "#d4a017";
+        gameCtx.lineWidth = 3;
+        gameCtx.beginPath();
+        gameCtx.ellipse(x, y - 30, 110, 35, 0, 0, Math.PI * 2);
+        gameCtx.stroke();
+
+        gameCtx.restore();
+      }
+
       // レンダリングループ
       function render() {
         gameCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
         updateMochi();
-        drawUsu();
-        drawKine();
+
+        // 完成後は料理を表示、それ以外は餅つき
+        if (isComplete && completeDish) {
+          const dishX = window.innerWidth / 2;
+          const dishY = window.innerHeight * 0.7;  // メッセージの下に表示
+          if (completeDish === "oshiruko") {
+            drawOshiruko(dishX, dishY);
+          } else {
+            drawOzoni(dishX, dishY);
+          }
+        } else {
+          drawUsu();
+          drawKine();
+        }
 
         requestAnimationFrame(render);
       }
