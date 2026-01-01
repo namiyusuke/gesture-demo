@@ -497,7 +497,7 @@
 
       <div id="info">
         <h1>馬以外の動物をつまみ出せ！</h1>
-        <div id="timer">⏱️ 0.00秒</div>
+        <div id="timer">⏱️ 60.00秒</div>
         <div id="remaining">残り: 0匹</div>
       </div>
 
@@ -571,6 +571,7 @@
       let clearTime = 0; // クリアタイム（秒）
       let isGameRunning = false; // ゲーム進行中フラグ
       let timerInterval = null; // タイマー更新用
+      const COUNTDOWN_TIME = 60; // カウントダウン開始時間（秒）
 
       // 籠の位置とサイズ
       const kago = {
@@ -708,7 +709,7 @@
       // 画像を読み込み
       const images = {};
       let imagesLoaded = 0;
-      const imageFiles = ["uma", "ushi", "saru", "hebi", "kago"];
+      const imageFiles = ["uma", "ushi", "saru", "hebi", "kago", "nezumi", "tora", "usagi", "tatsu", "hitsuji", "tori", "inu", "inoshishi"];
 
       imageFiles.forEach((name) => {
         images[name] = new Image();
@@ -722,11 +723,19 @@
         images[name].src = `horse_game-images/${name}.png`;
       });
 
-      // 隠れている動物の種類（馬以外）
+      // 隠れている動物の種類（馬以外の干支全て）
       const animalTypes = [
-        { type: "ushi", name: "牛", emoji: "🐄" },
-        { type: "saru", name: "猿", emoji: "🐵" },
-        { type: "hebi", name: "蛇", emoji: "🐍" },
+        { type: "nezumi", name: "子（ねずみ）", emoji: "🐭" },
+        { type: "ushi", name: "丑（うし）", emoji: "🐄" },
+        { type: "tora", name: "寅（とら）", emoji: "🐯" },
+        { type: "usagi", name: "卯（うさぎ）", emoji: "🐰" },
+        { type: "tatsu", name: "辰（たつ）", emoji: "🐉" },
+        { type: "hebi", name: "巳（へび）", emoji: "🐍" },
+        { type: "hitsuji", name: "未（ひつじ）", emoji: "🐑" },
+        { type: "saru", name: "申（さる）", emoji: "🐵" },
+        { type: "tori", name: "酉（とり）", emoji: "🐔" },
+        { type: "inu", name: "戌（いぬ）", emoji: "🐕" },
+        { type: "inoshishi", name: "亥（いのしし）", emoji: "🐗" },
       ];
 
       // キャンバスサイズ調整
@@ -762,7 +771,9 @@
         ctx.save();
         ctx.translate(animal.x, animal.y);
 
-        const scale = animal.size / 80;
+        // 馬と同じサイズになるよう固定幅でスケーリング
+        const targetWidth = animal.size * 1.2; // 目標の幅
+        const scale = targetWidth / img.width;
         const w = img.width * scale;
         const h = img.height * scale;
         ctx.drawImage(img, -w / 2, -h / 2, w, h);
@@ -851,8 +862,11 @@
         clearModal.classList.remove("show");
 
         // タイマーリセット
-        timerElement.textContent = `⏱️ 0.00秒`;
+        timerElement.textContent = `⏱️ ${COUNTDOWN_TIME.toFixed(2)}秒`;
         clearTime = 0;
+        // クリアモーダルのテキストをリセット
+        document.querySelector("#clear-content h2").textContent = "🎉 クリア！";
+        document.querySelector("#clear-content p").textContent = "全ての動物を見つけました！";
         // カメラが既に起動している場合はタイマー開始（リスタート時）
         if (handLandmarker) {
           startTimer();
@@ -889,7 +903,7 @@
           for (let col = 0; col < cols; col++) {
             const x = col * spacingX + (row % 2) * (spacingX / 2) + 60 + Math.random() * 30 - 15;
             const y = grassStartY + row * spacingY + Math.random() * 20 - 10;
-            const speed = 2 + Math.random() * 2; // 移動速度（速め）
+            const speed = 1 + Math.random() * 4; // 移動速度（1〜5でバラつき）
             horses.push({
               x: x,
               y: y,
@@ -901,19 +915,25 @@
           }
         }
 
-        // 隠れている動物を配置（馬の位置を一部置き換え）
-        const numAnimals = Math.min(5, Math.max(3, Math.floor(horses.length / 8)));
-        const usedIndices = new Set();
+        // 隠れている動物を配置（手前側の馬の位置を一部置き換え）
+        // 全ての干支（馬以外）を表示
+        const numAnimals = animalTypes.length;
 
-        for (let i = 0; i < numAnimals; i++) {
-          let idx;
-          do {
-            idx = Math.floor(Math.random() * horses.length);
-          } while (usedIndices.has(idx));
-          usedIndices.add(idx);
+        // 手前側（Y座標が大きい）の馬を取得してシャッフル
+        const sortedHorses = [...horses]
+          .sort((a, b) => b.y - a.y) // Y座標が大きい順（手前順）
+          .slice(0, Math.max(numAnimals, Math.floor(horses.length / 2))); // 必要な数を確保
 
-          const horse = horses[idx];
-          const animalType = animalTypes[i % animalTypes.length];
+        // シャッフル
+        for (let i = sortedHorses.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [sortedHorses[i], sortedHorses[j]] = [sortedHorses[j], sortedHorses[i]];
+        }
+
+        // 動物を配置
+        for (let i = 0; i < numAnimals && i < sortedHorses.length; i++) {
+          const horse = sortedHorses[i];
+          const animalType = animalTypes[i];
 
           hiddenAnimals.push({
             id: i,
@@ -932,7 +952,10 @@
           });
 
           // 馬のリストから削除
-          horses.splice(idx, 1);
+          const horseIdx = horses.indexOf(horse);
+          if (horseIdx !== -1) {
+            horses.splice(horseIdx, 1);
+          }
         }
 
         updateUI();
@@ -945,11 +968,24 @@
         remainingElement.textContent = `残り: ${remaining}匹`;
       }
 
-      // タイマー更新
+      // タイマー更新（カウントダウン方式）
       function updateTimer() {
         if (isGameRunning && gameStartTime > 0) {
           const elapsed = (Date.now() - gameStartTime) / 1000;
-          timerElement.textContent = `⏱️ ${elapsed.toFixed(2)}秒`;
+          const remaining = Math.max(0, COUNTDOWN_TIME - elapsed);
+          timerElement.textContent = `⏱️ ${remaining.toFixed(2)}秒`;
+
+          // タイムオーバー
+          if (remaining <= 0) {
+            stopTimer();
+            clearTime = COUNTDOWN_TIME;
+            timerElement.textContent = `⏱️ 0.00秒`;
+            const clearTimeElement = document.getElementById("clear-time");
+            clearTimeElement.textContent = `タイムオーバー！`;
+            document.querySelector("#clear-content h2").textContent = "⏰ タイムオーバー";
+            document.querySelector("#clear-content p").textContent = "時間切れです...";
+            clearModal.classList.add("show");
+          }
         }
       }
 
@@ -1206,10 +1242,11 @@
         if (remaining === 0) {
           // タイマー停止
           stopTimer();
-          // クリアタイムを計算
-          clearTime = (Date.now() - gameStartTime) / 1000;
+          // クリアタイムを計算（残り時間）
+          const elapsed = (Date.now() - gameStartTime) / 1000;
+          clearTime = Math.max(0, COUNTDOWN_TIME - elapsed);
           const clearTimeElement = document.getElementById("clear-time");
-          clearTimeElement.textContent = `タイム: ${clearTime.toFixed(2)}秒`;
+          clearTimeElement.textContent = `残り時間: ${clearTime.toFixed(2)}秒`;
           timerElement.textContent = `⏱️ ${clearTime.toFixed(2)}秒`;
 
           setTimeout(() => {
