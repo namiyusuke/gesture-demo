@@ -23,7 +23,7 @@
         position: relative;
         width: 100vw;
         height: 100vh;
-        background: repeating-linear-gradient(90deg, #dc143c 0px, #dc143c 50px, #fff 50px, #fff 100px);
+        background: repeating-linear-gradient(90deg, #dc143c 0px, #dc143c 200px, #fff 200px, #fff 400px);
       }
 
       #game-canvas {
@@ -486,6 +486,26 @@
         z-index: 1000;
         display: none;
       }
+
+      /* 装飾画像 */
+      .decoration-image {
+        position: fixed;
+        bottom: 20px;
+        z-index: 50;
+        pointer-events: none;
+      }
+
+      #kadomatsu {
+        left: 53px;
+        height: calc(400 / 1440 * 100vw);
+        width: auto;
+      }
+
+      #shishimai {
+        right: 20px;
+        height: calc(342 / 1440 * 100vw);
+        width: auto;
+      }
     </style>
   </head>
   <body>
@@ -564,6 +584,10 @@
       <div id="hand-indicator"></div>
 
       <div id="debug-info"></div>
+
+      <!-- 装飾画像 -->
+      <img id="kadomatsu" class="decoration-image" src="mochitsuki_game-images/kadomatsu.png" alt="門松" />
+      <img id="shishimai" class="decoration-image" src="mochitsuki_game-images/shishimai.png" alt="獅子舞" />
     </div>
 
     <script type="module">
@@ -830,8 +854,8 @@
 
         // 成長に応じたベースサイズ（最大2倍に）
         const growthScale = 1 + mochi.growth * 1.0;
-        mochi.baseWidth = 90 * growthScale;
-        mochi.baseHeight = 70 * growthScale;
+        mochi.baseWidth = 115 * growthScale;
+        mochi.baseHeight = 90 * growthScale;
 
         // バネ物理：潰れからの復帰（大きく跳ね返る）
         const springK = 0.12; // バネ定数（しっかり戻る）
@@ -886,7 +910,7 @@
           const imgHeight = usuImage.naturalHeight;
           const aspectRatio = imgWidth / imgHeight;
 
-          const usuHeight = 280;
+          const usuHeight = 340;
           const usuWidth = usuHeight * aspectRatio;
 
           // 臼の影
@@ -1178,7 +1202,7 @@
           const aspectRatio = imgWidth / imgHeight;
 
           // 高さを基準にサイズを決める
-          const kineHeight = 250;
+          const kineHeight = 300;
           const kineWidth = kineHeight * aspectRatio;
 
           // 杵の先端（下側）を基準に描画

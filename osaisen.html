@@ -83,7 +83,7 @@
         inset: 0;
         margin: auto;
         width: 100%;
-
+        max-width: 900px;
         z-index: 5;
       }
 
@@ -491,15 +491,15 @@
       }
 
       #fail-paper {
-        background: linear-gradient(180deg, #4a4a4a 0%, #2a2a2a 100%);
+        background: #2a2a2a;
         width: 300px;
         padding: 40px 30px;
-        border-radius: 12px;
+        border-radius: 4px;
         text-align: center;
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
         transform: scale(0) rotate(-10deg);
         transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-        border: 3px solid #888;
+        border: 1px solid #fff;
       }
 
       #fail-overlay.show #fail-paper {
@@ -507,11 +507,10 @@
       }
 
       #fail-title {
-        font-size: 48px;
+        font-size: 32px;
         font-weight: bold;
-        color: #ff6b6b;
+        color: #fff;
         margin-bottom: 20px;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
       }
 
       #fail-reason {
@@ -721,10 +720,171 @@
           transform: translate(-50%, -100%) scale(1);
         }
       }
+
+      /* チュートリアルモーダル */
+      #tutorial-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        z-index: 20000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      #tutorial-modal.hidden {
+        display: none;
+      }
+
+      .tutorial-content {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 8px;
+        padding: 40px;
+        max-width: 500px;
+        width: 90%;
+        text-align: center;
+        color: white;
+        border: #fff solid 1px;
+      }
+
+      .tutorial-content h1 {
+        font-size: 32px;
+        color: #fff;
+        margin-bottom: 30px;
+      }
+
+      .slides-container {
+        position: relative;
+        width: 100%;
+        height: 320px;
+        overflow: hidden;
+      }
+
+      .slide {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        transform: translateX(100%);
+        transition: opacity 0.5s ease, transform 0.5s ease;
+      }
+
+      .slide.active {
+        opacity: 1;
+        transform: translateX(0);
+      }
+
+      .slide.prev {
+        opacity: 0;
+        transform: translateX(-100%);
+      }
+
+      .slide-subtitle {
+        font-size: 26px;
+        font-weight: bold;
+        margin-bottom: 20px;
+      }
+
+      .slide .icon {
+        font-size: 80px;
+        margin-bottom: 20px;
+      }
+
+      .slide-description {
+        font-size: 18px;
+        line-height: 1.8;
+        text-align: center;
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      .slide-note {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.6);
+        margin-top: 15px;
+      }
+
+      .slide-indicators {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin: 25px 0;
+      }
+
+      .slide-indicator {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transition: background 0.3s, transform 0.3s;
+      }
+
+      .slide-indicator.active {
+        background: #ffd700;
+        transform: scale(1.2);
+      }
+
+      .tutorial-button {
+        padding: 10px 20px;
+        font-size: 16px;
+        font-weight: bold;
+        color: #2a1a0a;
+        background: #fff;
+        border: none;
+        border-radius: 2px;
+        cursor: pointer;
+      }
+
+      .tutorial-button:active {
+        transform: scale(0.98);
+      }
     </style>
   </head>
   <body>
-    <div id="loading">
+    <!-- チュートリアルモーダル -->
+    <div id="tutorial-modal">
+      <div class="tutorial-content">
+        <h1>お賽銭ゲーム</h1>
+        <div class="slides-container">
+          <!-- スライド1: 手を上げる -->
+          <div class="slide active" data-slide="0">
+            <div class="slide-subtitle">手を上げて準備</div>
+            <div class="icon">🖐️</div>
+            <div class="slide-description">画面に向かって<br />手を上に上げてください</div>
+          </div>
+
+          <!-- スライド2: 振り下ろして投げる -->
+          <div class="slide" data-slide="1">
+            <div class="slide-subtitle">振り下ろして投げる</div>
+            <div class="icon">💨</div>
+            <div class="slide-description">勢いよく手を振り下ろすと<br />お賽銭が飛んでいきます</div>
+            <div class="slide-note">強さと方向でコインの軌道が変わります</div>
+          </div>
+
+          <!-- スライド3: 賽銭箱を狙おう -->
+          <div class="slide" data-slide="2">
+            <div class="slide-subtitle">賽銭箱を狙おう！</div>
+            <div class="icon">🎁</div>
+            <div class="slide-description">うまく入れば結果が表示されます<br />猫や犬に邪魔されることも...!?</div>
+          </div>
+        </div>
+        <div class="slide-indicators">
+          <div class="slide-indicator active" data-slide="0"></div>
+          <div class="slide-indicator" data-slide="1"></div>
+          <div class="slide-indicator" data-slide="2"></div>
+        </div>
+        <button id="next-button" class="tutorial-button">次へ</button>
+        <button id="start-button" class="tutorial-button" style="display: none">ゲームスタート</button>
+      </div>
+    </div>
+
+    <div id="loading" class="hidden">
       <div class="spinner"></div>
       <p>カメラを起動中...</p>
     </div>
@@ -1485,7 +1645,47 @@
         }
       }
 
-      startCamera();
+      // チュートリアルモーダル制御
+      const tutorialModal = document.getElementById("tutorial-modal");
+      const startButton = document.getElementById("start-button");
+      const nextButton = document.getElementById("next-button");
+      const slides = document.querySelectorAll(".slide");
+      const indicators = document.querySelectorAll(".slide-indicator");
+      let currentSlide = 0;
+      const totalSlides = slides.length;
+
+      function showSlide(index) {
+        slides.forEach((slide, i) => {
+          slide.classList.remove("active", "prev");
+          if (i === index) {
+            slide.classList.add("active");
+          } else if (i < index) {
+            slide.classList.add("prev");
+          }
+        });
+        indicators.forEach((ind, i) => {
+          ind.classList.toggle("active", i === index);
+        });
+
+        // 最後のスライドならボタンを切り替え
+        if (currentSlide === totalSlides - 1) {
+          nextButton.style.display = "none";
+          startButton.style.display = "inline-block";
+        }
+      }
+
+      nextButton.addEventListener("click", () => {
+        if (currentSlide < totalSlides - 1) {
+          currentSlide++;
+          showSlide(currentSlide);
+        }
+      });
+
+      startButton.addEventListener("click", () => {
+        tutorialModal.classList.add("hidden");
+        loading.classList.remove("hidden");
+        startCamera();
+      });
     </script>
   </body>
 </html>
