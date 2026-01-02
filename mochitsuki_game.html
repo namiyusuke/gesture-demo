@@ -4,6 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>餅つきゲーム - 餅をつけ！</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic&display=swap" rel="stylesheet" />
     <style>
       * {
         margin: 0;
@@ -12,7 +15,8 @@
       }
 
       body {
-        font-family: "Arial", sans-serif;
+        font-family: "Zen Maru Gothic", "Arial", sans-serif;
+        font-weight: 700;
         background: linear-gradient(180deg, #dc143c 0%, #dc143c 50%, #fff 50%, #fff 100%);
         background-size: 100px 100px;
         min-height: 100vh;
@@ -47,6 +51,7 @@
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
         background: #000;
         z-index: 1000;
+        display: none;
       }
 
       #input_video {
@@ -107,6 +112,52 @@
         display: none;
       }
 
+      /* ゲーム情報パネル */
+      #info {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        background: #fff;
+        padding: 20px 24px;
+        border-radius: 20px;
+        z-index: 1000;
+        padding-block: 50px;
+        padding-inline: 42px;
+      }
+
+      .info-icon {
+        font-size: 40px;
+        margin-right: 6px;
+      }
+
+      #info h1 {
+        font-size: 17px;
+        color: #000;
+        margin-bottom: 24px;
+        font-weight: bold;
+      }
+
+      #info p {
+        font-size: 13px;
+        color: #6b4423;
+        margin: 6px 0;
+        opacity: 0.9;
+      }
+
+      #mochi-count {
+        font-size: 24px;
+        color: #e7141b;
+        font-weight: 900;
+      }
+
+      .info-remaining {
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 16px;
+      }
+
       /* 完成メッセージ */
       #complete-message {
         position: fixed;
@@ -119,6 +170,9 @@
         z-index: 5000;
         animation: completeAppear 0.8s ease-out;
         white-space: nowrap;
+        background-color: #fff;
+        padding: 10px 20px;
+        border-radius: 12px;
       }
 
       #complete-message.hidden {
@@ -525,7 +579,7 @@
             <div class="slide-subtitle">餅を完成させよう！</div>
             <div class="icon">🍡</div>
             <div class="slide-description">
-              餅をつくと成長していきます<br />100%になったら完成！<br />おしるこかお雑煮になります
+              餅をつくと成長していきます<br />100%になったら完成！<br />美味しいものに変化します
             </div>
           </div>
         </div>
@@ -549,6 +603,13 @@
       <div id="video-container">
         <video id="input_video" autoplay playsinline></video>
         <canvas id="output_canvas"></canvas>
+      </div>
+
+      <!-- ゲーム情報パネル -->
+      <div id="info">
+        <h1><span class="info-icon">🍡</span>餅つきゲーム</h1>
+        <p>手を振り下ろして餅をつこう！</p>
+        <p class="info-remaining"><span class="info-icon">🎯</span>つき回数 <span id="mochi-count">0</span> 回</p>
       </div>
 
       <div id="score-display">

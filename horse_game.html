@@ -1,6 +1,9 @@
 <!doctype html>
 <html lang="ja">
   <head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic&display=swap" rel="stylesheet">
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>馬以外の動物をつまみ出せ！</title>
@@ -12,7 +15,8 @@
       }
 
       body {
-        font-family: "Arial", sans-serif;
+        font-family: "Zen Maru Gothic", "Arial", sans-serif;
+        font-weight: 700;
         background: #f5e6d3;
         min-height: 100vh;
         overflow: hidden;
@@ -45,6 +49,7 @@
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         background: #000;
         z-index: 1000;
+        display: none;
       }
 
       #input_video {
@@ -187,7 +192,6 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(255, 255, 255, 0.95);
         display: none;
         justify-content: center;
         align-items: center;
@@ -202,13 +206,11 @@
       #clear-content,
       #timeover-content {
         background: white;
-        padding: 40px 60px;
         border-radius: 20px;
-        border: 4px solid #7dd3fc;
         text-align: center;
         animation: bounceIn 0.5s ease;
         position: relative;
-        min-width: 350px;
+        width: 400px;
       }
 
       @keyframes bounceIn {
@@ -225,8 +227,8 @@
 
       .modal-icon {
         position: absolute;
-        top: -20px;
-        left: -20px;
+        top: 20%;
+        left: 20%;
         font-size: 60px;
       }
 
@@ -239,7 +241,7 @@
       }
 
       .modal-horse {
-        width: 180px;
+        width: calc(180 / 1440 * 100vw);
         height: auto;
         margin: 0 auto 10px;
         display: block;
@@ -696,7 +698,7 @@
       <div class="sparkle">✦</div>
       <div id="clear-content">
         <div class="modal-icon">🎉</div>
-        <img src="horse_game-images/uma.png" alt="馬" class="modal-horse" />
+        <img  src="horse_game-images/uma.png" alt="馬" class="modal-horse" />
         <h2 class="game-modal-title">
           <span>すべてクリア！</span>
         </h2>
