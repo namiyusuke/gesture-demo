@@ -104,35 +104,18 @@
 
       /* スコア表示 */
       #score-display {
-        position: fixed;
-        top: 20px;
-        left: 20px;
-        background: rgba(139, 69, 19, 0.9);
-        padding: 15px 25px;
-        border-radius: 10px;
-        border: 3px solid #ffd700;
-        color: white;
-        font-size: 18px;
-        font-weight: bold;
-        z-index: 1000;
-        min-width: 180px;
+        display: none;
       }
 
       /* 完成メッセージ */
       #complete-message {
         position: fixed;
-        top: 50%;
+        top: 20%;
         left: 50%;
         transform: translate(-50%, -50%);
-        font-size: 72px;
+        font-size: 40px;
         font-weight: bold;
-        color: #8b4513;
-        text-shadow:
-          3px 3px 0 #fff,
-          -3px -3px 0 #fff,
-          3px -3px 0 #fff,
-          -3px 3px 0 #fff,
-          0 5px 20px rgba(0, 0, 0, 0.3);
+        color: #212121;
         z-index: 5000;
         animation: completeAppear 0.8s ease-out;
         white-space: nowrap;
@@ -182,18 +165,17 @@
       /* 指示テキスト */
       #instruction {
         position: fixed;
-        top: 100px;
+        top: 10%;
         left: 50%;
         transform: translateX(-50%);
-        font-size: 48px;
+        font-size: 32px;
         font-weight: bold;
-        color: #333;
-        text-shadow:
-          2px 2px 0 #fff,
-          -2px -2px 0 #fff,
-          2px -2px 0 #fff,
-          -2px 2px 0 #fff;
+        color: #fff;
+        padding: 10px;
+        border-radius: 10px;
+        background-color: #6f6f6f;
         z-index: 100;
+        overflow: hidden;
       }
 
       /* 手の位置インジケーター */
@@ -838,6 +820,18 @@
         const growthPercent = Math.floor(mochi.growth * 100);
         growthBar.style.width = growthPercent + "%";
         growthText.textContent = `餅の成長: ${growthPercent}%`;
+
+        // 進捗に応じて指示テキストを変更
+        const instruction = document.getElementById("instruction");
+        if (growthPercent < 25) {
+          instruction.textContent = "餅をつけ！";
+        } else if (growthPercent < 50) {
+          instruction.textContent = "もっとつけ！";
+        } else if (growthPercent < 75) {
+          instruction.textContent = "もう少しつけ！";
+        } else if (growthPercent < 100) {
+          instruction.textContent = "あとちょっと！";
+        }
 
         // 完成判定（100%に達したら）
         if (mochi.targetGrowth >= 1.0 && mochi.growth >= 1.0 && !isComplete) {

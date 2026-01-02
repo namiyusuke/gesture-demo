@@ -320,7 +320,7 @@
       .tutorial-content {
         background: rgba(0, 0, 0, 0.2);
         border-radius: 8px;
-        padding: 40px;
+        padding: 10px;
         max-width: 500px;
         width: 90%;
         text-align: center;
@@ -452,7 +452,7 @@
     <!-- チュートリアルモーダル -->
     <div id="tutorial-modal">
       <div class="tutorial-content">
-        <h1>🐴 馬以外の動物をつまみ出せ！</h1>
+        <h1>馬以外の動物をつまみ出せ！</h1>
 
         <div class="slides-container">
           <!-- スライド1: カーソルの動かし方 -->
@@ -709,7 +709,21 @@
       // 画像を読み込み
       const images = {};
       let imagesLoaded = 0;
-      const imageFiles = ["uma", "ushi", "saru", "hebi", "kago", "nezumi", "tora", "usagi", "tatsu", "hitsuji", "tori", "inu", "inoshishi"];
+      const imageFiles = [
+        "uma",
+        "ushi",
+        "saru",
+        "hebi",
+        "kago",
+        "nezumi",
+        "tora",
+        "usagi",
+        "tatsu",
+        "hitsuji",
+        "tori",
+        "inu",
+        "inoshishi",
+      ];
 
       imageFiles.forEach((name) => {
         images[name] = new Image();
