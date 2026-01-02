@@ -35,13 +35,6 @@
         z-index: -2;
       }
 
-      #top-banner h1 {
-        color: #ffd700;
-        font-size: 28px;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-        font-weight: bold;
-      }
-
       #video-container {
         position: fixed;
         top: 100px;
@@ -114,13 +107,13 @@
       #dog-character {
         position: absolute;
         bottom: 100px;
-        left: calc(50% - 250px);
+        left: calc(50% - 280px);
         width: 140px;
         height: auto;
         z-index: 25;
         filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
         opacity: 0;
-        transition: all 0.3s ease;
+        transition: opacity 0.3s ease;
       }
 
       #dog-character.active {
@@ -128,15 +121,42 @@
       }
 
       #dog-character.blocking {
-        animation: dogBlock 2s linear forwards;
+        animation: dogRun 2.5s ease-in-out forwards;
       }
 
-      @keyframes dogBlock {
+      @keyframes dogRun {
         0% {
-          transform: translateX(0);
+          transform: translateX(0) translateY(0) scaleX(1);
+        }
+        10% {
+          transform: translateX(40px) translateY(-8px) scaleX(1);
+        }
+        20% {
+          transform: translateX(90px) translateY(0) scaleX(1);
+        }
+        30% {
+          transform: translateX(150px) translateY(-8px) scaleX(1);
+        }
+        40% {
+          transform: translateX(210px) translateY(0) scaleX(1);
+        }
+        50% {
+          transform: translateX(280px) translateY(-5px) scaleX(1);
+        }
+        60% {
+          transform: translateX(350px) translateY(0) scaleX(1);
+        }
+        70% {
+          transform: translateX(400px) translateY(-8px) scaleX(1);
+        }
+        80% {
+          transform: translateX(460px) translateY(0) scaleX(1);
+        }
+        90% {
+          transform: translateX(510px) translateY(-5px) scaleX(1);
         }
         100% {
-          transform: translateX(350px);
+          transform: translateX(560px) translateY(0) scaleX(1);
         }
       }
 
@@ -312,9 +332,10 @@
 
       #omikuji-paper {
         background: linear-gradient(180deg, #fff8e7 0%, #f5e6c8 100%);
-        width: 220px;
+        width: 80%;
+        max-width: 500px;
         padding: 40px 30px;
-        border-radius: 4px;
+        border-radius: 12px;
         text-align: center;
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
         transform: scale(0) rotate(-10deg);
@@ -322,8 +343,84 @@
         border: 2px solid #d4a017;
       }
 
+      #result-image {
+        max-width: 100%;
+        max-height: 60vh;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      }
+
       #omikuji-overlay.show #omikuji-paper {
         transform: scale(1) rotate(0deg);
+      }
+
+      /* 失敗オーバーレイ */
+      #fail-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 2000;
+        opacity: 0;
+        transition: opacity 0.5s;
+      }
+
+      #fail-overlay.show {
+        display: flex;
+        opacity: 1;
+      }
+
+      #fail-paper {
+        background: linear-gradient(180deg, #4a4a4a 0%, #2a2a2a 100%);
+        width: 300px;
+        padding: 40px 30px;
+        border-radius: 12px;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        transform: scale(0) rotate(-10deg);
+        transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        border: 3px solid #888;
+      }
+
+      #fail-overlay.show #fail-paper {
+        transform: scale(1) rotate(0deg);
+      }
+
+      #fail-title {
+        font-size: 48px;
+        font-weight: bold;
+        color: #ff6b6b;
+        margin-bottom: 20px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+      }
+
+      #fail-reason {
+        font-size: 24px;
+        color: #fff;
+        margin-bottom: 30px;
+        line-height: 1.5;
+      }
+
+      #close-fail {
+        padding: 12px 35px;
+        font-size: 16px;
+        background: #666;
+        color: white;
+        border: none;
+        border-radius: 25px;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-weight: bold;
+      }
+
+      #close-fail:hover {
+        background: #888;
+        transform: scale(1.05);
       }
 
       #omikuji-result {
@@ -458,47 +555,55 @@
         }
       }
 
-      /* キラキラエフェクト */
-      .sparkle {
+      /* パーティクルエフェクト */
+      .particle {
         position: fixed;
         pointer-events: none;
-        font-size: 30px;
-        animation: sparkle 1s ease-out forwards;
+        border-radius: 50%;
+        animation: particleBurst 1s ease-out forwards;
         z-index: 1500;
       }
 
-      @keyframes sparkle {
+      @keyframes particleBurst {
         0% {
           opacity: 1;
-          transform: scale(0) rotate(0deg);
-        }
-        50% {
-          opacity: 1;
-          transform: scale(1.2) rotate(180deg);
+          transform: translate(0, 0) scale(1);
         }
         100% {
           opacity: 0;
-          transform: scale(0.5) rotate(360deg);
+          transform: translate(var(--tx), var(--ty)) scale(0);
         }
       }
 
       /* 失敗エフェクト */
       .miss-effect {
         position: fixed;
-        font-size: 60px;
+        font-size: 28px;
+        font-weight: bold;
+        color: #fff;
+        text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
         pointer-events: none;
         z-index: 1500;
-        animation: missAnim 1s ease-out forwards;
+        white-space: nowrap;
+        transform: translate(-50%, -50%);
+        animation: missAnim 2s ease-out forwards;
       }
 
       @keyframes missAnim {
         0% {
           opacity: 1;
-          transform: scale(1) translateY(0);
+          transform: translate(-50%, -50%) scale(0.5);
+        }
+        20% {
+          opacity: 1;
+          transform: translate(-50%, -50%) scale(1.2);
+        }
+        40% {
+          transform: translate(-50%, -50%) scale(1);
         }
         100% {
           opacity: 0;
-          transform: scale(1.5) translateY(-50px);
+          transform: translate(-50%, -100%) scale(1);
         }
       }
     </style>
@@ -513,19 +618,6 @@
     <div id="success-light"></div>
 
     <div id="container">
-      <div id="top-banner">
-        <h1>お賽銭を投げ入れろ！</h1>
-      </div>
-
-      <div id="info">
-        <h2>並河稲荷 お賽銭ゲーム</h2>
-        <p>✋ <strong>手を上に上げて</strong>準備</p>
-        <p>👇 <strong>振り下ろす</strong>とお賽銭を投げます</p>
-        <p>🐱 <strong>猫に注意！</strong>邪魔してきます</p>
-        <div id="status">待機中...</div>
-        <div id="score-display">スコア: <span id="score">0</span></div>
-      </div>
-
       <div id="video-container">
         <video id="input_video" autoplay playsinline></video>
         <canvas id="output_canvas"></canvas>
@@ -544,12 +636,20 @@
       </div>
     </div>
 
-    <!-- おみくじオーバーレイ -->
+    <!-- 結果オーバーレイ -->
     <div id="omikuji-overlay">
       <div id="omikuji-paper">
-        <div id="omikuji-result"></div>
-        <div id="omikuji-message"></div>
-        <button id="close-omikuji">もう一度引く</button>
+        <img id="result-image" src="" alt="結果" />
+        <button id="close-omikuji">もう一度投げる</button>
+      </div>
+    </div>
+
+    <!-- 失敗オーバーレイ -->
+    <div id="fail-overlay">
+      <div id="fail-paper">
+        <div id="fail-title">残念！</div>
+        <div id="fail-reason"></div>
+        <button id="close-fail">もう一度投げる</button>
       </div>
     </div>
 
@@ -659,9 +759,11 @@
       const bell = document.getElementById("bell");
       const saisenboxArea = document.getElementById("saisenbox-area");
       const omikujiOverlay = document.getElementById("omikuji-overlay");
-      const omikujiResult = document.getElementById("omikuji-result");
-      const omikujiMessage = document.getElementById("omikuji-message");
+      const resultImage = document.getElementById("result-image");
       const closeOmikuji = document.getElementById("close-omikuji");
+      const failOverlay = document.getElementById("fail-overlay");
+      const failReason = document.getElementById("fail-reason");
+      const closeFail = document.getElementById("close-fail");
       const successLight = document.getElementById("success-light");
       const catCharacter = document.getElementById("cat-character");
       const dogCharacter = document.getElementById("dog-character");
@@ -690,88 +792,124 @@
       // 邪魔キャラの出現頻度（かなり高め）
       let interferenceChance = 0.7;
 
-      // おみくじデータ
-      const omikujiData = [
-        { result: "大吉", color: "#ff0000", message: "最高の運勢！\n願い事が叶うでしょう。\n積極的に行動を。" },
-        { result: "中吉", color: "#ff6600", message: "良い運勢です。\n努力が実を結びます。\n焦らず進みましょう。" },
-        { result: "小吉", color: "#ffcc00", message: "まずまずの運勢。\n小さな幸せを大切に。\n感謝を忘れずに。" },
-        { result: "吉", color: "#33cc33", message: "普通の運勢。\n平穏な日々が続きます。\n健康に注意を。" },
-        { result: "末吉", color: "#3399ff", message: "これから上向き。\n辛抱強く待てば\n良いことがあります。" },
-        { result: "凶", color: "#9933ff", message: "注意が必要です。\n慎重に行動し\n無理は禁物。" },
+      // 結果画像（10枚）
+      const resultImages = [
+        "osaisen-images/result01.jpg",
+        "osaisen-images/result02.jpg",
+        "osaisen-images/result03.jpg",
+        "osaisen-images/result04.jpg",
+        "osaisen-images/result05.jpg",
+        "osaisen-images/result06.jpg",
+        "osaisen-images/result07.jpg",
+        "osaisen-images/result08.jpg",
+        "osaisen-images/result09.jpg",
+        "osaisen-images/result10.jpg",
       ];
 
-      // 猫が突然出てきて邪魔をする
-      function triggerCatInterference() {
-        if (catActive || dogActive || !canThrow) return;
+      // コインを横取りする動物の情報
+      let interceptor = null; // { type: 'cat' | 'dog', timing: number, x: number, y: number }
 
+      // 猫がジャンプしてコインを取る
+      function catIntercept(targetX, targetY, callback) {
         catActive = true;
 
-        // ランダムな位置から出現（左側か右側か中央）
-        const positions = ["left", "center", "right"];
-        const pos = positions[Math.floor(Math.random() * positions.length)];
+        // 猫の開始位置（左右ランダム）
+        const fromLeft = Math.random() < 0.5;
+        const startX = fromLeft ? targetX - 150 : targetX + 150;
 
-        if (pos === "left") {
-          catCharacter.style.left = "calc(50% - 150px)";
-        } else if (pos === "right") {
-          catCharacter.style.left = "calc(50% + 100px)";
-        } else {
-          catCharacter.style.left = "calc(50% - 20px)";
-        }
+        catCharacter.style.left = `${startX}px`;
+        catCharacter.style.bottom = "auto";
+        catCharacter.style.top = `${targetY + 50}px`;
+        catCharacter.style.transform = fromLeft ? "scaleX(1)" : "scaleX(-1)";
 
         catCharacter.classList.add("active");
 
-        // すぐにブロックモードに
+        // ジャンプアニメーション
         setTimeout(() => {
+          catCharacter.style.transition = "all 0.3s ease-out";
+          catCharacter.style.left = `${targetX - 60}px`;
+          catCharacter.style.top = `${targetY - 30}px`;
           catBlockingActive = true;
-          catCharacter.classList.add("blocking");
+        }, 50);
+
+        // コールバック（コインを取った）
+        setTimeout(() => {
+          callback();
         }, 300);
 
-        // 猫が去る（短め）
+        // 猫が去る
         setTimeout(() => {
-          catCharacter.classList.remove("active", "blocking");
+          catCharacter.style.transition = "all 0.4s ease-in";
+          catCharacter.style.top = `${targetY + 200}px`;
+          catCharacter.style.opacity = "0";
+        }, 600);
+
+        setTimeout(() => {
+          catCharacter.classList.remove("active");
+          catCharacter.style.transition = "";
+          catCharacter.style.opacity = "";
+          catCharacter.style.transform = "";
           catActive = false;
           catBlockingActive = false;
-        }, 2500);
+        }, 1000);
       }
 
-      // 犬が直線的に動いて邪魔をする
-      function triggerDogInterference() {
-        if (dogActive || catActive || !canThrow) return;
-
+      // 犬がジャンプしてコインを取る
+      function dogIntercept(targetX, targetY, callback) {
         dogActive = true;
+
+        // 犬の開始位置（左右ランダム）
+        const fromLeft = Math.random() < 0.5;
+        const startX = fromLeft ? targetX - 150 : targetX + 150;
+
+        dogCharacter.style.left = `${startX}px`;
+        dogCharacter.style.bottom = "auto";
+        dogCharacter.style.top = `${targetY + 50}px`;
+        dogCharacter.style.transform = fromLeft ? "scaleX(1)" : "scaleX(-1)";
 
         dogCharacter.classList.add("active");
 
-        // すぐにブロックモードに（左右に動く）
+        // ジャンプアニメーション
         setTimeout(() => {
+          dogCharacter.style.transition = "all 0.3s ease-out";
+          dogCharacter.style.left = `${targetX - 70}px`;
+          dogCharacter.style.top = `${targetY - 30}px`;
           dogBlockingActive = true;
-          dogCharacter.classList.add("blocking");
-        }, 200);
+        }, 50);
+
+        // コールバック（コインを取った）
+        setTimeout(() => {
+          callback();
+        }, 300);
 
         // 犬が去る
         setTimeout(() => {
-          dogCharacter.classList.remove("active", "blocking");
+          dogCharacter.style.transition = "all 0.4s ease-in";
+          dogCharacter.style.top = `${targetY + 200}px`;
+          dogCharacter.style.opacity = "0";
+        }, 600);
+
+        setTimeout(() => {
+          dogCharacter.classList.remove("active");
+          dogCharacter.style.transition = "";
+          dogCharacter.style.opacity = "";
+          dogCharacter.style.transform = "";
           dogActive = false;
           dogBlockingActive = false;
-        }, 3000);
+        }, 1000);
       }
-
-      // 定期的に猫か犬が邪魔しに来る（頻繁に）
-      setInterval(() => {
-        if (canThrow && !throwCooldown && Math.random() < interferenceChance) {
-          // ランダムで猫か犬
-          if (Math.random() < 0.5) {
-            triggerCatInterference();
-          } else {
-            triggerDogInterference();
-          }
-        }
-      }, 2000);
 
       // おみくじを閉じる
       closeOmikuji.addEventListener("click", () => {
         omikujiOverlay.classList.remove("show");
         canThrow = true;
+      });
+
+      // 失敗モーダルを閉じる
+      closeFail.addEventListener("click", () => {
+        failOverlay.classList.remove("show");
+        canThrow = true;
+        throwCooldown = false;
       });
 
       // MediaPipe初期化
@@ -832,73 +970,46 @@
         const boxCenterX = boxRect.left + boxRect.width / 2;
         const boxCenterY = boxRect.top + 30;
 
-        // 強さに応じた弧の高さ（弱い=低い弧、強い=高い弧）
-        const arcHeight = 80 + power * 100; // 80〜230px
+        // 強さに応じた弧の高さ
+        const arcHeight = 80 + power * 100;
 
-        // 強さに応じた飛距離（弱いと手前に落ちる、強いと奥に飛ぶ）
-        // 適正値は0.95〜1.05くらい
-        const distanceMultiplier = 0.5 + power * 0.5; // 0.5〜1.25
+        // 強さに応じた飛距離
+        const distanceMultiplier = 0.5 + power * 0.5;
 
-        // 方向に応じた横ずれ（-120〜+120px）少なめに
+        // 方向に応じた横ずれ
         const horizontalOffset = direction * 120;
-
-        // 目標地点を計算
-        let targetX = boxCenterX + horizontalOffset;
-        let targetY = boxCenterY;
 
         // 最終着地点を計算
         const finalLandX = boxCenterX + horizontalOffset;
-        const finalLandY = boxCenterY + (1 - distanceMultiplier) * 150; // 弱いと手前、強いと奥
+        const finalLandY = boxCenterY + (1 - distanceMultiplier) * 150;
 
-        // 当たり判定：賽銭箱の範囲内かチェック
+        // 当たり判定
         const hitBoxLeft = boxRect.left + 30;
         const hitBoxRight = boxRect.right - 30;
-        const hitBoxTop = boxRect.top;
-        const hitBoxBottom = boxRect.top + 60;
-
-        // X方向の判定（範囲を広げた）
         const isOnTargetX = finalLandX >= hitBoxLeft - 30 && finalLandX <= hitBoxRight + 30;
-        // Y方向（距離）の判定：適正パワーは0.6〜1.4（かなり広め）
         const isOnTargetY = power >= 0.6 && power <= 1.4;
         const isOnTarget = isOnTargetX && isOnTargetY;
 
-        // 失敗理由を記録
+        // 失敗理由
         let missReason = "";
         if (!isOnTargetX) {
           missReason = direction > 0 ? "右にずれた！" : "左にずれた！";
         } else if (power < 0.6) {
-          missReason = "弱すぎた！手前に落ちた...";
+          missReason = "弱すぎた！";
         } else if (power > 1.4) {
-          missReason = "強すぎた！奥に飛んだ...";
+          missReason = "強すぎた！";
         }
 
-        // 猫か犬が邪魔している場合
-        let hitAnimal = false;
-        let hitAnimalName = "";
-        if (catBlockingActive) {
-          const catRect = catCharacter.getBoundingClientRect();
-          // コインが猫の範囲を通過するかチェック
-          if (finalLandX >= catRect.left - 50 && finalLandX <= catRect.right + 50) {
-            targetX = catRect.left + catRect.width / 2;
-            targetY = catRect.top + catRect.height / 2;
-            hitAnimal = true;
-            hitAnimalName = "猫";
-          }
-        }
-        if (dogBlockingActive && !hitAnimal) {
-          const dogRect = dogCharacter.getBoundingClientRect();
-          // コインが犬の範囲を通過するかチェック
-          if (finalLandX >= dogRect.left - 50 && finalLandX <= dogRect.right + 50) {
-            targetX = dogRect.left + dogRect.width / 2;
-            targetY = dogRect.top + dogRect.height / 2;
-            hitAnimal = true;
-            hitAnimalName = "犬";
-          }
-        }
+        // 動物が横取りするかどうか（成功時のみ発動、70%の確率）
+        const willIntercept = isOnTarget && Math.random() < interferenceChance;
+        const interceptType = Math.random() < 0.5 ? "cat" : "dog";
+        const interceptTiming = 0.4 + Math.random() * 0.3; // 40%〜70%の位置で横取り
+        let intercepted = false;
+        let interceptTriggered = false;
 
         // 放物線アニメーション
-        const duration = 500 + (1.5 - power) * 300; // 強いと速い（500〜800ms）
-        const rotation = 360 + power * 540; // 強いと多く回転
+        const duration = 500 + (1.5 - power) * 300;
+        const rotation = 360 + power * 540;
         const startTime = Date.now();
 
         function animateCoin() {
@@ -906,61 +1017,64 @@
           const progress = Math.min(elapsed / duration, 1);
 
           // 放物線の計算
-          let x, y;
-          if (hitAnimal) {
-            x = startX + (targetX - startX) * progress;
-            y = startY + (targetY - startY) * progress - Math.sin(progress * Math.PI) * arcHeight;
-          } else {
-            x = startX + (finalLandX - startX) * progress;
-            y = startY + (finalLandY - startY) * progress - Math.sin(progress * Math.PI) * arcHeight;
-          }
+          const x = startX + (finalLandX - startX) * progress;
+          const y = startY + (finalLandY - startY) * progress - Math.sin(progress * Math.PI) * arcHeight;
 
           coin.style.left = `${x}px`;
           coin.style.top = `${y}px`;
           coin.style.transform = `rotate(${progress * rotation}deg) scale(${1 - progress * 0.3})`;
+
+          // 横取りのタイミング
+          if (willIntercept && !interceptTriggered && progress >= interceptTiming) {
+            interceptTriggered = true;
+            const interceptX = x;
+            const interceptY = y;
+
+            if (interceptType === "cat") {
+              catIntercept(interceptX, interceptY, () => {
+                intercepted = true;
+                coin.remove();
+                showMissEffect(interceptX, interceptY, "猫に取られた！");
+              });
+            } else {
+              dogIntercept(interceptX, interceptY, () => {
+                intercepted = true;
+                coin.remove();
+                showMissEffect(interceptX, interceptY, "犬に取られた！");
+              });
+            }
+          }
+
+          if (intercepted) {
+            return; // 横取りされたらアニメーション終了
+          }
 
           if (progress < 1) {
             requestAnimationFrame(animateCoin);
           } else {
             coin.remove();
 
-            if (hitAnimal) {
-              // 動物に当たった
-              showMissEffect(targetX, targetY);
-              status.textContent = hitAnimalName === "猫" ? "猫に邪魔された！😿" : "犬に邪魔された！🐕";
-              status.className = "blocked";
-              setTimeout(() => {
-                canThrow = true;
-                throwCooldown = false;
-              }, 1500);
-            } else if (!isOnTarget) {
+            // 横取りがトリガーされていたら成功判定しない
+            if (interceptTriggered) {
+              return;
+            }
+
+            if (!isOnTarget) {
               // 賽銭箱を外した
-              showMissEffect(finalLandX, finalLandY);
-              status.textContent = missReason;
-              status.className = "blocked";
-              setTimeout(() => {
-                canThrow = true;
-                throwCooldown = false;
-              }, 1500);
+              showMissEffect(finalLandX, finalLandY, missReason);
             } else {
               // 成功！
               createSparkles(boxCenterX, boxCenterY);
               triggerSuccessEffect(boxCenterX, boxCenterY);
 
-              // パワーが適正中央に近いほどボーナス
-              const accuracy = 1 - Math.abs(power - 1) * 2; // 0〜1
+              const accuracy = 1 - Math.abs(power - 1) * 2;
               const bonus = Math.floor(accuracy * 15);
               score += 10 + bonus;
-              scoreElement.textContent = score;
+              if (scoreElement) scoreElement.textContent = score;
 
-              // 鈴を鳴らす（アニメーションのみ）
               setTimeout(() => {
-                bell.classList.add("ringing");
-                setTimeout(() => bell.classList.remove("ringing"), 500);
-
-                // おみくじ表示
-                setTimeout(showOmikuji, 800);
-              }, 300);
+                showOmikuji();
+              }, 500);
             }
           }
         }
@@ -968,37 +1082,38 @@
         animateCoin();
       }
 
-      // 失敗エフェクト
-      function showMissEffect(x, y) {
-        const miss = document.createElement("div");
-        miss.className = "miss-effect";
-        miss.textContent = "❌";
-        miss.style.left = `${x}px`;
-        miss.style.top = `${y}px`;
-        document.body.appendChild(miss);
-        setTimeout(() => miss.remove(), 1000);
+      // 失敗モーダルを表示
+      function showMissEffect(x, y, reason) {
+        failReason.textContent = reason;
+        failOverlay.classList.add("show");
       }
 
-      // キラキラエフェクト
+      // パーティクルエフェクト
       function createSparkles(x, y) {
-        const sparkles = ["✨", "⭐", "💫", "🌟"];
-        for (let i = 0; i < 12; i++) {
-          const sparkle = document.createElement("div");
-          sparkle.className = "sparkle";
-          sparkle.textContent = sparkles[Math.floor(Math.random() * sparkles.length)];
-          sparkle.style.left = `${x + (Math.random() - 0.5) * 150}px`;
-          sparkle.style.top = `${y + (Math.random() - 0.5) * 150}px`;
-          document.body.appendChild(sparkle);
-          setTimeout(() => sparkle.remove(), 1000);
+        const colors = ["#ffd700", "#ffec8b", "#fff", "#ffa500", "#ff6347"];
+        for (let i = 0; i < 20; i++) {
+          const particle = document.createElement("div");
+          particle.className = "particle";
+          const size = 5 + Math.random() * 10;
+          const color = colors[Math.floor(Math.random() * colors.length)];
+          particle.style.width = `${size}px`;
+          particle.style.height = `${size}px`;
+          particle.style.background = `radial-gradient(circle, ${color} 0%, transparent 70%)`;
+          particle.style.left = `${x}px`;
+          particle.style.top = `${y}px`;
+          particle.style.setProperty("--tx", `${(Math.random() - 0.5) * 200}px`);
+          particle.style.setProperty("--ty", `${(Math.random() - 0.5) * 200}px`);
+          document.body.appendChild(particle);
+          setTimeout(() => particle.remove(), 1000);
         }
       }
 
-      // おみくじ表示
+      // 結果画像を表示
       function showOmikuji() {
-        const fortune = omikujiData[Math.floor(Math.random() * omikujiData.length)];
-        omikujiResult.textContent = fortune.result;
-        omikujiResult.style.color = fortune.color;
-        omikujiMessage.textContent = fortune.message;
+        const randomIndex = Math.floor(Math.random() * resultImages.length);
+        const imagePath = resultImages[randomIndex] + "?t=" + Date.now();
+        console.log("選ばれた画像:", randomIndex + 1, imagePath);
+        resultImage.src = imagePath;
         omikujiOverlay.classList.add("show");
       }
 
@@ -1058,8 +1173,10 @@
               // 投げの方向を計算（-200〜+200pxの動きを-1〜+1に変換）
               const throwDirection = Math.min(Math.max(movementX / 200, -1), 1);
 
-              status.textContent = `投げた！💪${(throwPower * 100).toFixed(0)}%`;
-              status.className = "throwing";
+              if (status) {
+                status.textContent = `投げた！💪${(throwPower * 100).toFixed(0)}%`;
+                status.className = "throwing";
+              }
 
               // 小銭を投げる（強さと方向を渡す）
               throwCoin(handX, handY, throwPower, throwDirection);
@@ -1073,23 +1190,21 @@
 
           // 手が上にあるとき
           if (handY < window.innerHeight * 0.5 && canThrow) {
-            if (catBlockingActive || dogBlockingActive) {
-              const animal = catBlockingActive ? "猫" : "犬";
-              status.textContent = `${animal}が邪魔してる！タイミングを見て！`;
-              status.className = "blocked";
-            } else {
-              const currentMovement =
-                handYHistory.length > 1 ? handYHistory[handYHistory.length - 1] - handYHistory[0] : 0;
+            const currentMovement =
+              handYHistory.length > 1 ? handYHistory[handYHistory.length - 1] - handYHistory[0] : 0;
+            if (status) {
               status.textContent = `準備OK！振り下ろして！(${Math.max(0, currentMovement).toFixed(0)}px)`;
               status.className = "active";
             }
           } else if (canThrow && !throwCooldown) {
-            status.textContent = "手を上に上げてください";
-            status.className = "";
+            if (status) {
+              status.textContent = "手を上に上げてください";
+              status.className = "";
+            }
           }
         } else {
           handIndicator.style.display = "none";
-          if (canThrow) {
+          if (canThrow && status) {
             status.textContent = "手が見えません...";
             status.className = "";
           }
