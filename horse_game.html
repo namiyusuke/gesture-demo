@@ -109,16 +109,19 @@
         left: 20px;
         background: #fff;
         padding: 20px 24px;
-        border-radius: 4px;
-        max-width: 280px;
+        border-radius: 20px;
         z-index: 1000;
-        border: 1px solid rgba(139, 90, 43, 1);
+        padding-block: 50px;
+        padding-inline: 42px;
       }
-
+      .info-icon {
+        font-size: 40px;
+        margin-right: 6px;
+      }
       #info h1 {
         font-size: 17px;
-        color: #8b5a2b;
-        margin-bottom: 12px;
+        color: #000;
+        margin-bottom: 24px;
         font-weight: bold;
       }
 
@@ -130,12 +133,17 @@
       }
 
       #remaining {
-        font-size: 15px;
-        color: #cd853f;
-        margin-top: 6px;
-        font-weight: 500;
+        font-size: 24px;
+        color: #e7141b;
+        font-weight: 900;
       }
-
+      .info-remaining {
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 900;
+      }
       #loading {
         position: fixed;
         top: 50%;
@@ -172,29 +180,35 @@
         }
       }
 
-      #clear-modal {
+      #clear-modal,
+      #timeover-modal {
         position: fixed;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.7);
+        background: rgba(255, 255, 255, 0.95);
         display: none;
         justify-content: center;
         align-items: center;
         z-index: 20000;
       }
 
-      #clear-modal.show {
+      #clear-modal.show,
+      #timeover-modal.show {
         display: flex;
       }
 
-      #clear-content {
+      #clear-content,
+      #timeover-content {
         background: white;
-        padding: 40px;
+        padding: 40px 60px;
         border-radius: 20px;
+        border: 4px solid #7dd3fc;
         text-align: center;
         animation: bounceIn 0.5s ease;
+        position: relative;
+        min-width: 350px;
       }
 
       @keyframes bounceIn {
@@ -209,31 +223,121 @@
         }
       }
 
-      #clear-content h2 {
-        font-size: 36px;
-        color: #4ecdc4;
-        margin-bottom: 20px;
+      .modal-icon {
+        position: absolute;
+        top: -20px;
+        left: -20px;
+        font-size: 60px;
       }
 
-      #clear-content p {
+      .modal-effect {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        font-size: 40px;
+        color: #ef4444;
+      }
+
+      .modal-horse {
+        width: 180px;
+        height: auto;
+        margin: 0 auto 10px;
+        display: block;
+      }
+
+      #clear-content h2,
+      #timeover-content h2 {
+        font-size: 48px;
+        font-weight: 900;
+        color: #1a1a1a;
+        margin-bottom: 20px;
+        letter-spacing: 2px;
+      }
+
+      #clear-content p,
+      #timeover-content p {
         font-size: 18px;
         color: #666;
         margin-bottom: 20px;
       }
 
-      #restart-btn {
+      #restart-btn,
+      #restart-btn-timeover {
         padding: 15px 40px;
         font-size: 18px;
-        background: #ff6b6b;
+        background: #ef4444;
         color: white;
         border: none;
         border-radius: 30px;
         cursor: pointer;
         transition: transform 0.2s;
+        font-weight: bold;
       }
 
-      #restart-btn:hover {
+      #restart-btn:hover,
+      #restart-btn-timeover:hover {
         transform: scale(1.05);
+      }
+
+      /* キラキラエフェクト */
+      .sparkle {
+        position: absolute;
+        font-size: 30px;
+        color: #fbbf24;
+        animation: sparkleAnim 1.5s ease-in-out infinite;
+      }
+
+      .sparkle:nth-child(1) {
+        top: 10%;
+        left: 5%;
+        animation-delay: 0s;
+      }
+      .sparkle:nth-child(2) {
+        top: 5%;
+        right: 10%;
+        animation-delay: 0.3s;
+      }
+      .sparkle:nth-child(3) {
+        top: 30%;
+        right: 5%;
+        animation-delay: 0.6s;
+      }
+      .sparkle:nth-child(4) {
+        bottom: 30%;
+        left: 8%;
+        animation-delay: 0.9s;
+      }
+      .sparkle:nth-child(5) {
+        bottom: 10%;
+        right: 15%;
+        animation-delay: 0.2s;
+      }
+      .sparkle:nth-child(6) {
+        top: 50%;
+        left: 3%;
+        animation-delay: 0.5s;
+      }
+      .sparkle:nth-child(7) {
+        bottom: 20%;
+        left: 15%;
+        animation-delay: 0.8s;
+      }
+      .sparkle:nth-child(8) {
+        top: 15%;
+        right: 3%;
+        animation-delay: 0.4s;
+      }
+
+      @keyframes sparkleAnim {
+        0%,
+        100% {
+          opacity: 0.3;
+          transform: scale(0.8);
+        }
+        50% {
+          opacity: 1;
+          transform: scale(1.2);
+        }
       }
 
       /* 捕獲エリア */
@@ -292,13 +396,22 @@
 
       /* タイマー表示 */
       #timer {
-        font-size: 20px;
-        font-weight: bold;
-        color: #ff6347;
-        margin-top: 10px;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        font-size: 64px;
+        font-weight: 900;
+        color: #e7141b;
+        text-align: center;
+        display: flex;
+      }
+      .info-unit {
+        font-size: 24px;
+        color: #e7141b;
+        font-weight: 900;
       }
 
+      .info-icon {
+        font-size: 24px;
+        margin-right: 6px;
+      }
       /* チュートリアルモーダル */
       #tutorial-modal {
         position: fixed;
@@ -320,14 +433,17 @@
       .tutorial-content {
         background: rgba(0, 0, 0, 0.2);
         border-radius: 8px;
-        padding: 10px;
+        padding: 30px;
         max-width: 500px;
         width: 90%;
         text-align: center;
         color: white;
         border: #fff solid 1px;
       }
-
+      .info-remaining-unit {
+        color: #e7141b;
+        font-weight: 900;
+      }
       .tutorial-content h1 {
         font-size: 32px;
         color: #fff;
@@ -446,6 +562,43 @@
           padding: 12px 40px;
         }
       }
+      .info-timer {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding-bottom: 28px;
+      }
+      .info-header {
+        position: relative;
+      }
+      .info-saru {
+        position: absolute;
+        bottom: -20px;
+        left: -30px;
+      }
+      .info-saru img,
+      .info-hebi img {
+        width: 60px;
+      }
+      .info-hebi {
+        position: absolute;
+        bottom: -20px;
+        right: -30px;
+      }
+      .game-modal-title {
+        position: absolute;
+        inset: 0;
+        margin: auto;
+        display: grid;
+        place-items: center;
+      }
+      .game-modal-title span {
+        padding: 10px;
+        display: inline-block;
+        width: max-content;
+        height: max-content;
+        background-color: #fff;
+      }
     </style>
   </head>
   <body>
@@ -496,9 +649,25 @@
       <canvas id="game-canvas"></canvas>
 
       <div id="info">
-        <h1>馬以外の動物をつまみ出せ！</h1>
-        <div id="timer">⏱️ 60.00秒</div>
-        <div id="remaining">残り: 0匹</div>
+        <div class="info-header">
+          <h1>馬以外の動物をつまみ出せ！</h1>
+          <div class="info-timer">
+            <span class="info-icon">⏰</span>
+            <span id="timer">60.00</span>
+            <span class="info-unit">秒</span>
+          </div>
+          <div class="info-remaining">
+            <span class="info-remaining-text">残り：</span>
+            <div id="remaining">0</div>
+            <span class="info-remaining-unit">匹</span>
+          </div>
+          <span class="info-saru">
+            <img src="horse_game-images/saru.png" alt="猿" />
+          </span>
+          <span class="info-hebi">
+            <img src="horse_game-images/hebi.png" alt="蛇" />
+          </span>
+        </div>
       </div>
 
       <div id="video-container">
@@ -517,11 +686,31 @@
     </div>
 
     <div id="clear-modal">
+      <div class="sparkle">✦</div>
+      <div class="sparkle">✦</div>
+      <div class="sparkle">✦</div>
+      <div class="sparkle">✦</div>
+      <div class="sparkle">✦</div>
+      <div class="sparkle">✦</div>
+      <div class="sparkle">✦</div>
+      <div class="sparkle">✦</div>
       <div id="clear-content">
-        <h2>🎉 クリア！</h2>
-        <p>全ての動物を見つけました！</p>
-        <p id="clear-time" style="font-size: 28px; color: #ff6b6b; font-weight: bold; margin: 16px 0">タイム: 0.00秒</p>
+        <div class="modal-icon">🎉</div>
+        <img src="horse_game-images/uma.png" alt="馬" class="modal-horse" />
+        <h2 class="game-modal-title">
+          <span>すべてクリア！</span>
+        </h2>
         <button id="restart-btn">もう一度遊ぶ</button>
+      </div>
+    </div>
+
+    <div id="timeover-modal">
+      <div id="timeover-content">
+        <div class="modal-icon">⏰</div>
+        <img src="horse_game-images/uma.png" alt="馬" class="modal-horse" />
+        <h2 class="game-modal-title">
+          <span>タイムオーバー</span>
+        <button id="restart-btn-timeover">もう一度遊ぶ</button>
       </div>
     </div>
 
@@ -538,6 +727,8 @@
       const remainingElement = document.getElementById("remaining");
       const clearModal = document.getElementById("clear-modal");
       const restartBtn = document.getElementById("restart-btn");
+      const timeoverModal = document.getElementById("timeover-modal");
+      const restartBtnTimeover = document.getElementById("restart-btn-timeover");
       const capturedAnimalsDiv = document.getElementById("captured-animals");
       const captureZone = document.getElementById("capture-zone");
       const timerElement = document.getElementById("timer");
@@ -874,13 +1065,11 @@
         ripples = [];
         capturedAnimalsDiv.innerHTML = "";
         clearModal.classList.remove("show");
+        timeoverModal.classList.remove("show");
 
         // タイマーリセット
-        timerElement.textContent = `⏱️ ${COUNTDOWN_TIME.toFixed(2)}秒`;
+        timerElement.textContent = `${COUNTDOWN_TIME.toFixed(2)}`;
         clearTime = 0;
-        // クリアモーダルのテキストをリセット
-        document.querySelector("#clear-content h2").textContent = "🎉 クリア！";
-        document.querySelector("#clear-content p").textContent = "全ての動物を見つけました！";
         // カメラが既に起動している場合はタイマー開始（リスタート時）
         if (handLandmarker) {
           startTimer();
@@ -979,7 +1168,7 @@
       // UI更新
       function updateUI() {
         const remaining = hiddenAnimals.filter((a) => !a.isCaptured).length;
-        remainingElement.textContent = `残り: ${remaining}匹`;
+        remainingElement.textContent = `${remaining}`;
       }
 
       // タイマー更新（カウントダウン方式）
@@ -987,18 +1176,14 @@
         if (isGameRunning && gameStartTime > 0) {
           const elapsed = (Date.now() - gameStartTime) / 1000;
           const remaining = Math.max(0, COUNTDOWN_TIME - elapsed);
-          timerElement.textContent = `⏱️ ${remaining.toFixed(2)}秒`;
+          timerElement.textContent = `${remaining.toFixed(2)}`;
 
           // タイムオーバー
           if (remaining <= 0) {
             stopTimer();
             clearTime = COUNTDOWN_TIME;
-            timerElement.textContent = `⏱️ 0.00秒`;
-            const clearTimeElement = document.getElementById("clear-time");
-            clearTimeElement.textContent = `タイムオーバー！`;
-            document.querySelector("#clear-content h2").textContent = "⏰ タイムオーバー";
-            document.querySelector("#clear-content p").textContent = "時間切れです...";
-            clearModal.classList.add("show");
+            timerElement.textContent = `0.00`;
+            timeoverModal.classList.add("show");
           }
         }
       }
@@ -1259,9 +1444,7 @@
           // クリアタイムを計算（残り時間）
           const elapsed = (Date.now() - gameStartTime) / 1000;
           clearTime = Math.max(0, COUNTDOWN_TIME - elapsed);
-          const clearTimeElement = document.getElementById("clear-time");
-          clearTimeElement.textContent = `残り時間: ${clearTime.toFixed(2)}秒`;
-          timerElement.textContent = `⏱️ ${clearTime.toFixed(2)}秒`;
+          timerElement.textContent = `${clearTime.toFixed(2)}`;
 
           setTimeout(() => {
             clearModal.classList.add("show");
@@ -1490,6 +1673,7 @@
       // イベントリスナー
       window.addEventListener("resize", resizeCanvas);
       restartBtn.addEventListener("click", initGame);
+      restartBtnTimeover.addEventListener("click", initGame);
 
       // 初期化（チュートリアル表示中は待機）
       resizeCanvas();
