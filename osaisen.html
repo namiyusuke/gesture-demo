@@ -6,7 +6,10 @@
     <title>お賽銭ジェスチャー - 並河稲荷</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@300;400;500;700;900&display=swap"
+      rel="stylesheet"
+    />
     <style>
       * {
         margin: 0;
@@ -15,7 +18,7 @@
       }
 
       body {
-        font-family: "Zen Maru Gothic", "Arial", sans-serif;
+        font-family: "Zen Kaku Gothic New", "Arial", sans-serif;
         font-weight: 700;
         min-height: 100vh;
         overflow: hidden;
@@ -483,30 +486,29 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.8);
+        background: rgba(0, 0, 0, 0.85);
         display: none;
         justify-content: center;
         align-items: center;
-        z-index: 2000;
-        opacity: 0;
-        transition: opacity 0.5s;
+        z-index: 20000;
       }
 
       #fail-overlay.show {
         display: flex;
-        opacity: 1;
       }
 
       #fail-paper {
-        background: #2a2a2a;
-        width: 300px;
-        padding: 40px 30px;
-        border-radius: 4px;
+        background: #fff;
+        border-radius: 40px;
+        max-width: 500px;
+        width: 90%;
         text-align: center;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        color: #000;
+        padding: 85px 40px;
+        position: relative;
+        overflow: hidden;
         transform: scale(0) rotate(-10deg);
         transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-        border: 1px solid #fff;
       }
 
       #fail-overlay.show #fail-paper {
@@ -514,34 +516,34 @@
       }
 
       #fail-title {
-        font-size: 32px;
+        font-size: 36px;
         font-weight: bold;
-        color: #fff;
-        margin-bottom: 20px;
+        color: #000;
+        margin-bottom: 30px;
       }
 
       #fail-reason {
-        font-size: 24px;
-        color: #fff;
-        margin-bottom: 30px;
+        font-size: 48px;
+        font-weight: 900;
+        color: #000;
+        margin-bottom: 20px;
         line-height: 1.5;
       }
 
       #close-fail {
-        padding: 12px 35px;
-        font-size: 16px;
-        background: #666;
-        color: white;
-        border: none;
-        border-radius: 25px;
-        cursor: pointer;
-        transition: all 0.3s;
+        padding: 15px 40px;
+        font-size: 20px;
         font-weight: bold;
+        color: #fff;
+        background-color: #e7141b;
+        border: none;
+        border-radius: 30px;
+        cursor: pointer;
+        margin-top: 50px;
       }
 
-      #close-fail:hover {
-        background: #888;
-        transform: scale(1.05);
+      #close-fail:active {
+        transform: scale(0.98);
       }
 
       #omikuji-result {
@@ -581,11 +583,8 @@
         top: 20px;
         left: 20px;
         background: #fff;
-        padding: 20px 24px;
         border-radius: 20px;
         z-index: 1000;
-        padding-block: 50px;
-        padding-inline: 42px;
       }
 
       .info-icon {
@@ -596,23 +595,14 @@
       #info h1 {
         font-size: 17px;
         color: #000;
-        margin-bottom: 24px;
+        margin-bottom: 10px;
         font-weight: bold;
       }
-
-      #info p {
-        font-size: 13px;
-        color: #6b4423;
-        margin: 6px 0;
-        opacity: 0.9;
-      }
-
       #coin-count {
         font-size: 24px;
         color: #e7141b;
         font-weight: 900;
       }
-
       .info-remaining {
         text-align: center;
         display: flex;
@@ -868,6 +858,33 @@
       .tutorial-button:active {
         transform: scale(0.98);
       }
+      .info {
+        padding-top: 46px;
+        padding-bottom: 120px;
+        padding-inline: 42px;
+        text-align: center;
+      }
+      .info-ttl {
+        color: #000;
+        font-size: 24px;
+      }
+      .info-text {
+        color: #000;
+      }
+      .info-dog-character {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        width: 80px;
+        height: auto;
+      }
+      .info-cat-character {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        width: 80px;
+        height: auto;
+      }
     </style>
   </head>
   <body>
@@ -923,10 +940,11 @@
       </div>
 
       <!-- ゲーム情報パネル -->
-      <div id="info">
-        <h1><span class="info-icon">⛩️</span>お賽銭ゲーム</h1>
-        <p>手を振って賽銭を投げよう！</p>
-        <p class="info-remaining"><span class="info-icon">🪙</span>投げた回数 <span id="coin-count">0</span> 回</p>
+      <div id="info" class="info">
+        <h1 class="info-ttl">お賽銭を投げ入れろ！</h1>
+        <p class="info-text">犬や猫が邪魔します</p>
+        <img class="info-dog-character" src="osaisen-images/dog.png" alt="犬" />
+        <img class="info-cat-character" src="osaisen-images/cat.png" alt="猫" />
       </div>
 
       <div id="hand-indicator">✋</div>

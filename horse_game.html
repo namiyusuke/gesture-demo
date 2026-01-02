@@ -1,9 +1,9 @@
 <!doctype html>
 <html lang="ja">
   <head>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>馬以外の動物をつまみ出せ！</title>
@@ -15,7 +15,7 @@
       }
 
       body {
-        font-family: "Zen Maru Gothic", "Arial", sans-serif;
+        font-family: "Zen Kaku Gothic New", "Arial", sans-serif;
         font-weight: 700;
         background: #f5e6d3;
         min-height: 100vh;
@@ -113,10 +113,10 @@
         top: 20px;
         left: 20px;
         background: #fff;
-        padding: 20px 24px;
+        padding: 10px 24px;
         border-radius: 20px;
         z-index: 1000;
-        padding-block: 50px;
+        padding-block: 30px;
         padding-inline: 42px;
       }
       .info-icon {
@@ -126,7 +126,7 @@
       #info h1 {
         font-size: 17px;
         color: #000;
-        margin-bottom: 24px;
+        margin-bottom: 10px;
         font-weight: bold;
       }
 
@@ -205,6 +205,7 @@
 
       #clear-content,
       #timeover-content {
+        padding-block: 42px;
         background: white;
         border-radius: 20px;
         text-align: center;
@@ -249,7 +250,7 @@
 
       #clear-content h2,
       #timeover-content h2 {
-        font-size: 48px;
+        font-size: min(calc(48 / 1440 * 100vw), 48px);
         font-weight: 900;
         color: #1a1a1a;
         margin-bottom: 20px;
@@ -265,15 +266,21 @@
 
       #restart-btn,
       #restart-btn-timeover {
-        padding: 15px 40px;
-        font-size: 18px;
+        padding: 16px 24px;
+        font-size: 16px;
         background: #ef4444;
         color: white;
         border: none;
-        border-radius: 30px;
+        border-radius: 20px;
         cursor: pointer;
         transition: transform 0.2s;
         font-weight: bold;
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 30px;
+        margin-inline: auto;
+        width: max-content;
       }
 
       #restart-btn:hover,
@@ -569,6 +576,7 @@
         align-items: center;
         gap: 5px;
         padding-bottom: 28px;
+        line-height: 1;
       }
       .info-header {
         position: relative;
@@ -688,15 +696,15 @@
     </div>
 
     <div id="clear-modal">
-      <div class="sparkle">✦</div>
-      <div class="sparkle">✦</div>
-      <div class="sparkle">✦</div>
-      <div class="sparkle">✦</div>
-      <div class="sparkle">✦</div>
-      <div class="sparkle">✦</div>
-      <div class="sparkle">✦</div>
-      <div class="sparkle">✦</div>
       <div id="clear-content">
+        <div class="sparkle">✦</div>
+        <div class="sparkle">✦</div>
+        <div class="sparkle">✦</div>
+        <div class="sparkle">✦</div>
+        <div class="sparkle">✦</div>
+        <div class="sparkle">✦</div>
+        <div class="sparkle">✦</div>
+        <div class="sparkle">✦</div>
         <div class="modal-icon">🎉</div>
         <img  src="horse_game-images/uma.png" alt="馬" class="modal-horse" />
         <h2 class="game-modal-title">
@@ -763,6 +771,7 @@
       let gameStartTime = 0; // ゲーム開始時刻
       let clearTime = 0; // クリアタイム（秒）
       let isGameRunning = false; // ゲーム進行中フラグ
+      let isRenderRunning = false; // renderループ実行中フラグ
       let timerInterval = null; // タイマー更新用
       const COUNTDOWN_TIME = 60; // カウントダウン開始時間（秒）
 
@@ -1108,7 +1117,7 @@
           for (let col = 0; col < cols; col++) {
             const x = col * spacingX + (row % 2) * (spacingX / 2) + 60 + Math.random() * 30 - 15;
             const y = grassStartY + row * spacingY + Math.random() * 20 - 10;
-            const speed = 1 + Math.random() * 4; // 移動速度（1〜5でバラつき）
+            const speed = 0.5 + Math.random() * 1.5; // 移動速度（0.5〜2でバラつき）
             horses.push({
               x: x,
               y: y,
@@ -1164,7 +1173,11 @@
         }
 
         updateUI();
-        render();
+        // renderが未起動なら開始
+        if (!isRenderRunning) {
+          isRenderRunning = true;
+          render();
+        }
       }
 
       // UI更新

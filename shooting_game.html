@@ -6,7 +6,10 @@
     <title>射的ゲーム - 的をねらえ！</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@300;400;500;700;900&display=swap"
+      rel="stylesheet"
+    />
     <style>
       * {
         margin: 0;
@@ -15,7 +18,7 @@
       }
 
       body {
-        font-family: "Zen Maru Gothic", "Arial", sans-serif;
+        font-family: "Zen Kaku Gothic New", "Arial", sans-serif;
         font-weight: 900;
         background: #fff;
         min-height: 100vh;
@@ -28,7 +31,7 @@
         height: 100vh;
         background-image: url("shooting_game-images/shooting-bg.png");
         background-size: contain;
-        background-position: center max(calc(100 / 1440 * 100vw), 100px);
+        background-position: center calc(100 / 1440 * 100vw);
         background-repeat: no-repeat;
       }
 
@@ -413,31 +416,38 @@
         padding-block: 50px;
         padding-inline: 42px;
         display: none;
+        min-width: 300px;
+        overflow: hidden;
       }
 
       #game-ui h1 {
-        font-size: 17px;
+        font-size: 24px;
         color: #000;
         margin-bottom: 10px;
-        font-weight: bold;
-      }
-
-      .info-icon {
-        font-size: 40px;
-        margin-right: 6px;
-      }
-      .info-score {
-        color: #e7141b;
-      }
-      #timer-display {
-        font-size: 24px;
         font-weight: 900;
-        color: #e7141b;
         text-align: center;
       }
 
+      .info-icon {
+        font-size: 30px;
+        margin-right: 6px;
+      }
       #timer-display.warning {
-        animation: pulse 0.5s infinite;
+        font-size: 64px;
+      }
+      .info-score {
+        color: #000;
+        font-size: 24px;
+        font-weight: 900;
+        margin-top: 10px;
+      }
+      #timer-display {
+        font-size: 64px;
+        font-weight: 900;
+        width: 150px;
+        color: #e7141b;
+        text-align: center;
+        font-variant-numeric: tabular-nums;
       }
 
       @keyframes pulse {
@@ -451,8 +461,8 @@
       }
 
       #score-display {
-        font-size: 13px;
-        color: #6b4423;
+        font-size: 24px;
+        color: #e7141b;
         margin: 6px 0;
         opacity: 0.9;
       }
@@ -460,9 +470,10 @@
       .info-remaining {
         text-align: center;
         display: flex;
-        align-items: center;
+        align-items: flex-end;
         justify-content: center;
         margin-top: 16px;
+        line-height: 1;
       }
 
       /* 結果画面 */
@@ -484,14 +495,16 @@
       }
 
       .result-content {
-        background: rgba(0, 0, 0, 0.2);
-        border-radius: 8px;
-        padding: 40px;
+        background: #fff;
+        border-radius: 40px;
         max-width: 500px;
         width: 90%;
         text-align: center;
-        color: white;
-        border: #fff solid 1px;
+        color: #000;
+        padding-top: 85px;
+        padding-bottom: 85px;
+        position: relative;
+        overflow: hidden;
       }
 
       .result-content h1 {
@@ -499,33 +512,54 @@
         color: #ffd700;
         margin-bottom: 30px;
       }
-
       .result-score {
-        font-size: 72px;
+        font-size: 64px;
         font-weight: bold;
-        color: #fff;
+        color: #e7141b;
+      }
+      .result-label {
+        font-size: 48px;
+        font-weight: 900;
+      }
+      result-label-title {
+        font-size: 24px;
+        font-weight: 900;
         margin-bottom: 20px;
       }
-
-      .result-label {
-        font-size: 24px;
-        color: rgba(255, 255, 255, 0.7);
-        margin-bottom: 40px;
-      }
-
       .result-button {
         padding: 15px 40px;
         font-size: 20px;
         font-weight: bold;
-        color: #2a1a0a;
-        background: #fff;
+        color: #fff;
         border: none;
-        border-radius: 4px;
+        border-radius: 30px;
         cursor: pointer;
+        background-color: #e7141b;
+        margin-top: 70px;
       }
 
       .result-button:active {
         transform: scale(0.98);
+      }
+
+      /* キラキラエフェクト */
+      .sparkle {
+        position: absolute;
+        font-size: 24px;
+        pointer-events: none;
+        animation: sparkle-fall 2s ease-out forwards;
+        z-index: 20001;
+      }
+
+      @keyframes sparkle-fall {
+        0% {
+          opacity: 1;
+          transform: translateY(0) scale(1) rotate(0deg);
+        }
+        100% {
+          opacity: 0;
+          transform: translateY(100px) scale(0.5) rotate(360deg);
+        }
       }
 
       /* マイナスヒットモーダル */
@@ -630,6 +664,45 @@
           padding: 12px 40px;
         }
       }
+      .info-remaining-unit {
+        font-size: 24px;
+        font-weight: 900;
+        color: #e7141b;
+      }
+      .info-score {
+        text-align: center;
+      }
+      .result-score-unit {
+        font-size: 24px;
+        color: #e7141b;
+        list-style: none;
+      }
+      .result-score-container {
+        display: flex;
+        align-items: baseline;
+        justify-content: center;
+        gap: 8px;
+        line-height: 1;
+      }
+      .result-score-container {
+        margin-bottom: 32px;
+      }
+      .info-score-decorate01 {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        width: min(calc(100 / 1440) * 100vw, 100px);
+        height: auto;
+        display: block;
+      }
+      .info-score-decorate02 {
+        position: absolute;
+        top: -10px;
+        right: -30px;
+        display: block;
+        width: min(calc(180 / 1440) * 100vw, 180px);
+        height: auto;
+      }
     </style>
   </head>
   <body>
@@ -696,20 +769,42 @@
       <!-- ゲームUI -->
       <div id="game-ui">
         <h1>的をねらえ！</h1>
-        <p class="info-remaining"><span class="info-icon">⏱️</span><span id="timer-display">60:00</span></p>
-        <p>
+        <p class="info-remaining">
+          <span class="info-icon">⏱️</span><span id="timer-display">60:00</span>
+          <span class="info-remaining-unit">秒</span>
+        </p>
+        <p class="info-score">
           スコア:
           <span class="info-score" id="score-display">0</span>
         </p>
+        <img
+          class="info-score-decorate01"
+          src="/shooting_game-images/target-mouse.png"
+          alt="弾丸アイコン"
+          width="24"
+          height="24"
+        />
+        <img
+          class="info-score-decorate02"
+          src="/shooting_game-images/target08.png"
+          alt="弾丸アイコン"
+          width="24"
+          height="24"
+        />
       </div>
     </div>
 
     <!-- 結果画面 -->
     <div id="result-modal">
       <div class="result-content">
-        <h1>タイムアップ！</h1>
-        <div class="result-label">あなたのスコア</div>
-        <div class="result-score" id="final-score">0</div>
+        <div class="result-label-title">あなたのスコア</div>
+        <div class="result-score-container">
+          <div class="result-score" id="final-score">0</div>
+          <span class="result-score-unit">点</span>
+        </div>
+        <div>
+          <span class="result-label" id="rank-label"></span>
+        </div>
         <button class="result-button" id="retry-button">もう一度遊ぶ</button>
       </div>
     </div>
@@ -779,6 +874,7 @@
       const scoreDisplay = document.getElementById("score-display");
       const resultModal = document.getElementById("result-modal");
       const finalScoreElement = document.getElementById("final-score");
+      const rankLabel = document.getElementById("rank-label");
       const retryButton = document.getElementById("retry-button");
       const minusModal = document.getElementById("minus-modal");
       const minusPointsDisplay = document.getElementById("minus-points-display");
@@ -812,7 +908,7 @@
       // ゲーム開始
       function startGame() {
         score = 0;
-        gameTime = 60000;
+        gameTime = 10000;
         isGameRunning = true;
         gameUI.style.display = "block";
         resultModal.classList.remove("show");
@@ -830,6 +926,25 @@
         }, 10);
       }
 
+      // キラキラエフェクトを生成
+      function createSparkles() {
+        const resultContent = document.querySelector(".result-content");
+        const sparkleCount = 20;
+        for (let i = 0; i < sparkleCount; i++) {
+          setTimeout(() => {
+            const sparkle = document.createElement("span");
+            sparkle.className = "sparkle";
+            sparkle.textContent = "✨";
+            sparkle.style.left = Math.random() * 100 + "%";
+            sparkle.style.top = Math.random() * 100 + "%";
+            sparkle.style.fontSize = Math.random() * 20 + 16 + "px";
+            sparkle.style.animationDuration = Math.random() * 1 + 1.5 + "s";
+            resultContent.appendChild(sparkle);
+            setTimeout(() => sparkle.remove(), 2500);
+          }, i * 100);
+        }
+      }
+
       // ゲーム終了
       function endGame() {
         isGameRunning = false;
@@ -839,7 +954,22 @@
         }
         // 結果画面を表示
         finalScoreElement.textContent = score;
+
+        // ランク判定
+        let rank;
+        if (score >= 3000) {
+          rank = "無双！！";
+        } else if (score >= 2000) {
+          rank = "勝ち組！";
+        } else if (score >= 1000) {
+          rank = "凡人ムーブ";
+        } else {
+          rank = "やらかし";
+        }
+        rankLabel.textContent = rank;
+
         resultModal.classList.add("show");
+        createSparkles();
       }
 
       // リトライボタン
@@ -894,7 +1024,7 @@
 
       // 的の種類（画像を使用）- サイズが小さいほど高得点（基準: 200px）
       const targetTypes = [
-        { image: "shooting_game-images/target01.png", points: 300, size: 440 },
+        { image: "shooting_game-images/target01.png", points: 300, size: 380 },
         { image: "shooting_game-images/target02.png", points: 120, size: 320 },
         { image: "shooting_game-images/target03.png", points: 150, size: 300 },
         { image: "shooting_game-images/target04.png", points: 180, size: 290 },
@@ -957,7 +1087,7 @@
         // 固定配置: 画像の通りに並べる
         const fixedLayout = [
           // 上段
-          { y: 0.15, sizeMultiplier: 1, items: [9, 8, 11] },
+          { y: 0.19, sizeMultiplier: 1, items: [9, 8, 11] },
           // 中段
           { y: 0.25, sizeMultiplier: 1, items: [5, 6] },
           // 下段
