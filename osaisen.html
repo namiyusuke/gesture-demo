@@ -93,7 +93,7 @@
         inset: 0;
         margin: auto;
         width: 100%;
-        max-width: 900px;
+        /* max-width: 900px; */
         z-index: 5;
       }
 
@@ -1069,6 +1069,13 @@
         oscillator.start();
         oscillator.stop(audioCtx.currentTime + 0.3);
       }
+
+      // お金が入ったときの音声
+      const moneySound = new Audio("osaisen-images/sound-money.mp3");
+      function playMoneySound() {
+        moneySound.currentTime = 0;
+        moneySound.play();
+      }
     </script>
 
     <script type="module">
@@ -1455,6 +1462,7 @@
               // 成功！
               createSparkles(boxCenterX, boxCenterY);
               triggerSuccessEffect(boxCenterX, boxCenterY);
+              playMoneySound();
 
               const accuracy = 1 - Math.abs(power - 1) * 2;
               const bonus = Math.floor(accuracy * 15);
