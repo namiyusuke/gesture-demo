@@ -701,6 +701,53 @@
         height: max-content;
         background-color: #fff;
       }
+
+      /* 手検知マーク */
+      #hand-detected {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.8);
+        color: #fff;
+        padding: 20px 40px;
+        border-radius: 16px;
+        font-size: 24px;
+        font-weight: bold;
+        z-index: 10000;
+        display: none;
+        animation: handDetectedPop 0.5s ease;
+      }
+      #hand-detected.show {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      #hand-detected .icon {
+        font-size: 36px;
+      }
+      @keyframes handDetectedPop {
+        0% {
+          opacity: 0;
+          transform: translate(-50%, -50%) scale(0.5);
+        }
+        50% {
+          transform: translate(-50%, -50%) scale(1.1);
+        }
+        100% {
+          opacity: 1;
+          transform: translate(-50%, -50%) scale(1);
+        }
+      }
+      @media (max-width: 768px) {
+        #hand-detected {
+          font-size: 16px;
+          padding: 15px 25px;
+        }
+        #hand-detected .icon {
+          font-size: 24px;
+        }
+      }
     </style>
   </head>
   <body>
@@ -778,6 +825,12 @@
       </div>
 
       <div id="cursor"></div>
+
+      <!-- 手検知マーク -->
+      <div id="hand-detected">
+        <span class="icon">✋</span>
+        <span>手を検知しました！</span>
+      </div>
 
       <!-- 籠がゲームキャンバス上に表示されるため非表示 -->
       <!-- <div id="capture-zone">
@@ -1596,7 +1649,13 @@
           // 手が初めて検出されたらタイマー開始
           if (!hasHandDetected && !isGameRunning) {
             hasHandDetected = true;
-            startTimer();
+            // 手検知マークを表示
+            const handDetectedEl = document.getElementById("hand-detected");
+            handDetectedEl.classList.add("show");
+            setTimeout(() => {
+              handDetectedEl.classList.remove("show");
+              startTimer();
+            }, 1000);
           }
 
           // 手の骨格を描画
