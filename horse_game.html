@@ -863,6 +863,7 @@
       let gameStartTime = 0; // ゲーム開始時刻
       let clearTime = 0; // クリアタイム（秒）
       let isGameRunning = false; // ゲーム進行中フラグ
+      let hasHandDetected = false; // 手が検出されたかどうか
       let isRenderRunning = false; // renderループ実行中フラグ
       let timerInterval = null; // タイマー更新用
       const COUNTDOWN_TIME = 5; // カウントダウン開始時間（秒）
@@ -1173,10 +1174,8 @@
         // タイマーリセット
         timerElement.textContent = `${COUNTDOWN_TIME.toFixed(2)}`;
         clearTime = 0;
-        // カメラが既に起動している場合はタイマー開始（リスタート時）
-        if (handLandmarker) {
-          startTimer();
-        }
+        // リスタート時は手の検出フラグをリセット（手が見えてからタイマー開始）
+        hasHandDetected = false;
 
         const width = gameCanvas.width;
         const height = gameCanvas.height;
@@ -1594,6 +1593,12 @@
         if (results.landmarks && results.landmarks.length > 0) {
           const landmarks = results.landmarks[0];
 
+          // 手が初めて検出されたらタイマー開始
+          if (!hasHandDetected && !isGameRunning) {
+            hasHandDetected = true;
+            startTimer();
+          }
+
           // 手の骨格を描画
           canvasCtx.strokeStyle = "#00ff00";
           canvasCtx.lineWidth = 2;
@@ -1724,8 +1729,7 @@
 
           videoElement.addEventListener("loadeddata", () => {
             loading.classList.add("hidden");
-            // カメラ起動後にタイマー開始
-            startTimer();
+            // タイマーは手が検出されてから開始
 
             function onFrame() {
               if (!handLandmarker) return;

@@ -965,6 +965,7 @@
       let gameTime = 60000; // 制限時間（ミリ秒）
       let gameTimerId = null;
       let isGameRunning = false;
+      let hasHandDetected = false; // 手が検出されたかどうか
 
       // UI要素
       const gameUI = document.getElementById("game-ui");
@@ -1008,6 +1009,7 @@
         score = 0;
         gameTime = 10000;
         isGameRunning = true;
+        hasHandDetected = true; // リトライ時にもフラグを設定
         gameUI.style.display = "block";
         resultModal.classList.remove("show");
         updateScoreDisplay();
@@ -1546,6 +1548,12 @@
         if (results.landmarks && results.landmarks.length > 0) {
           const landmarks = results.landmarks[0];
 
+          // 手が初めて検出されたらゲーム開始
+          if (!hasHandDetected && !isGameRunning) {
+            hasHandDetected = true;
+            startGame();
+          }
+
           // 手の骨格を描画
           canvasCtx.strokeStyle = "#ffd700";
           canvasCtx.lineWidth = 2;
@@ -1641,7 +1649,7 @@
 
           videoElement.addEventListener("loadeddata", () => {
             loading.classList.add("hidden");
-            startGame(); // ゲーム開始
+            // タイマーは手が検出されてから開始
 
             function onFrame() {
               if (!handLandmarker) return;

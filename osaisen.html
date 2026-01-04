@@ -1532,15 +1532,8 @@
         const isOnTargetY = power >= 0.6 && power <= 1.4;
         const isOnTarget = isOnTargetX && isOnTargetY;
 
-        // 失敗理由
+        // 失敗理由（判定なし）
         let missReason = "";
-        if (!isOnTargetX) {
-          missReason = direction > 0 ? "右にずれた！" : "左にずれた！";
-        } else if (power < 0.6) {
-          missReason = "弱すぎた！";
-        } else if (power > 1.4) {
-          missReason = "強すぎた！";
-        }
 
         // 動物が横取りするかどうか（成功時のみ発動、70%の確率）
         const willIntercept = isOnTarget && Math.random() < interferenceChance;
