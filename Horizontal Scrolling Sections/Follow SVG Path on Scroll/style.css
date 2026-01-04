@@ -1,0 +1,141 @@
+.motionpath-wrap {
+  width: 100%;
+  height: 450vh;
+  position: relative;
+  overflow: clip;
+}
+
+.motionpath-container {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.motionpath-content {
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  position: sticky;
+  top: 0;
+}
+
+.motionpath-content-inner {
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  display: flex;
+}
+
+.motionpath-content-path {
+  width: 100vmax;
+  height: 100%;
+  max-height: 45vh;
+}
+
+.motionpath-svg {
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.motionpath-content-wrap {
+  z-index: 1;
+  position: absolute;
+}
+
+.motionpath-content-item {
+  grid-column-gap: 2em;
+  grid-row-gap: 2em;
+  justify-content: flex-start;
+  align-items: flex-start;
+  display: flex;
+  position: absolute;
+}
+
+.motionpath-content-item__visual {
+  aspect-ratio: 1 / 1.5;
+  border-radius: 0.75em;
+  flex: none;
+  width: max(24vw, 12rem);
+  overflow: hidden;
+}
+
+.motionpath-content-item__img {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
+
+.motionpath-content-item__details {
+  grid-column-gap: 0.75em;
+  grid-row-gap: 0.75em;
+  white-space: nowrap;
+  flex-flow: column;
+  justify-content: flex-end;
+  align-items: flex-start;
+  padding-top: 2em;
+  display: flex;
+}
+
+.motionpath-content-item__title {
+  margin-top: 0;
+  margin-bottom: 0;
+  font-size: 2em;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.motionpath-content-item__label {
+  color: #13131399;
+  background-color: #fff;
+  border-radius: 100em;
+  padding: 0.5em 0.75em;
+  font-size: 0.75em;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.motionpath-content-title {
+  z-index: 0;
+  color: #1313130f;
+  margin-top: 0;
+  margin-bottom: 0;
+  font-family: PP Neue Corp Tight, Arial, sans-serif;
+  font-size: 30vw;
+  line-height: 0.8;
+  position: absolute;
+}
+
+@media screen and (max-width: 767px) {
+  .motionpath-content-inner {
+    justify-content: flex-start;
+    align-items: flex-start;
+  }
+
+  .motionpath-content-path {
+    max-height: 70vh;
+  }
+
+  .motionpath-content-item {
+    grid-column-gap: 1em;
+    grid-row-gap: 1em;
+  }
+
+  .motionpath-content-item__details {
+    grid-column-gap: 0.5em;
+    grid-row-gap: 0.5em;
+    padding-top: 1em;
+  }
+
+  .motionpath-content-item__title {
+    font-size: 1.25em;
+  }
+
+  .motionpath-content-item__label {
+    font-size: 0.625em;
+  }
+}

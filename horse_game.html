@@ -17,7 +17,7 @@
       body {
         font-family: "Zen Kaku Gothic New", "Arial", sans-serif;
         font-weight: 700;
-        background: #f5e6d3;
+        background: url("horse_game-images/uma-bg.jpg") center center / cover no-repeat;
         min-height: 100vh;
         overflow: hidden;
       }
@@ -1073,6 +1073,10 @@
       // 画像を読み込み
       const images = {};
       let imagesLoaded = 0;
+
+      // 背景画像
+      const bgImage = new Image();
+      bgImage.src = "horse_game-images/uma-bg.jpg";
       const imageFiles = [
         "uma",
         "ushi",
@@ -1437,50 +1441,13 @@
         const w = gameCanvas.width;
         const h = gameCanvas.height;
 
-        // 空（グラデーション）- 縮小
-        const skyGradient = ctx.createLinearGradient(0, 0, 0, h * SKY_RATIO);
-        skyGradient.addColorStop(0, "#87CEEB"); // 水色
-        skyGradient.addColorStop(1, "#E0F4FF"); // 薄い青
-        ctx.fillStyle = skyGradient;
-        ctx.fillRect(0, 0, w, h * SKY_RATIO);
-
-        // 遠くの山
-        ctx.fillStyle = "#8FBC8F";
-        ctx.beginPath();
-        ctx.moveTo(0, h * SKY_RATIO);
-        for (let x = 0; x <= w; x += 100) {
-          const mountainHeight = Math.sin(x * 0.01) * 30 + Math.sin(x * 0.02) * 20;
-          ctx.lineTo(x, h * (SKY_RATIO - 0.05) - mountainHeight);
-        }
-        ctx.lineTo(w, h * SKY_RATIO);
-        ctx.closePath();
-        ctx.fill();
-
-        // 草原（グラデーション）
-        const grassGradient = ctx.createLinearGradient(0, h * (SKY_RATIO - 0.05), 0, h);
-        grassGradient.addColorStop(0, "#90EE90"); // 明るい緑
-        grassGradient.addColorStop(0.3, "#7CCD7C");
-        grassGradient.addColorStop(1, "#C4A76C"); // 土色
-        ctx.fillStyle = grassGradient;
-        ctx.fillRect(0, h * (SKY_RATIO - 0.05), w, h * (1 - SKY_RATIO + 0.05));
-
-        // 柵（奥）
-        ctx.strokeStyle = "#8B4513";
-        ctx.lineWidth = 4;
-        const fenceY = h * (SKY_RATIO + 0.03);
-        // 横棒
-        ctx.beginPath();
-        ctx.moveTo(0, fenceY);
-        ctx.lineTo(w, fenceY);
-        ctx.moveTo(0, fenceY + 15);
-        ctx.lineTo(w, fenceY + 15);
-        ctx.stroke();
-        // 縦棒
-        for (let x = 30; x < w; x += 80) {
-          ctx.beginPath();
-          ctx.moveTo(x, fenceY - 10);
-          ctx.lineTo(x, fenceY + 30);
-          ctx.stroke();
+        // 背景画像を描画
+        if (bgImage.complete) {
+          ctx.drawImage(bgImage, 0, 0, w, h);
+        } else {
+          // 画像が読み込まれていない場合はフォールバック色
+          ctx.fillStyle = "#f5e6d3";
+          ctx.fillRect(0, 0, w, h);
         }
 
         // 草のディテール（固定位置）
