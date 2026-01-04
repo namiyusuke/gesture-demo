@@ -285,7 +285,7 @@
       }
 
       #success-light.active {
-        animation: lightBurst 1.5s ease-out;
+        animation: lightBurst 3.5s ease-out;
       }
 
       @keyframes lightBurst {
@@ -294,21 +294,24 @@
           background: radial-gradient(
             circle at 50% 70%,
             rgba(255, 255, 255, 1) 0%,
-            rgba(255, 215, 0, 0.9) 20%,
-            transparent 50%
-          );
-        }
-        10% {
-          opacity: 1;
-          background: radial-gradient(
-            circle at 50% 70%,
-            rgba(255, 255, 255, 1) 0%,
             rgba(255, 215, 0, 0.9) 30%,
             transparent 60%
           );
         }
-        50% {
-          opacity: 0.7;
+        5% {
+          opacity: 1;
+          background: radial-gradient(
+            circle at 50% 70%,
+            rgba(255, 255, 255, 1) 0%,
+            rgba(255, 215, 0, 0.9) 40%,
+            transparent 70%
+          );
+        }
+        30% {
+          opacity: 0.9;
+        }
+        60% {
+          opacity: 0.6;
         }
         100% {
           opacity: 0;
@@ -330,22 +333,25 @@
           opacity: 1;
           transform: translateY(0) rotate(0deg) scale(1);
         }
+        70% {
+          opacity: 0.8;
+        }
         100% {
           opacity: 0;
-          transform: translateY(400px) rotate(720deg) scale(0.5);
+          transform: translateY(600px) rotate(1080deg) scale(0.3);
         }
       }
 
       /* 放射状光線 */
       .light-ray {
         position: fixed;
-        width: 4px;
-        height: 150px;
-        background: linear-gradient(to top, rgba(255, 215, 0, 0.8), transparent);
+        width: 8px;
+        height: 300px;
+        background: linear-gradient(to top, rgba(255, 215, 0, 0.9), rgba(255, 255, 255, 0.5), transparent);
         pointer-events: none;
         z-index: 90;
         transform-origin: bottom center;
-        animation: rayBurst 1s ease-out forwards;
+        animation: rayBurst 2.5s ease-out forwards;
       }
 
       @keyframes rayBurst {
@@ -353,24 +359,29 @@
           opacity: 1;
           transform: scaleY(0);
         }
-        30% {
+        20% {
           opacity: 1;
           transform: scaleY(1);
         }
+        50% {
+          opacity: 0.8;
+          transform: scaleY(1.3);
+        }
         100% {
           opacity: 0;
-          transform: scaleY(1.5);
+          transform: scaleY(2);
         }
       }
 
       /* 広がるリング */
       .success-ring {
         position: fixed;
-        border: 4px solid rgba(255, 215, 0, 0.8);
+        border: 6px solid rgba(255, 215, 0, 0.9);
         border-radius: 50%;
         pointer-events: none;
         z-index: 95;
-        animation: ringExpand 1s ease-out forwards;
+        animation: ringExpand 2s ease-out forwards;
+        box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
       }
 
       @keyframes ringExpand {
@@ -379,9 +390,12 @@
           height: 20px;
           opacity: 1;
         }
+        50% {
+          opacity: 0.8;
+        }
         100% {
-          width: 400px;
-          height: 400px;
+          width: 700px;
+          height: 700px;
           opacity: 0;
         }
       }
@@ -389,12 +403,12 @@
       /* 花火パーティクル */
       .firework {
         position: fixed;
-        width: 6px;
-        height: 6px;
+        width: 10px;
+        height: 10px;
         border-radius: 50%;
         pointer-events: none;
         z-index: 1550;
-        animation: fireworkBurst 1.2s ease-out forwards;
+        animation: fireworkBurst 2.5s ease-out forwards;
       }
 
       @keyframes fireworkBurst {
@@ -402,25 +416,28 @@
           opacity: 1;
           transform: translate(0, 0) scale(1);
         }
-        50% {
+        30% {
           opacity: 1;
+        }
+        60% {
+          opacity: 0.7;
         }
         100% {
           opacity: 0;
-          transform: translate(var(--fx), var(--fy)) scale(0.3);
+          transform: translate(var(--fx), var(--fy)) scale(0.2);
         }
       }
 
       /* 光の粒子 */
       .light-particle {
         position: fixed;
-        width: 10px;
-        height: 10px;
+        width: 15px;
+        height: 15px;
         background: radial-gradient(circle, #fff 0%, #ffd700 50%, transparent 100%);
         border-radius: 50%;
         pointer-events: none;
         z-index: 150;
-        animation: particleRise 2s ease-out forwards;
+        animation: particleRise 3.5s ease-out forwards;
       }
 
       @keyframes particleRise {
@@ -428,9 +445,13 @@
           opacity: 1;
           transform: translateY(0) scale(1);
         }
+        50% {
+          opacity: 0.8;
+          transform: translateY(-150px) scale(1.2);
+        }
         100% {
           opacity: 0;
-          transform: translateY(-200px) scale(0);
+          transform: translateY(-350px) scale(0);
         }
       }
 
@@ -885,6 +906,139 @@
         width: 80px;
         height: auto;
       }
+
+      /* スマホ対応 */
+      @media (max-width: 768px) {
+        /* ビデオコンテナ */
+        #video-container {
+          width: 100px !important;
+          height: 75px !important;
+          top: 10px;
+          right: 10px;
+        }
+
+        /* 手のインジケーター */
+        #hand-indicator {
+          width: 40px;
+          height: 40px;
+          font-size: 35px;
+        }
+
+        /* 情報パネル */
+        #info {
+          top: 10px;
+          left: 10px;
+        }
+        .info {
+          padding: 20px 25px 80px;
+        }
+        .info-ttl {
+          font-size: 16px;
+        }
+        .info-icon {
+          font-size: 24px;
+        }
+        #coin-count {
+          font-size: 18px;
+        }
+        .info-dog-character,
+        .info-cat-character {
+          width: 50px;
+          bottom: 5px;
+        }
+        .info-dog-character {
+          left: 5px;
+        }
+        .info-cat-character {
+          right: 5px;
+        }
+
+        /* 賽銭箱エリア */
+        #saisenbox-image {
+          width: 150px;
+        }
+        #saisenbox-area {
+          bottom: 50px;
+        }
+
+        /* キャラクター */
+        #dog-character {
+          width: 80px;
+          bottom: 60px;
+          left: calc(50% - 160px);
+        }
+        #cat-character {
+          width: 70px;
+          bottom: 50px;
+          left: calc(50% + 40px);
+        }
+
+        /* 鈴 */
+        #bell {
+          font-size: 40px;
+          top: 120px;
+        }
+
+        /* チュートリアル */
+        .tutorial-content {
+          padding: 25px;
+        }
+        .tutorial-content h1 {
+          font-size: 24px;
+          margin-bottom: 20px;
+        }
+        .slides-container {
+          height: 280px;
+        }
+        .slide-subtitle {
+          font-size: 20px;
+        }
+        .slide .icon {
+          font-size: 60px;
+        }
+        .slide-description {
+          font-size: 15px;
+        }
+        .tutorial-button {
+          font-size: 18px;
+          padding: 12px 35px;
+        }
+
+        /* おみくじオーバーレイ */
+        #omikuji-paper {
+          width: 90%;
+        }
+        #result-image {
+          max-height: 50vh;
+        }
+        #close-omikuji {
+          padding: 10px 25px;
+          font-size: 14px;
+        }
+
+        /* 失敗オーバーレイ */
+        #fail-paper {
+          padding: 50px 25px;
+          border-radius: 25px;
+        }
+        #fail-title {
+          font-size: 24px;
+          margin-bottom: 20px;
+        }
+        #fail-reason {
+          font-size: 32px;
+        }
+        #close-fail {
+          font-size: 16px;
+          padding: 12px 30px;
+          margin-top: 30px;
+        }
+
+        /* コイン */
+        .coin {
+          font-size: 30px;
+        }
+      }
     </style>
   </head>
   <body>
@@ -1269,82 +1423,74 @@
       function triggerSuccessEffect(x, y) {
         // 光のバースト
         successLight.classList.add("active");
-        setTimeout(() => successLight.classList.remove("active"), 1500);
+        setTimeout(() => successLight.classList.remove("active"), 3500);
 
-        // 放射状の光線を生成
-        for (let i = 0; i < 12; i++) {
-          const ray = document.createElement("div");
-          ray.className = "light-ray";
-          ray.style.left = `${x}px`;
-          ray.style.top = `${y}px`;
-          ray.style.transform = `rotate(${i * 30}deg)`;
-          document.body.appendChild(ray);
-          setTimeout(() => ray.remove(), 1000);
+        // 放射状の光線を生成（2回に分けて）
+        for (let wave = 0; wave < 2; wave++) {
+          setTimeout(() => {
+            for (let i = 0; i < 16; i++) {
+              const ray = document.createElement("div");
+              ray.className = "light-ray";
+              ray.style.left = `${x}px`;
+              ray.style.top = `${y}px`;
+              ray.style.transform = `rotate(${i * 22.5 + wave * 11}deg)`;
+              document.body.appendChild(ray);
+              setTimeout(() => ray.remove(), 2500);
+            }
+          }, wave * 500);
         }
 
-        // 広がるリングを複数生成
-        for (let i = 0; i < 3; i++) {
+        // 花火パーティクル（5回爆発に増加）
+        const fireworkColors = ["#ffd700", "#ff6347", "#ff69b4", "#00ff7f", "#00bfff", "#ff8c00", "#ffffff"];
+        for (let burst = 0; burst < 5; burst++) {
           setTimeout(() => {
-            const ring = document.createElement("div");
-            ring.className = "success-ring";
-            ring.style.left = `${x - 10}px`;
-            ring.style.top = `${y - 10}px`;
-            document.body.appendChild(ring);
-            setTimeout(() => ring.remove(), 1000);
-          }, i * 200);
-        }
-
-        // 花火パーティクル（複数回爆発）
-        const fireworkColors = ["#ffd700", "#ff6347", "#ff69b4", "#00ff7f", "#00bfff", "#ff8c00"];
-        for (let burst = 0; burst < 3; burst++) {
-          setTimeout(() => {
-            for (let i = 0; i < 20; i++) {
+            for (let i = 0; i < 30; i++) {
               const fw = document.createElement("div");
               fw.className = "firework";
-              const angle = (i / 20) * Math.PI * 2;
-              const distance = 80 + Math.random() * 80;
+              const angle = (i / 30) * Math.PI * 2;
+              const distance = 120 + Math.random() * 150;
               fw.style.setProperty("--fx", `${Math.cos(angle) * distance}px`);
               fw.style.setProperty("--fy", `${Math.sin(angle) * distance}px`);
-              fw.style.left = `${x}px`;
-              fw.style.top = `${y}px`;
+              fw.style.left = `${x + (Math.random() - 0.5) * 100}px`;
+              fw.style.top = `${y + (Math.random() - 0.5) * 100}px`;
               fw.style.background = fireworkColors[Math.floor(Math.random() * fireworkColors.length)];
-              fw.style.boxShadow = `0 0 6px ${fw.style.background}`;
+              fw.style.boxShadow = `0 0 12px ${fw.style.background}`;
               document.body.appendChild(fw);
-              setTimeout(() => fw.remove(), 1200);
+              setTimeout(() => fw.remove(), 2500);
             }
-          }, burst * 300);
+          }, burst * 500);
         }
 
-        // 紙吹雪
-        const confettiColors = ["#ffd700", "#ff6b6b", "#4ecdc4", "#ffe66d", "#95e1d3", "#f38181"];
-        for (let i = 0; i < 50; i++) {
+        // 紙吹雪（100個に増加）
+        const confettiColors = ["#ffd700", "#ff6b6b", "#4ecdc4", "#ffe66d", "#95e1d3", "#f38181", "#fff"];
+        for (let i = 0; i < 100; i++) {
           setTimeout(() => {
             const confetti = document.createElement("div");
             confetti.className = "confetti";
-            confetti.style.left = `${x + (Math.random() - 0.5) * 300}px`;
-            confetti.style.top = `${y - 100 + Math.random() * 50}px`;
+            confetti.style.left = `${x + (Math.random() - 0.5) * 500}px`;
+            confetti.style.top = `${y - 150 + Math.random() * 100}px`;
             confetti.style.background = confettiColors[Math.floor(Math.random() * confettiColors.length)];
-            confetti.style.width = `${8 + Math.random() * 8}px`;
-            confetti.style.height = `${8 + Math.random() * 8}px`;
+            confetti.style.width = `${10 + Math.random() * 12}px`;
+            confetti.style.height = `${10 + Math.random() * 12}px`;
             confetti.style.borderRadius = Math.random() > 0.5 ? "50%" : "2px";
-            confetti.style.animationDuration = `${2 + Math.random() * 2}s`;
+            confetti.style.animationDuration = `${3 + Math.random() * 3}s`;
             document.body.appendChild(confetti);
-            setTimeout(() => confetti.remove(), 4000);
-          }, i * 30);
+            setTimeout(() => confetti.remove(), 6000);
+          }, i * 40);
         }
 
-        // 光の粒子を生成（元のエフェクト強化）
-        for (let i = 0; i < 30; i++) {
+        // 光の粒子を生成（50個に増加）
+        for (let i = 0; i < 50; i++) {
           setTimeout(() => {
             const particle = document.createElement("div");
             particle.className = "light-particle";
-            particle.style.left = `${x + (Math.random() - 0.5) * 250}px`;
-            particle.style.top = `${y + Math.random() * 50}px`;
-            particle.style.width = `${8 + Math.random() * 12}px`;
+            particle.style.left = `${x + (Math.random() - 0.5) * 400}px`;
+            particle.style.top = `${y + Math.random() * 80}px`;
+            particle.style.width = `${12 + Math.random() * 18}px`;
             particle.style.height = particle.style.width;
             document.body.appendChild(particle);
-            setTimeout(() => particle.remove(), 2000);
-          }, i * 40);
+            setTimeout(() => particle.remove(), 3500);
+          }, i * 60);
         }
       }
 
@@ -1471,7 +1617,7 @@
 
               setTimeout(() => {
                 showOmikuji();
-              }, 2000);
+              }, 4000);
             }
           }
         }

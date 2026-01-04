@@ -212,6 +212,7 @@
         animation: bounceIn 0.5s ease;
         position: relative;
         width: 400px;
+        height: 400px;
       }
 
       @keyframes bounceIn {
@@ -228,9 +229,10 @@
 
       .modal-icon {
         position: absolute;
-        top: 20%;
-        left: 20%;
+        top: 10%;
+        left: 10%;
         font-size: 60px;
+        z-index: 10;
       }
 
       .modal-effect {
@@ -271,7 +273,7 @@
         background: #ef4444;
         color: white;
         border: none;
-        border-radius: 20px;
+        border-radius: 30px;
         cursor: pointer;
         transition: transform 0.2s;
         font-weight: bold;
@@ -570,6 +572,96 @@
           font-size: 20px;
           padding: 12px 40px;
         }
+
+        /* ビデオコンテナ スマホ対応 */
+        #video-container {
+          width: 100px !important;
+          height: 75px !important;
+          top: 10px;
+          right: 10px;
+        }
+
+        /* カーソル スマホ対応 */
+        #cursor {
+          width: 40px;
+          height: 40px;
+          font-size: 35px;
+          line-height: 40px;
+        }
+
+        /* 情報パネル スマホ対応 */
+        #info {
+          top: 10px;
+          left: 10px;
+          padding: 15px 20px;
+          border-radius: 12px;
+          max-width: 180px;
+        }
+        #info h1 {
+          font-size: 12px;
+          margin-bottom: 5px;
+        }
+        .info-icon {
+          font-size: 18px !important;
+          margin-right: 3px;
+        }
+        #timer {
+          font-size: 32px;
+        }
+        .info-unit {
+          font-size: 14px;
+        }
+        .info-remaining {
+          font-size: 12px;
+        }
+        #remaining {
+          font-size: 16px;
+        }
+        .info-remaining-unit {
+          font-size: 14px;
+        }
+        .info-saru,
+        .info-hebi {
+          display: none;
+        }
+
+        /* クリアモーダル スマホ対応 */
+        #clear-content,
+        #timeover-content {
+          width: 90%;
+          max-width: 320px;
+          height: auto;
+          min-height: 300px;
+          padding: 30px 20px;
+        }
+        #clear-content h2,
+        #timeover-content h2 {
+          font-size: 28px;
+        }
+        .modal-icon {
+          font-size: 40px;
+          top: 5%;
+          left: 5%;
+        }
+        .modal-horse {
+          width: 120px;
+        }
+        #restart-btn,
+        #restart-btn-timeover {
+          font-size: 14px;
+          padding: 12px 20px;
+          bottom: 20px;
+        }
+        .sparkle {
+          font-size: 20px;
+        }
+
+        /* 捕獲アイコン スマホ対応 */
+        .captured-icon {
+          width: 35px;
+          height: 35px;
+          font-size: 18px;
+        }
       }
       .info-timer {
         display: flex;
@@ -635,7 +727,7 @@
           <!-- スライド3: 捕まえ方 -->
           <div class="slide" data-slide="2">
             <div class="slide-subtitle">籠に入れて捕獲！</div>
-            <div class="icon">🧺</div>
+            <div class="icon"><img src="horse_game-images/kago.png" alt="籠" style="width: 80px; height: auto;"></div>
             <div class="slide-description">馬以外の動物をつまんで<br />右下の籠にドラッグして捕獲！</div>
           </div>
         </div>
@@ -773,7 +865,7 @@
       let isGameRunning = false; // ゲーム進行中フラグ
       let isRenderRunning = false; // renderループ実行中フラグ
       let timerInterval = null; // タイマー更新用
-      const COUNTDOWN_TIME = 60; // カウントダウン開始時間（秒）
+      const COUNTDOWN_TIME = 5; // カウントダウン開始時間（秒）
 
       // 籠の位置とサイズ
       const kago = {
@@ -1090,12 +1182,15 @@
         const height = gameCanvas.height;
 
         // 籠の位置を設定（画面中央下）
+        // スマホ対応: 画面幅に応じてサイズを調整
+        const isMobileKago = width <= 768;
+        kago.width = isMobileKago ? 120 : 200;
         kago.x = width / 2;
-        kago.y = height - 120;
+        kago.y = height - (isMobileKago ? 80 : 120);
 
         // 草原エリアの開始位置（空と柵の下から）
         const grassStartY = height * (SKY_RATIO + 0.1);
-        const grassEndY = height - 150; // 籠エリアの上
+        const grassEndY = height - (isMobileKago ? 100 : 150); // 籠エリアの上
 
         // 草のディテールを生成（草原エリアのみ）
         grassDetails = [];
@@ -1105,9 +1200,11 @@
             y: grassStartY + Math.random() * (grassEndY - grassStartY),
           });
         }
-        const horseSize = 80;
-        const spacingX = 120; // 横の間隔
-        const spacingY = 100; // 縦の間隔
+        // スマホ対応: 画面幅に応じてサイズを調整
+        const isMobile = width <= 768;
+        const horseSize = isMobile ? 45 : 80;
+        const spacingX = isMobile ? 70 : 120; // 横の間隔
+        const spacingY = isMobile ? 60 : 100; // 縦の間隔
         const cols = Math.ceil(width / spacingX);
         const availableHeight = grassEndY - grassStartY;
         const rows = Math.ceil(availableHeight / spacingY);
