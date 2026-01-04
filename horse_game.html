@@ -242,14 +242,30 @@
         font-size: 40px;
         color: #ef4444;
       }
-
-      .modal-horse {
-        width: calc(180 / 1440 * 100vw);
+      .modal-hitsuji {
+        width: calc(140 / 1440 * 100vw);
         height: auto;
-        margin: 0 auto 10px;
         display: block;
+        position: absolute;
+        right: 10%;
+        top: 10%;
       }
-
+    .modal-tatsu {
+        width: calc(260 / 1440 * 100vw);
+        height: auto;
+        display: block;
+        position: absolute;
+        left: 10%;
+        bottom: 5%;
+      }
+    .modal-tori {
+      width: calc(100 / 1440 * 100vw);
+      height: auto;
+      display: block;
+      position: absolute;
+      right: 10%;
+      bottom: 10%;
+    }
       #clear-content h2,
       #timeover-content h2 {
         font-size: min(calc(48 / 1440 * 100vw), 48px);
@@ -280,7 +296,7 @@
         position: absolute;
         left: 0;
         right: 0;
-        bottom: 30px;
+        bottom: 20%;
         margin-inline: auto;
         width: max-content;
       }
@@ -699,7 +715,6 @@
         display: inline-block;
         width: max-content;
         height: max-content;
-        background-color: #fff;
       }
 
       /* 手検知マーク */
@@ -861,8 +876,9 @@
 
     <div id="timeover-modal">
       <div id="timeover-content">
-        <div class="modal-icon">⏰</div>
-        <img src="horse_game-images/uma.png" alt="馬" class="modal-horse" />
+        <img src="horse_game-images/hitsuji.png" alt="馬" class="modal-hitsuji" />
+        <img src="horse_game-images/tatsu.png" alt="馬" class="modal-tatsu" />
+        <img src="horse_game-images/tori.png" alt="馬" class="modal-tori" />
         <h2 class="game-modal-title">
           <span>タイムオーバー</span>
         <button id="restart-btn-timeover">もう一度遊ぶ</button>
