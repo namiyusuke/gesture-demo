@@ -1569,8 +1569,8 @@
           const dx = x - animal.x;
           const dy = y - animal.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < animal.size * 0.9) {
-            // 当たり判定を広げてつまみやすく
+          if (dist < animal.size * 1.5) {
+            // 当たり判定を広げてつまみやすく（0.9 → 1.5）
             return animal;
           }
         }
