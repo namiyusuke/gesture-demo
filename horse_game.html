@@ -679,6 +679,150 @@
           font-size: 18px;
         }
       }
+
+      /* 横向き・低い高さ対応（スマホ横向き時） */
+      @media (max-height: 450px) and (orientation: landscape) {
+        /* チュートリアルモーダル */
+        .tutorial-content {
+          padding: 15px 20px;
+          max-width: 90%;
+        }
+        .tutorial-content h1 {
+          font-size: 18px;
+          margin-bottom: 10px;
+        }
+        .slides-container {
+          height: 180px;
+        }
+        .slide-subtitle {
+          font-size: 16px;
+          margin-bottom: 10px;
+        }
+        .slide .icon {
+          font-size: 40px;
+          margin-bottom: 10px;
+        }
+        .slide .icon img {
+          width: 50px !important;
+        }
+        .slide-description {
+          font-size: 13px;
+          line-height: 1.5;
+        }
+        .slide-indicators {
+          margin: 10px 0;
+        }
+        .slide-indicator {
+          width: 8px;
+          height: 8px;
+        }
+        .tutorial-button {
+          font-size: 14px;
+          padding: 8px 20px;
+        }
+
+        /* 情報パネル */
+        #info {
+          padding: 8px 12px;
+          border-radius: 10px;
+          max-width: 150px;
+        }
+        #info h1 {
+          font-size: 10px;
+          margin-bottom: 3px;
+        }
+        .info-timer {
+          padding-bottom: 8px;
+        }
+        .info-icon {
+          font-size: 14px !important;
+        }
+        #timer {
+          font-size: 24px;
+        }
+        .info-unit {
+          font-size: 12px;
+        }
+        .info-remaining {
+          font-size: 10px;
+          margin-top: 5px;
+        }
+        #remaining {
+          font-size: 14px;
+        }
+        .info-remaining-unit {
+          font-size: 12px;
+        }
+
+        /* ビデオコンテナ */
+        #video-container {
+          width: 80px !important;
+          height: 60px !important;
+          top: 5px;
+          right: 5px;
+        }
+
+        /* カーソル */
+        #cursor {
+          width: 35px;
+          height: 35px;
+          font-size: 30px;
+          line-height: 35px;
+        }
+
+        /* クリアモーダル・タイムオーバーモーダル */
+        #clear-content,
+        #timeover-content {
+          width: 80%;
+          max-width: 400px;
+          height: auto;
+          min-height: auto;
+          padding: 20px 15px;
+        }
+        #clear-content h2,
+        #timeover-content h2 {
+          font-size: 20px;
+        }
+        .modal-icon {
+          font-size: 30px;
+        }
+        .modal-horse {
+          width: 80px;
+        }
+        .modal-hitsuji,
+        .modal-tatsu,
+        .modal-tori {
+          width: 50px !important;
+        }
+        #restart-btn,
+        #restart-btn-timeover {
+          font-size: 12px;
+          padding: 8px 16px;
+          bottom: 15px;
+          position: relative;
+          margin-top: 15px;
+        }
+        .sparkle {
+          font-size: 16px;
+        }
+
+        /* 捕獲アイコン */
+        .captured-icon {
+          width: 30px;
+          height: 30px;
+          font-size: 16px;
+        }
+
+        /* 手検知マーク */
+        #hand-detected {
+          font-size: 14px;
+          padding: 10px 20px;
+        }
+        #hand-detected .icon {
+          font-size: 20px;
+        }
+      }
+
       .info-timer {
         display: flex;
         align-items: center;
