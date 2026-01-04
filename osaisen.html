@@ -1087,6 +1087,162 @@
         }
       }
 
+      /* 横向き・低い高さ対応（スマホ横向き時） */
+      @media (max-height: 450px) and (orientation: landscape) {
+        /* チュートリアルモーダル */
+        .tutorial-content {
+          padding: 15px 20px;
+          max-width: 90%;
+        }
+        .tutorial-content h1 {
+          font-size: 18px;
+          margin-bottom: 10px;
+        }
+        .slides-container {
+          height: 180px;
+        }
+        .slide-subtitle {
+          font-size: 16px;
+          margin-bottom: 10px;
+        }
+        .slide .icon {
+          font-size: 40px;
+          margin-bottom: 10px;
+        }
+        .slide-description {
+          font-size: 13px;
+          line-height: 1.5;
+        }
+        .slide-note {
+          font-size: 11px;
+          margin-top: 8px;
+        }
+        .slide-indicators {
+          margin: 10px 0;
+        }
+        .slide-indicator {
+          width: 8px;
+          height: 8px;
+        }
+        .tutorial-button {
+          font-size: 14px;
+          padding: 8px 20px;
+        }
+
+        /* 情報パネル */
+        #info {
+          top: 5px;
+          left: 5px;
+        }
+        .info {
+          padding: 10px 15px 50px;
+        }
+        .info-ttl {
+          font-size: 12px;
+        }
+        .info-text {
+          font-size: 10px;
+        }
+        .info-icon {
+          font-size: 18px;
+        }
+        #coin-count {
+          font-size: 14px;
+        }
+        .info-remaining {
+          margin-top: 8px;
+        }
+        .info-dog-character,
+        .info-cat-character {
+          width: 35px;
+        }
+
+        /* ビデオコンテナ */
+        #video-container {
+          width: 80px !important;
+          height: 60px !important;
+          top: 5px;
+          right: 5px;
+        }
+
+        /* 手のインジケーター */
+        #hand-indicator {
+          width: 35px;
+          height: 35px;
+          font-size: 30px;
+        }
+
+        /* 神社エリア */
+        #shrine-area {
+          height: calc(100% - 50px);
+        }
+        #saisenbox-image {
+          width: 100px;
+        }
+        #saisenbox-area {
+          bottom: 30px;
+        }
+        #dog-character {
+          width: 50px;
+          bottom: 40px;
+          left: calc(50% - 100px);
+        }
+        #cat-character {
+          width: 45px;
+          bottom: 30px;
+          left: calc(50% + 25px);
+        }
+        #bell {
+          font-size: 30px;
+          top: 80px;
+        }
+
+        /* 結果オーバーレイ */
+        #omikuji-paper {
+          width: 85%;
+        }
+        #result-image {
+          max-height: 45vh;
+        }
+        #close-omikuji {
+          margin-top: 15px;
+          padding: 8px 20px;
+          font-size: 12px;
+        }
+
+        /* 失敗オーバーレイ */
+        #fail-paper {
+          padding: 30px 20px;
+          border-radius: 20px;
+        }
+        #fail-title {
+          font-size: 20px;
+          margin-bottom: 15px;
+        }
+        #fail-reason {
+          font-size: 24px;
+        }
+        #close-fail {
+          font-size: 14px;
+          padding: 10px 24px;
+          margin-top: 20px;
+        }
+
+        /* 手検知マーク */
+        #hand-detected {
+          font-size: 14px;
+          padding: 10px 20px;
+        }
+        #hand-detected .icon {
+          font-size: 20px;
+        }
+
+        /* コイン */
+        .coin {
+          font-size: 25px;
+        }
+      }
+
       /* 縦向き検知オーバーレイ */
       #orientation-overlay {
         position: fixed;

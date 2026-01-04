@@ -840,6 +840,170 @@
         }
       }
 
+      /* 横向き・低い高さ対応（スマホ横向き時） */
+      @media (max-height: 450px) and (orientation: landscape) {
+        /* チュートリアルモーダル */
+        .tutorial-content {
+          padding: 15px 20px;
+          max-width: 90%;
+        }
+        .tutorial-content h1 {
+          font-size: 18px;
+          margin-bottom: 10px;
+        }
+        .slides-container {
+          height: 180px;
+        }
+        .slide-subtitle {
+          font-size: 16px;
+          margin-bottom: 10px;
+        }
+        .hand-icons {
+          margin-bottom: 15px;
+        }
+        .hand-icon {
+          width: 50px;
+          height: 60px;
+        }
+        .hand-emoji {
+          font-size: 50px;
+        }
+        .arrow-icon {
+          font-size: 20px;
+        }
+        .slide .icon {
+          font-size: 40px;
+          margin-bottom: 10px;
+        }
+        .slide-description {
+          font-size: 13px;
+          line-height: 1.5;
+        }
+        .slide-note {
+          font-size: 11px;
+          margin-top: 8px;
+        }
+        .slide .text {
+          font-size: 14px;
+        }
+        .slide .text strong {
+          font-size: 16px;
+        }
+        .slide-indicators {
+          margin: 10px 0;
+        }
+        .slide-indicator {
+          width: 8px;
+          height: 8px;
+        }
+        .tutorial-button {
+          font-size: 14px;
+          padding: 8px 20px;
+        }
+
+        /* ゲームUI */
+        #game-ui {
+          top: 5px;
+          left: 5px;
+          padding: 8px 12px;
+          min-width: auto;
+          max-width: 140px;
+          border-radius: 10px;
+        }
+        #game-ui h1 {
+          font-size: 10px;
+          margin-bottom: 3px;
+        }
+        #timer-display {
+          font-size: 24px;
+          width: auto;
+        }
+        #timer-display.warning {
+          font-size: 24px;
+        }
+        .info-icon {
+          font-size: 14px;
+          margin-right: 3px;
+        }
+        .info-remaining {
+          margin-top: 5px;
+        }
+        .info-remaining-unit {
+          font-size: 12px;
+        }
+        .info-score {
+          font-size: 12px !important;
+          margin-top: 3px;
+        }
+        #score-display {
+          font-size: 14px;
+        }
+        .info-score-decorate01,
+        .info-score-decorate02 {
+          display: none;
+        }
+
+        /* ビデオコンテナ */
+        #video-container {
+          width: 60px !important;
+          height: 45px !important;
+          top: 5px;
+          right: 5px;
+        }
+
+        /* 照準 */
+        #crosshair {
+          width: 50px;
+          height: 50px;
+        }
+
+        /* 結果画面 */
+        .result-content {
+          padding: 20px 15px;
+          border-radius: 20px;
+          max-width: 400px;
+        }
+        .result-title {
+          font-size: 20px;
+          margin-bottom: 10px;
+        }
+        .result-score-label {
+          font-size: 14px;
+        }
+        .result-score-value {
+          font-size: 36px;
+        }
+        .result-detail {
+          font-size: 12px;
+          margin: 10px 0;
+        }
+        .result-restart-btn {
+          font-size: 12px;
+          padding: 8px 20px;
+        }
+
+        /* マイナス表示 */
+        .minus-overlay .minus-content {
+          width: 150px;
+          height: 150px;
+        }
+        .minus-text {
+          font-size: 16px;
+        }
+        .minus-points {
+          font-size: 32px;
+        }
+
+        /* 手検知マーク */
+        #hand-detected {
+          font-size: 14px;
+          padding: 10px 20px;
+        }
+        #hand-detected .icon {
+          font-size: 20px;
+        }
+      }
+
       /* 縦向き検知オーバーレイ */
       #orientation-overlay {
         position: fixed;

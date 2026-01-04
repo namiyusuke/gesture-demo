@@ -243,6 +243,52 @@
           font-size: 14vw;
         }
       }
+
+      /* 横向き・低い高さ対応（スマホ横向き時） */
+      @media (max-height: 450px) and (orientation: landscape) {
+        .motionpath-content-path {
+          height: 70vh;
+          top: 15%;
+        }
+
+        .motionpath-content-item__visual {
+          width: max(25vw, 150px);
+        }
+
+        .motionpath-content-item__title {
+          font-size: 1em;
+          margin-bottom: 15px;
+        }
+
+        .motionpath-content-item__label {
+          font-size: 0.6em;
+          padding: 0.3em 0.5em;
+          margin-bottom: 10px;
+        }
+
+        .motionpath-content-item__desc {
+          font-size: 0.7em;
+        }
+
+        .play-btn {
+          padding: 6px 16px;
+          font-size: 0.7rem;
+        }
+
+        .motionpath-content-title svg {
+          width: 80vw;
+        }
+
+        .scroll-hint {
+          bottom: 0.5rem;
+          font-size: 0.5rem;
+        }
+
+        .scroll-hint::before,
+        .scroll-hint::after {
+          width: 20px;
+        }
+      }
     </style>
   </head>
   <body>
