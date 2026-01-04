@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
@@ -108,7 +108,9 @@
         border: 2px solid rgba(255, 255, 255, 0.2);
         border-radius: 0.3125rem;
         width: 7rem;
-        transition: border-color 0.2s, transform 0.2s;
+        transition:
+          border-color 0.2s,
+          transform 0.2s;
         position: relative;
         overflow: hidden;
       }
@@ -158,7 +160,9 @@
         color: rgba(255, 255, 255, 0.5);
         letter-spacing: 0.3em;
         margin-bottom: 15px;
-        transition: opacity 0.3s ease, transform 0.3s ease;
+        transition:
+          opacity 0.3s ease,
+          transform 0.3s ease;
       }
 
       .game-title {
@@ -166,15 +170,66 @@
         font-weight: bold;
         margin-bottom: 15px;
         letter-spacing: 0.1em;
-        text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
-        transition: opacity 0.3s ease, transform 0.3s ease;
+        opacity: 1;
+        transition:
+          opacity 0.3s ease,
+          transform 0.3s ease;
+        position: relative;
+      }
+      .game-title:after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-color: #fff;
+        width: 100%;
+        clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
+        transition: none;
+      }
+      .fade-out .game-title::after {
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%);
+        transition: clip-path 0.4s cubic-bezier(0.215, 0.61, 0.355, 1);
+      }
+      .fade-in .game-title::after {
+        clip-path: polygon(100% 0, 100% 0, 100% 100%, 100% 100%);
+        transition: clip-path 0.4s cubic-bezier(0.55, 0.055, 0.675, 0.19);
       }
 
+      .game-title:after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-color: #fff;
+        width: 100%;
+        clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
+        transition: none;
+      }
+      .game-desc:after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-color: #fff;
+        width: 100%;
+        clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
+        transition: none;
+      }
+      .fade-out .game-desc::after {
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%);
+        transition: clip-path 0.4s ease;
+        transition-delay: 0.2s;
+      }
+      .fade-in .game-desc::after {
+        clip-path: polygon(100% 0, 100% 0, 100% 100%, 100% 100%);
+        transition: clip-path 0.4s ease;
+        transition-delay: 0.1s;
+      }
       .game-desc {
         font-size: 1.1rem;
         color: rgba(255, 255, 255, 0.7);
         margin-bottom: 30px;
-        transition: opacity 0.3s ease, transform 0.3s ease;
+        transition:
+          opacity 0.3s ease,
+          transform 0.3s ease;
+        position: relative;
       }
 
       /* STARTボタン */
@@ -196,21 +251,6 @@
       .play-btn:hover {
         transform: scale(1.05);
         box-shadow: 0 5px 30px rgba(255, 255, 255, 0.3);
-      }
-
-      /* アニメーション用 */
-      .game-info.fade-out .game-number,
-      .game-info.fade-out .game-title,
-      .game-info.fade-out .game-desc {
-        opacity: 0;
-        transform: translateY(-20px);
-      }
-
-      .game-info.fade-in .game-number,
-      .game-info.fade-in .game-title,
-      .game-info.fade-in .game-desc {
-        opacity: 1;
-        transform: translateY(0);
       }
 
       @media screen and (max-width: 991px) {
@@ -295,25 +335,13 @@
       </div>
       <div class="img-slider__nav">
         <div data-slideshow="thumb" class="img-slider__thumb is--current">
-          <img
-            src="shooting_game-images/shooting-bg.png"
-            class="slider-thumb__img"
-            alt="SHOOTING"
-          />
+          <img src="shooting_game-images/shooting-bg.png" class="slider-thumb__img" alt="SHOOTING" />
         </div>
         <div data-slideshow="thumb" class="img-slider__thumb">
-          <img
-            src="osaisen-images/osaisen-bg.jpg"
-            class="slider-thumb__img"
-            alt="OSAISEN"
-          />
+          <img src="osaisen-images/osaisen-bg.jpg" class="slider-thumb__img" alt="OSAISEN" />
         </div>
         <div data-slideshow="thumb" class="img-slider__thumb">
-          <img
-            src="horse_game-images/uma.png"
-            class="slider-thumb__img"
-            alt="HORSE RACE"
-          />
+          <img src="horse_game-images/uma.png" class="slider-thumb__img" alt="HORSE RACE" />
         </div>
       </div>
     </div>
@@ -352,14 +380,12 @@
             `${String(index + 1).padStart(2, "0")} / ${String(games.length).padStart(2, "0")}`;
           document.getElementById("game-title").textContent = game.title;
           document.getElementById("game-desc").textContent = game.description;
-
           gameInfo.classList.remove("fade-out");
           gameInfo.classList.add("fade-in");
-
           setTimeout(() => {
             gameInfo.classList.remove("fade-in");
-          }, 300);
-        }, 200);
+          }, 400);
+        }, 800);
       }
 
       // STARTボタン
@@ -412,12 +438,12 @@
             targetIndex !== null && targetIndex !== undefined
               ? targetIndex
               : direction === 1
-              ? current < length - 1
-                ? current + 1
-                : 0
-              : current > 0
-              ? current - 1
-              : length - 1;
+                ? current < length - 1
+                  ? current + 1
+                  : 0
+                : current > 0
+                  ? current - 1
+                  : length - 1;
 
           // グローバルのcurrentIndexを更新
           currentIndex = current;
@@ -442,7 +468,8 @@
               onComplete: function () {
                 currentSlide.classList.remove("is--current");
                 animating = false;
-                setTimeout(() => observer.enable(), animationDuration);
+                // クールダウン時間を長めに設定して連続スクロールを防ぐ
+                setTimeout(() => observer.enable(), 800);
               },
             })
             .to(currentSlide, { xPercent: -direction * 100 }, 0)
@@ -478,7 +505,7 @@
             if (!animating) navigate(-1);
           },
           wheelSpeed: 1,
-          tolerance: 30,
+          tolerance: 100,
         });
 
         // キーボード左右矢印

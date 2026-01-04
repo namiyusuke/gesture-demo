@@ -1649,8 +1649,8 @@
             }
 
             if (!isOnTarget) {
-              // 賽銭箱を外した
-              showMissEffect(finalLandX, finalLandY, missReason);
+              // 賽銭箱を外した（失敗モーダルは表示しない）
+              playMissSound();
             } else {
               // 成功！
               createSparkles(boxCenterX, boxCenterY);
