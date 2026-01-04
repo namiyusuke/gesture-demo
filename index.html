@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@300;400;500;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <title>ゲームセレクト</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/Observer.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/CustomEase.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Zen Kaku Gothic New", "Arial", sans-serif;
+        background: #111;
+        color: #fff;
+        overflow: hidden;
+      }
+
+      .img-slider {
+        grid-column-gap: 1rem;
+        grid-row-gap: 1rem;
+        border-radius: 0.5em;
+        justify-content: center;
+        align-items: flex-end;
+        width: 100%;
+        height: 100vh;
+        display: flex;
+        position: relative;
+      }
+
+      .img-slider__list {
+        grid-template-rows: 100%;
+        grid-template-columns: 100%;
+        place-items: center;
+        width: 100%;
+        height: 100%;
+        display: grid;
+        overflow: hidden;
+      }
+
+      .img-slide {
+        opacity: 0;
+        pointer-events: none;
+        will-change: transform, opacity;
+        grid-area: 1 / 1 / -1 / -1;
+        place-items: center;
+        width: 100%;
+        height: 100%;
+        display: grid;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .img-slide.is--current {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .img-slide__inner {
+        object-fit: cover;
+        will-change: transform;
+        width: 100%;
+        height: 100%;
+        position: absolute;
+      }
+
+      /* オーバーレイ（画像を暗くする） */
+      .img-slide::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.4);
+        pointer-events: none;
+      }
+
+      .img-slider__nav {
+        z-index: 2;
+        grid-column-gap: 0.5rem;
+        grid-row-gap: 0.5rem;
+        pointer-events: none;
+        flex-flow: wrap;
+        justify-content: center;
+        align-items: center;
+        max-width: 95vw;
+        display: flex;
+        position: absolute;
+        bottom: 2rem;
+      }
+
+      .img-slider__thumb {
+        aspect-ratio: 1.5;
+        pointer-events: auto;
+        cursor: pointer;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 0.3125rem;
+        width: 7rem;
+        transition: border-color 0.2s, transform 0.2s;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .img-slider__thumb:hover {
+        border-color: rgba(255, 255, 255, 0.5);
+        transform: scale(1.05);
+      }
+
+      .img-slider__thumb.is--current {
+        border-color: #fff;
+        box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+      }
+
+      .slider-thumb__img {
+        object-fit: cover;
+        width: 100%;
+        height: 100%;
+      }
+
+      /* タイトル */
+      .title {
+        position: absolute;
+        top: 2rem;
+        left: 50%;
+        transform: translateX(-50%);
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.9rem;
+        letter-spacing: 0.5em;
+        text-transform: uppercase;
+        z-index: 10;
+      }
+
+      /* ゲーム情報 */
+      .game-info {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        z-index: 10;
+        pointer-events: none;
+      }
+
+      .game-number {
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.5);
+        letter-spacing: 0.3em;
+        margin-bottom: 15px;
+        transition: opacity 0.3s ease, transform 0.3s ease;
+      }
+
+      .game-title {
+        font-size: 3rem;
+        font-weight: bold;
+        margin-bottom: 15px;
+        letter-spacing: 0.1em;
+        text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
+        transition: opacity 0.3s ease, transform 0.3s ease;
+      }
+
+      .game-desc {
+        font-size: 1.1rem;
+        color: rgba(255, 255, 255, 0.7);
+        margin-bottom: 30px;
+        transition: opacity 0.3s ease, transform 0.3s ease;
+      }
+
+      /* STARTボタン */
+      .play-btn {
+        pointer-events: auto;
+        padding: 15px 60px;
+        border-radius: 4px;
+        background: #fff;
+        color: #111;
+        border: none;
+        font-size: 1rem;
+        font-weight: bold;
+        letter-spacing: 0.15em;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-family: inherit;
+      }
+
+      .play-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 5px 30px rgba(255, 255, 255, 0.3);
+      }
+
+      /* アニメーション用 */
+      .game-info.fade-out .game-number,
+      .game-info.fade-out .game-title,
+      .game-info.fade-out .game-desc {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+
+      .game-info.fade-in .game-number,
+      .game-info.fade-in .game-title,
+      .game-info.fade-in .game-desc {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      @media screen and (max-width: 991px) {
+        .img-slider__list {
+          width: 100%;
+        }
+
+        .img-slider__thumb {
+          flex: none;
+        }
+      }
+
+      @media screen and (max-width: 767px) {
+        .img-slider__nav {
+          flex-flow: wrap;
+        }
+
+        .img-slider__thumb {
+          border-radius: 0.25rem;
+          width: 5rem;
+        }
+
+        .game-title {
+          font-size: 2rem;
+        }
+
+        .game-desc {
+          font-size: 1rem;
+        }
+      }
+
+      @media screen and (max-width: 479px) {
+        .img-slider__thumb {
+          width: 4.5rem;
+        }
+
+        .game-title {
+          font-size: 1.5rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1 class="title">GAME SELECT</h1>
+
+    <div class="game-info">
+      <div class="game-number" id="game-number">01 / 03</div>
+      <div class="game-title" id="game-title">SHOOTING</div>
+      <div class="game-desc" id="game-desc">的を撃ち抜け！</div>
+      <button class="play-btn" id="play-btn">START</button>
+    </div>
+
+    <div data-slideshow="wrap" class="img-slider">
+      <div class="img-slider__list">
+        <div data-slideshow="slide" class="img-slide is--current">
+          <img
+            data-slideshow="parallax"
+            alt="SHOOTING"
+            src="shooting_game-images/shooting-bg.png"
+            draggable="false"
+            class="img-slide__inner"
+          />
+        </div>
+        <div data-slideshow="slide" class="img-slide">
+          <img
+            data-slideshow="parallax"
+            alt="OSAISEN"
+            src="osaisen-images/osaisen-bg.jpg"
+            draggable="false"
+            class="img-slide__inner"
+          />
+        </div>
+        <div data-slideshow="slide" class="img-slide">
+          <img
+            data-slideshow="parallax"
+            alt="HORSE RACE"
+            src="horse_game-images/uma.png"
+            draggable="false"
+            class="img-slide__inner"
+          />
+        </div>
+      </div>
+      <div class="img-slider__nav">
+        <div data-slideshow="thumb" class="img-slider__thumb is--current">
+          <img
+            src="shooting_game-images/shooting-bg.png"
+            class="slider-thumb__img"
+            alt="SHOOTING"
+          />
+        </div>
+        <div data-slideshow="thumb" class="img-slider__thumb">
+          <img
+            src="osaisen-images/osaisen-bg.jpg"
+            class="slider-thumb__img"
+            alt="OSAISEN"
+          />
+        </div>
+        <div data-slideshow="thumb" class="img-slider__thumb">
+          <img
+            src="horse_game-images/uma.png"
+            class="slider-thumb__img"
+            alt="HORSE RACE"
+          />
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ゲームデータ
+      const games = [
+        {
+          title: "SHOOTING",
+          description: "的を撃ち抜け！",
+          url: "shooting_game.html",
+        },
+        {
+          title: "OSAISEN",
+          description: "お賽銭を投げ入れよう！",
+          url: "osaisen.html",
+        },
+        {
+          title: "HORSE RACE",
+          description: "干支レースで1位を目指せ！",
+          url: "horse_game.html",
+        },
+      ];
+
+      let currentIndex = 0;
+
+      // UI更新
+      function updateGameInfo(index) {
+        const game = games[index];
+        const gameInfo = document.querySelector(".game-info");
+
+        gameInfo.classList.add("fade-out");
+
+        setTimeout(() => {
+          document.getElementById("game-number").textContent =
+            `${String(index + 1).padStart(2, "0")} / ${String(games.length).padStart(2, "0")}`;
+          document.getElementById("game-title").textContent = game.title;
+          document.getElementById("game-desc").textContent = game.description;
+
+          gameInfo.classList.remove("fade-out");
+          gameInfo.classList.add("fade-in");
+
+          setTimeout(() => {
+            gameInfo.classList.remove("fade-in");
+          }, 300);
+        }, 200);
+      }
+
+      // STARTボタン
+      document.getElementById("play-btn").addEventListener("click", () => {
+        window.location.href = games[currentIndex].url;
+      });
+
+      // キーボード操作
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          window.location.href = games[currentIndex].url;
+        }
+      });
+
+      // GSAP Slideshow
+      gsap.registerPlugin(Observer, CustomEase);
+      CustomEase.create("slideshow-wipe", "0.6, 0.08, 0.02, 0.99");
+
+      function initSlideShow(el) {
+        const ui = {
+          el,
+          slides: Array.from(el.querySelectorAll('[data-slideshow="slide"]')),
+          inner: Array.from(el.querySelectorAll('[data-slideshow="parallax"]')),
+          thumbs: Array.from(el.querySelectorAll('[data-slideshow="thumb"]')),
+        };
+
+        let current = 0;
+        const length = ui.slides.length;
+        let animating = false;
+        let observer;
+        let animationDuration = 0.9;
+
+        ui.slides.forEach((slide, index) => {
+          slide.setAttribute("data-index", index);
+        });
+        ui.thumbs.forEach((thumb, index) => {
+          thumb.setAttribute("data-index", index);
+        });
+
+        ui.slides[current].classList.add("is--current");
+        ui.thumbs[current].classList.add("is--current");
+
+        function navigate(direction, targetIndex = null) {
+          if (animating) return;
+          animating = true;
+          observer.disable();
+
+          const previous = current;
+          current =
+            targetIndex !== null && targetIndex !== undefined
+              ? targetIndex
+              : direction === 1
+              ? current < length - 1
+                ? current + 1
+                : 0
+              : current > 0
+              ? current - 1
+              : length - 1;
+
+          // グローバルのcurrentIndexを更新
+          currentIndex = current;
+          updateGameInfo(current);
+
+          const currentSlide = ui.slides[previous];
+          const currentInner = ui.inner[previous];
+          const upcomingSlide = ui.slides[current];
+          const upcomingInner = ui.inner[current];
+
+          gsap
+            .timeline({
+              defaults: {
+                duration: animationDuration,
+                ease: "slideshow-wipe",
+              },
+              onStart: function () {
+                upcomingSlide.classList.add("is--current");
+                ui.thumbs[previous].classList.remove("is--current");
+                ui.thumbs[current].classList.add("is--current");
+              },
+              onComplete: function () {
+                currentSlide.classList.remove("is--current");
+                animating = false;
+                setTimeout(() => observer.enable(), animationDuration);
+              },
+            })
+            .to(currentSlide, { xPercent: -direction * 100 }, 0)
+            .to(currentInner, { xPercent: direction * 50 }, 0)
+            .fromTo(upcomingSlide, { xPercent: direction * 100 }, { xPercent: 0 }, 0)
+            .fromTo(upcomingInner, { xPercent: -direction * 50 }, { xPercent: 0 }, 0);
+        }
+
+        function onClick(event) {
+          const targetIndex = parseInt(event.currentTarget.getAttribute("data-index"), 10);
+          if (targetIndex === current || animating) return;
+          const direction = targetIndex > current ? 1 : -1;
+          navigate(direction, targetIndex);
+        }
+
+        ui.thumbs.forEach((thumb) => {
+          thumb.addEventListener("click", onClick);
+        });
+
+        observer = Observer.create({
+          target: el,
+          type: "wheel,touch,pointer",
+          onLeft: () => {
+            if (!animating) navigate(1);
+          },
+          onRight: () => {
+            if (!animating) navigate(-1);
+          },
+          onDown: () => {
+            if (!animating) navigate(1);
+          },
+          onUp: () => {
+            if (!animating) navigate(-1);
+          },
+          wheelSpeed: 1,
+          tolerance: 30,
+        });
+
+        // キーボード左右矢印
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "ArrowLeft" && !animating) navigate(-1);
+          if (e.key === "ArrowRight" && !animating) navigate(1);
+        });
+
+        return {
+          destroy: function () {
+            if (observer) observer.kill();
+            ui.thumbs.forEach((thumb) => {
+              thumb.removeEventListener("click", onClick);
+            });
+          },
+        };
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        let wrappers = document.querySelectorAll('[data-slideshow="wrap"]');
+        wrappers.forEach((wrap) => initSlideShow(wrap));
+      });
+    </script>
+  </body>
+</html>
