@@ -948,8 +948,6 @@
       // 砂煙パーティクル
       let dustParticles = [];
 
-      // 草のディテール位置（固定）
-      let grassDetails = [];
 
       // キラキラパーティクル
       let sparkleParticles = [];
@@ -1264,14 +1262,6 @@
         const grassStartY = height * (SKY_RATIO + 0.1);
         const grassEndY = height - (isMobileKago ? 100 : 150); // 籠エリアの上
 
-        // 草のディテールを生成（草原エリアのみ）
-        grassDetails = [];
-        for (let i = 0; i < 80; i++) {
-          grassDetails.push({
-            x: Math.random() * width,
-            y: grassStartY + Math.random() * (grassEndY - grassStartY),
-          });
-        }
         // スマホ対応: 画面幅に応じてサイズを調整
         const isMobile = width <= 768;
         const horseSize = isMobile ? 45 : 80;
@@ -1450,15 +1440,6 @@
           ctx.fillRect(0, 0, w, h);
         }
 
-        // 草のディテール（固定位置）
-        ctx.strokeStyle = "#228B22";
-        ctx.lineWidth = 2;
-        grassDetails.forEach((grass) => {
-          ctx.beginPath();
-          ctx.moveTo(grass.x, grass.y);
-          ctx.quadraticCurveTo(grass.x + 3, grass.y - 15, grass.x + 6, grass.y);
-          ctx.stroke();
-        });
       }
 
       // 砂煙パーティクルを生成

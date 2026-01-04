@@ -26,6 +26,7 @@
         color: #fff;
         overflow: hidden;
         height: 100vh;
+        font-weight: 700;
       }
 
       .motionpath-wrap {
@@ -89,13 +90,11 @@
       }
 
       .motionpath-content-item__visual {
-        aspect-ratio: 16 / 10;
-        border-radius: 0.75em;
+        aspect-ratio: 320 / 200;
         flex: none;
-        width: max(28vw, 14rem);
+        width: max(calc(320 / 1440 * 100vw), 320px);
         overflow: hidden;
         position: relative;
-        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
       }
 
       .motionpath-content-item__visual::after {
@@ -113,32 +112,29 @@
       }
 
       .motionpath-content-item__details {
-        grid-column-gap: 0.75em;
-        grid-row-gap: 0.75em;
         white-space: nowrap;
         flex-flow: column;
         justify-content: flex-end;
         align-items: flex-start;
-        padding-top: 2em;
         display: flex;
       }
 
       .motionpath-content-item__title {
         margin-top: 0;
-        margin-bottom: 0;
+        margin-bottom: 40px;
         font-size: 2em;
-        font-weight: 500;
-        line-height: 1;
+        font-weight: 900;
+        line-height: 1.2;
       }
 
       .motionpath-content-item__label {
         color: #fff;
-        background-color: rgba(255, 255, 255, 0.15);
-        border-radius: 100em;
+        border: #fff 1px solid;
         padding: 0.5em 0.75em;
-        font-size: 0.75em;
+        font-size: 16px;
         font-weight: 500;
         line-height: 1.2;
+        margin-bottom: 24px;
       }
 
       .motionpath-content-item__desc {
@@ -149,9 +145,9 @@
 
       .play-btn {
         padding: 10px 30px;
-        border-radius: 4px;
-        background: #fff;
-        color: #111;
+        border-radius: 20px;
+        background: #e7141b;
+        color: #fff;
         border: none;
         font-size: 0.85rem;
         font-weight: bold;
@@ -173,7 +169,7 @@
         color: rgba(255, 255, 255, 0.04);
         margin-top: 0;
         margin-bottom: 0;
-        font-size: 18vw;
+        font-size: calc();
         font-weight: 900;
         line-height: 0.9;
         position: absolute;
@@ -182,7 +178,18 @@
         pointer-events: none;
         user-select: none;
       }
-
+      .motionpath-content-title svg {
+        width: calc(1491 / 1440 * 100vw);
+      }
+      .title-path {
+        stroke: rgba(255, 255, 255, 0.4);
+        stroke-width: 1;
+        fill-opacity: 0;
+        stroke-opacity: 0;
+      }
+      .motionpath-content-wrap {
+        opacity: 0;
+      }
       /* スクロールヒント */
       .scroll-hint {
         position: fixed;
@@ -225,12 +232,6 @@
           width: max(45vw, 10rem);
         }
 
-        .motionpath-content-item__details {
-          grid-column-gap: 0.5em;
-          grid-row-gap: 0.5em;
-          padding-top: 1em;
-        }
-
         .motionpath-content-item__title {
           font-size: 1.25em;
         }
@@ -250,7 +251,23 @@
 
     <div data-motionpath="wrap" class="motionpath-wrap">
       <div class="motionpath-content">
-        <h1 class="motionpath-content-title">GAME SELECT</h1>
+        <h1 class="motionpath-content-title">
+          <!-- GESTURE<br aria-hidden="true" />GAME -->
+          <svg class="title-svg" width="1440" height="496" viewBox="0 0 1440 496" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              class="title-path"
+              d="M128.095 190.4C112.228 190.4 97.948 186.947 85.2547 180.04C72.5614 172.947 62.5747 162.4 55.2947 148.4C48.0147 134.213 44.3747 116.667 44.3747 95.76C44.3747 75.6 48.108 58.4266 55.5747 44.24C63.228 29.8666 74.2414 18.9466 88.6147 11.48C102.988 3.82664 120.161 -2.90871e-05 140.135 -2.90871e-05C162.908 -2.90871e-05 181.108 4.0133 194.735 12.04C208.548 20.0666 219.095 32.9466 226.375 50.68L165.615 72.52C164.308 63.7466 161.415 57.68 156.935 54.32C152.641 50.7733 147.228 49 140.695 49C133.601 49 127.815 50.68 123.335 54.04C119.041 57.4 115.868 62.5333 113.815 69.44C111.948 76.16 111.015 84.7466 111.015 95.2C111.015 106.773 112.228 116.107 114.655 123.2C117.268 130.293 121.095 135.427 126.135 138.6C131.361 141.587 137.895 143.08 145.735 143.08C149.468 143.08 152.828 142.707 155.815 141.96C158.988 141.213 161.695 140.093 163.935 138.6C166.361 136.92 168.135 134.867 169.255 132.44C170.561 130.013 171.215 127.12 171.215 123.76V123.48H140.135V83.44H225.815V187.6H182.695L177.375 138.04L187.455 148.96C184.281 162.213 177.655 172.48 167.575 179.76C157.681 186.853 144.521 190.4 128.095 190.4ZM252.325 187.6V2.79997H405.765V50.68H317.565V73.64H388.685V117.88H317.565V139.72H409.125V187.6H252.325ZM522.518 -2.90871e-05C540.252 -2.90871e-05 556.118 2.23997 570.118 6.71997C584.305 11.0133 596.812 17.5466 607.638 26.32L581.318 68.32C572.545 62.16 563.305 57.2133 553.598 53.48C544.078 49.7466 533.718 47.88 522.518 47.88C517.665 47.88 513.745 48.2533 510.758 49C507.958 49.7466 505.905 50.7733 504.598 52.08C503.478 53.3866 502.918 54.88 502.918 56.56C502.918 58.8 504.598 60.48 507.958 61.6C511.505 62.72 515.892 63.9333 521.118 65.24L546.598 71.12C565.452 75.4133 579.638 81.76 589.158 90.16C598.865 98.56 603.718 110.227 603.718 125.16C603.718 140.093 600.078 152.413 592.798 162.12C585.518 171.64 575.625 178.733 563.118 183.4C550.798 188.067 536.798 190.4 521.118 190.4C509.358 190.4 497.598 189.373 485.838 187.32C474.078 185.08 463.158 181.907 453.078 177.8C442.998 173.507 434.318 168.373 427.038 162.4L452.798 119.56C458.212 123.853 464.745 127.773 472.398 131.32C480.052 134.68 487.985 137.387 496.198 139.44C504.412 141.493 512.065 142.52 519.158 142.52C523.638 142.52 527.185 142.147 529.798 141.4C532.412 140.653 534.185 139.72 535.118 138.6C536.238 137.293 536.798 135.8 536.798 134.12C536.798 131.507 535.678 129.547 533.438 128.24C531.385 126.933 527.558 125.627 521.958 124.32L493.958 118.16C484.065 115.92 474.638 112.933 465.678 109.2C456.718 105.467 449.438 100.053 443.838 92.96C438.238 85.68 435.438 75.88 435.438 63.56C435.438 50.8666 438.798 39.76 445.518 30.24C452.425 20.72 462.318 13.3466 475.198 8.11997C488.265 2.70664 504.038 -2.90871e-05 522.518 -2.90871e-05ZM806.841 2.79997V50.68H749.161V187.6H683.921V50.68H625.961V2.79997H806.841ZM1004.11 2.79997V108.08C1004.11 135.707 996.647 156.333 981.714 169.96C966.967 183.587 944.661 190.4 914.794 190.4C884.927 190.4 862.527 183.587 847.594 169.96C832.847 156.333 825.474 135.707 825.474 108.08V2.79997H890.994V113.12C890.994 122.453 893.047 129.547 897.154 134.4C901.261 139.067 907.141 141.4 914.794 141.4C922.634 141.4 928.607 139.067 932.714 134.4C936.821 129.547 938.874 122.453 938.874 113.12V2.79997H1004.11ZM1125.89 2.79997C1149.97 2.79997 1168.45 8.2133 1181.33 19.04C1194.21 29.68 1200.65 43.8666 1200.65 61.6C1200.65 81.9466 1194.3 97.2533 1181.61 107.52C1169.1 117.787 1150.81 122.92 1126.73 122.92L1120.29 126.28H1089.49V187.6H1025.65V2.79997H1125.89ZM1114.69 83.44C1121.6 83.44 1126.73 82.2266 1130.09 79.8C1133.64 77.1866 1135.41 72.7066 1135.41 66.36C1135.41 60.2 1133.64 55.8133 1130.09 53.2C1126.73 50.5866 1121.6 49.28 1114.69 49.28H1089.49V83.44H1114.69ZM1153.33 97.16L1211.01 187.6H1140.17L1097.05 106.68L1153.33 97.16ZM1231.47 187.6V2.79997H1384.91V50.68H1296.71V73.64H1367.83V117.88H1296.71V139.72H1388.27V187.6H1231.47Z"
+              fill="white"
+              fill-opacity="0.1"
+            />
+            <path
+              class="title-path"
+              d="M386.991 495.4C371.124 495.4 356.844 491.947 344.151 485.04C331.457 477.947 321.471 467.4 314.191 453.4C306.911 439.213 303.271 421.667 303.271 400.76C303.271 380.6 307.004 363.427 314.471 349.24C322.124 334.867 333.137 323.947 347.511 316.48C361.884 308.827 379.057 305 399.031 305C421.804 305 440.004 309.013 453.631 317.04C467.444 325.067 477.991 337.947 485.271 355.68L424.511 377.52C423.204 368.747 420.311 362.68 415.831 359.32C411.537 355.773 406.124 354 399.591 354C392.497 354 386.711 355.68 382.231 359.04C377.937 362.4 374.764 367.533 372.711 374.44C370.844 381.16 369.911 389.747 369.911 400.2C369.911 411.773 371.124 421.107 373.551 428.2C376.164 435.293 379.991 440.427 385.031 443.6C390.257 446.587 396.791 448.08 404.631 448.08C408.364 448.08 411.724 447.707 414.711 446.96C417.884 446.213 420.591 445.093 422.831 443.6C425.257 441.92 427.031 439.867 428.151 437.44C429.457 435.013 430.111 432.12 430.111 428.76V428.48H399.031V388.44H484.711V492.6H441.591L436.271 443.04L446.351 453.96C443.177 467.213 436.551 477.48 426.471 484.76C416.577 491.853 403.417 495.4 386.991 495.4ZM695.741 492.6H629.101L620.701 457.32H570.861L562.181 492.6H497.221L557.141 307.8H635.541L695.741 492.6ZM580.661 416.72H611.181L596.061 352.6L580.661 416.72ZM947.308 307.8V492.6H890.468V428.48L891.308 366.32H890.468L854.628 492.6H802.548L767.268 366.32H766.148L766.988 428.48V492.6H709.868V307.8H801.148L822.428 389.84L830.548 424.28H831.108L839.228 389.84L860.508 307.8H947.308ZM972.576 492.6V307.8H1126.02V355.68H1037.82V378.64H1108.94V422.88H1037.82V444.72H1129.38V492.6H972.576Z"
+              fill="white"
+              fill-opacity="0.1"
+            />
+          </svg>
+        </h1>
         <div class="motionpath-content-inner">
           <div class="motionpath-content-path">
             <svg
@@ -269,37 +286,45 @@
           </div>
           <div class="motionpath-content-wrap">
             <div class="motionpath-content-list">
-              <div data-motionpath="item" class="motionpath-content-item" data-url="shooting_game.html">
+              <div data-motionpath="item" class="motionpath-content-item" data-url="horse_game.html">
                 <div class="motionpath-content-item__visual">
-                  <img src="shooting_game-images/shooting-bg.png" alt="SHOOTING" class="motionpath-content-item__img" />
+                  <img
+                    src="horse_game-images/uma-thumbnail.jpg"
+                    alt="HORSE RACE"
+                    class="motionpath-content-item__img"
+                  />
                 </div>
                 <div data-motionpath="item-details" class="motionpath-content-item__details">
                   <span class="motionpath-content-item__label">GAME 01</span>
-                  <h3 class="motionpath-content-item__title">SHOOTING</h3>
-                  <p class="motionpath-content-item__desc">的を撃ち抜け！</p>
+                  <h3 class="motionpath-content-item__title">馬以外の動物を<br aria-hidden="true" />つまみ出せ</h3>
+                  <a href="horse_game.html" class="play-btn">START</a>
+                </div>
+              </div>
+              <div data-motionpath="item" class="motionpath-content-item" data-url="shooting_game.html">
+                <div class="motionpath-content-item__visual">
+                  <img
+                    src="shooting_game-images/shooting-thumbnail.jpg"
+                    alt="SHOOTING"
+                    class="motionpath-content-item__img"
+                  />
+                </div>
+                <div data-motionpath="item-details" class="motionpath-content-item__details">
+                  <span class="motionpath-content-item__label">GAME 02</span>
+                  <h3 class="motionpath-content-item__title">的をねらえ</h3>
                   <a href="shooting_game.html" class="play-btn">START</a>
                 </div>
               </div>
               <div data-motionpath="item" class="motionpath-content-item" data-url="osaisen.html">
                 <div class="motionpath-content-item__visual">
-                  <img src="osaisen-images/osaisen-bg.jpg" alt="OSAISEN" class="motionpath-content-item__img" />
-                </div>
-                <div data-motionpath="item-details" class="motionpath-content-item__details">
-                  <span class="motionpath-content-item__label">GAME 02</span>
-                  <h3 class="motionpath-content-item__title">OSAISEN</h3>
-                  <p class="motionpath-content-item__desc">お賽銭を投げ入れよう！</p>
-                  <a href="osaisen.html" class="play-btn">START</a>
-                </div>
-              </div>
-              <div data-motionpath="item" class="motionpath-content-item" data-url="horse_game.html">
-                <div class="motionpath-content-item__visual">
-                  <img src="horse_game-images/uma.png" alt="HORSE RACE" class="motionpath-content-item__img" />
+                  <img src="osaisen-images/osaisen-thumbnail.jpg" alt="OSAISEN" class="motionpath-content-item__img" />
                 </div>
                 <div data-motionpath="item-details" class="motionpath-content-item__details">
                   <span class="motionpath-content-item__label">GAME 03</span>
-                  <h3 class="motionpath-content-item__title">HORSE RACE</h3>
-                  <p class="motionpath-content-item__desc">干支レースで1位を目指せ！</p>
-                  <a href="horse_game.html" class="play-btn">START</a>
+                  <h3 class="motionpath-content-item__title">
+                    お賽銭を<br aria-hidden="true" />
+                    投げ入れろ！
+                  </h3>
+                  <a href="osaisen.html" class="play-btn">START</a>
                 </div>
               </div>
             </div>
@@ -307,7 +332,6 @@
         </div>
       </div>
     </div>
-
     <script>
       gsap.registerPlugin(Observer, MotionPathPlugin);
 
@@ -408,22 +432,6 @@
           updateItems();
         });
 
-        // Observer設定
-        Observer.create({
-          target: wrap,
-          type: "wheel,touch,pointer",
-          onChangeY: (self) => {
-            // スクロール量に応じて進行度を変更
-            targetProgress += self.deltaY * 0.0005;
-          },
-          onChangeX: (self) => {
-            // 横スワイプにも対応
-            targetProgress -= self.deltaX * 0.0005;
-          },
-          tolerance: 10,
-          preventDefault: true,
-        });
-
         // キーボード操作
         document.addEventListener("keydown", (e) => {
           if (e.key === "ArrowDown" || e.key === "ArrowRight") {
@@ -454,6 +462,98 @@
 
         // 初期配置
         updateItems();
+
+        // 初期自動ループアニメーション
+        let autoAnimationActive = true;
+
+        function runAutoLoop() {
+          if (!autoAnimationActive) return;
+
+          // 1回のループで全アイテムを一周
+          gsap.to(
+            { value: targetProgress },
+            {
+              value: targetProgress + 1,
+              duration: 1,
+              ease: "slow(0.7, 0.1, false)", // ゆっくり始まり、中間で加速、ゆっくり終わる
+              onUpdate: function () {
+                if (autoAnimationActive) {
+                  targetProgress = this.targets()[0].value;
+                }
+              },
+            }
+          );
+        }
+
+        // ユーザー操作で自動アニメーションを停止
+        function stopAutoAnimation() {
+          autoAnimationActive = false;
+        }
+
+        // タイトルパスアニメーション → 画像ループの順番で実行
+        function runTitleAnimation() {
+          const titlePaths = document.querySelectorAll('.title-path');
+          const tl = gsap.timeline();
+
+          titlePaths.forEach((path, index) => {
+            const length = path.getTotalLength();
+            // 初期状態：パスを隠す
+            gsap.set(path, {
+              strokeDasharray: length,
+              strokeDashoffset: length,
+              strokeOpacity: 1,
+              fillOpacity: 0
+            });
+
+            // ストローク描画アニメーション（緩急つき）
+            tl.to(path, {
+              strokeDashoffset: 0,
+              duration: 1.2,
+              ease: "power2.inOut"
+            }, index * 0.3);
+
+            // fillをフェードイン & ストロークをフェードアウト
+            tl.to(path, {
+              fillOpacity: 0.1,
+              strokeOpacity: 0,
+              duration: 0.5,
+              ease: "power1.out"
+            }, `-=0.3`);
+          });
+
+          // スライダーをフェードインしながら同時にループ開始
+          tl.to('.motionpath-content-wrap', {
+            opacity: 1,
+            duration: 0.6,
+            ease: "power2.out",
+            onStart: () => {
+              runAutoLoop();
+            }
+          });
+        }
+
+        // 少し遅延してからタイトルアニメーション開始
+        setTimeout(() => {
+          runTitleAnimation();
+        }, 300);
+
+        // Observer設定（ユーザー操作で自動アニメーション停止）
+        Observer.create({
+          target: wrap,
+          type: "wheel,touch,pointer",
+          onChangeY: (self) => {
+            stopAutoAnimation();
+            // スクロール量に応じて進行度を変更
+            targetProgress += self.deltaY * 0.0005;
+          },
+          onChangeX: (self) => {
+            stopAutoAnimation();
+            // 横スワイプにも対応
+            targetProgress -= self.deltaX * 0.0005;
+          },
+          tolerance: 10,
+          preventDefault: true,
+        });
 
         // リサイズ対応
         window.addEventListener(
