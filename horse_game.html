@@ -121,6 +121,7 @@
       }
       .info-icon {
         font-size: 40px;
+        width: 60px;
         margin-right: 6px;
       }
       #info h1 {
@@ -198,6 +199,9 @@
         z-index: 20000;
       }
 
+     #timeover-content .game-modal-title{
+        color: #fff;
+      }
       #clear-modal.show,
       #timeover-modal.show {
         display: flex;
@@ -214,7 +218,27 @@
         width: 400px;
         height: 400px;
       }
-
+      #timeover-content{
+        background-color: #212121;
+      }
+      #timeover-content .game-modal-title span{
+        background-color: transparent;
+        position: relative;
+      }
+      #timeover-content .game-modal-title span::after{
+        position: absolute;
+        content: "";
+        width:calc(80 / 1400 * 100vw);
+        height:calc(75 / 1400 * 100vw);
+        bottom: 47%;
+        left: -4%;
+        background-image: url(./horse_game-images/gameover-mark.png);
+        background-size: contain;
+      }
+      #clear-content{
+        background-image: url(./horse_game-images/clear-bg.jpg);
+        background-size: cover;
+      }
       @keyframes bounceIn {
         0% {
           transform: scale(0);
@@ -243,28 +267,28 @@
         color: #ef4444;
       }
       .modal-hitsuji {
-        width: calc(140 / 1440 * 100vw);
+        width: calc(78 / 1440 * 100vw);
         height: auto;
         display: block;
         position: absolute;
-        right: 10%;
-        top: 10%;
+        right: 5%;
+        top: 5%;
       }
     .modal-tatsu {
-        width: calc(260 / 1440 * 100vw);
+        width: calc(180 / 1440 * 100vw);
         height: auto;
         display: block;
         position: absolute;
-        left: 10%;
+        left: 5%;
         bottom: 5%;
       }
     .modal-tori {
-      width: calc(100 / 1440 * 100vw);
+      width: calc(60 / 1440 * 100vw);
       height: auto;
       display: block;
       position: absolute;
-      right: 10%;
-      bottom: 10%;
+      right: 20%;
+      bottom: 5%;
     }
       #clear-content h2,
       #timeover-content h2 {
@@ -534,7 +558,12 @@
         gap: 10px;
         margin: 25px 0;
       }
-
+      .modal-horse {
+        width: 120px;
+        position:absolute;
+        bottom: 0;
+        right: 0;
+      }
       .slide-indicator {
         width: 12px;
         height: 12px;
@@ -659,9 +688,7 @@
           top: 5%;
           left: 5%;
         }
-        .modal-horse {
-          width: 120px;
-        }
+
         #restart-btn,
         #restart-btn-timeover {
           font-size: 14px;
@@ -861,6 +888,7 @@
         display: inline-block;
         width: max-content;
         height: max-content;
+        background-color: rgba(255, 255, 255, .8);
       }
 
       /* 手検知マーク */
@@ -1014,7 +1042,7 @@
         <div class="info-header">
           <h1>馬以外の動物をつまみ出せ！</h1>
           <div class="info-timer">
-            <span class="info-icon">⏰</span>
+            <img class="info-icon" src="horse_game-images/clock.png" alt="時計" />
             <span id="timer">60.00</span>
             <span class="info-unit">秒</span>
           </div>
@@ -1063,8 +1091,7 @@
         <div class="sparkle">✦</div>
         <div class="sparkle">✦</div>
         <div class="sparkle">✦</div>
-        <div class="modal-icon">🎉</div>
-        <img  src="horse_game-images/uma.png" alt="馬" class="modal-horse" />
+        <img src="horse_game-images/uma.png" alt="馬" class="modal-horse" />
         <h2 class="game-modal-title">
           <span>すべてクリア！</span>
         </h2>
@@ -1133,7 +1160,7 @@
       let hasHandDetected = false; // 手が検出されたかどうか
       let isRenderRunning = false; // renderループ実行中フラグ
       let timerInterval = null; // タイマー更新用
-      const COUNTDOWN_TIME = 50; // カウントダウン開始時間（秒）
+      const COUNTDOWN_TIME = 5; // カウントダウン開始時間（秒）
 
       // 籠の位置とサイズ
       const kago = {

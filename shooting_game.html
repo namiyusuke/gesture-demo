@@ -431,6 +431,7 @@
       .info-icon {
         font-size: 30px;
         margin-right: 6px;
+        width: 60px;
       }
       #timer-display.warning {
         font-size: 64px;
@@ -521,7 +522,7 @@
         font-size: 48px;
         font-weight: 900;
       }
-      result-label-title {
+      .result-label-title {
         font-size: 24px;
         font-weight: 900;
         margin-bottom: 20px;
@@ -1030,8 +1031,13 @@
       }
 
       @keyframes rotatePhone {
-        0%, 100% { transform: rotate(0deg); }
-        50% { transform: rotate(90deg); }
+        0%,
+        100% {
+          transform: rotate(0deg);
+        }
+        50% {
+          transform: rotate(90deg);
+        }
       }
 
       #orientation-overlay .message {
@@ -1049,6 +1055,18 @@
         #orientation-overlay {
           display: flex;
         }
+      }
+      .shooting-game-shishimai {
+        position: absolute;
+        width: calc(240 / 1440 * 100vw);
+        right: calc(10 / 1440 * 100vw);
+        bottom: 0;
+      }
+      .shooting-game-kadomatsu {
+        position: absolute;
+        width: calc(280 / 1440 * 100vw);
+        left: calc(10 / 1440 * 100vw);
+        bottom: 0;
       }
     </style>
   </head>
@@ -1130,7 +1148,7 @@
       <div id="game-ui">
         <h1>的をねらえ！</h1>
         <p class="info-remaining">
-          <span class="info-icon">⏱️</span><span id="timer-display">60:00</span>
+          <img class="info-icon" src="shooting_game-images/clock.png" alt="時計" /><span id="timer-display">60:00</span>
           <span class="info-remaining-unit">秒</span>
         </p>
         <p class="info-score">
@@ -1200,7 +1218,8 @@
         <div class="minus-points" id="minus-points-display">-100点</div>
       </div>
     </div>
-
+    <img class="shooting-game-shishimai" src="/shooting_game-images/shishimai.png" alt="弾丸アイコン" />
+    <img class="shooting-game-kadomatsu" src="/shooting_game-images/kadomatsu.png" />
     <script type="module">
       import { FilesetResolver, HandLandmarker } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest";
 

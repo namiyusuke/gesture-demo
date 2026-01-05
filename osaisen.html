@@ -611,6 +611,7 @@
       .info-icon {
         font-size: 40px;
         margin-right: 6px;
+        width: 60px;
       }
 
       #info h1 {
@@ -892,17 +893,12 @@
       .info-text {
         color: #000;
       }
-      .info-dog-character {
-        position: absolute;
-        bottom: 10px;
-        left: 10px;
-        width: 80px;
-        height: auto;
-      }
       .info-cat-character {
         position: absolute;
         bottom: 10px;
-        right: 10px;
+        right: 0;
+        left: 0;
+        margin-inline: auto;
         width: 80px;
         height: auto;
       }
@@ -1135,7 +1131,7 @@
           left: 5px;
         }
         .info {
-          padding: 10px 15px 50px;
+          padding: 10px 15px 40px;
         }
         .info-ttl {
           font-size: 12px;
@@ -1269,8 +1265,13 @@
       }
 
       @keyframes rotatePhone {
-        0%, 100% { transform: rotate(0deg); }
-        50% { transform: rotate(90deg); }
+        0%,
+        100% {
+          transform: rotate(0deg);
+        }
+        50% {
+          transform: rotate(90deg);
+        }
       }
 
       #orientation-overlay .message {
@@ -1354,7 +1355,6 @@
       <div id="info" class="info">
         <h1 class="info-ttl">お賽銭を投げ入れろ！</h1>
         <p class="info-text">犬や猫が邪魔します</p>
-        <img class="info-dog-character" src="osaisen-images/dog.png" alt="犬" />
         <img class="info-cat-character" src="osaisen-images/cat.png" alt="猫" />
       </div>
 
