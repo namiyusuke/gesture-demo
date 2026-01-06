@@ -58,7 +58,7 @@
         position: absolute;
         width: 120vw;
         height: 80vh;
-        left: 50%;
+        left: 40%;
         top: 20%;
         transform: translate(-50%, -50%);
       }
@@ -92,7 +92,7 @@
       .motionpath-content-item__visual {
         aspect-ratio: 320 / 200;
         flex: none;
-        width: max(calc(320 / 1440 * 100vw), 320px);
+        width: max(calc(520 / 1440 * 100vw), 520px);
         overflow: hidden;
         position: relative;
       }
@@ -314,8 +314,13 @@
       }
 
       @keyframes rotatePhone {
-        0%, 100% { transform: rotate(0deg); }
-        50% { transform: rotate(90deg); }
+        0%,
+        100% {
+          transform: rotate(0deg);
+        }
+        50% {
+          transform: rotate(90deg);
+        }
       }
 
       #orientation-overlay .message {

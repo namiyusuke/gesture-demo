@@ -519,7 +519,9 @@
       }
 
       #fail-paper {
-        background: #fff;
+        background-image: url(./osaisen-images/fail-bg.jpg);
+        background-size: contain;
+        background-repeat: repeat;
         border-radius: 40px;
         max-width: 500px;
         width: 90%;
@@ -528,6 +530,10 @@
         padding: 85px 40px;
         position: relative;
         overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
         transform: scale(0) rotate(-10deg);
         transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
       }
@@ -537,16 +543,16 @@
       }
 
       #fail-title {
-        font-size: 36px;
-        font-weight: bold;
-        color: #000;
-        margin-bottom: 30px;
+        font-size: 32px;
+        font-weight: 900;
+        color: #fff;
+        margin-bottom: 4px;
       }
 
       #fail-reason {
-        font-size: 48px;
+        font-size: 32px;
         font-weight: 900;
-        color: #000;
+        color: #fff;
         margin-bottom: 20px;
         line-height: 1.5;
       }
@@ -560,7 +566,7 @@
         border: none;
         border-radius: 30px;
         cursor: pointer;
-        margin-top: 50px;
+        margin-top: 10px;
       }
 
       #close-fail:active {
@@ -615,7 +621,7 @@
       }
 
       #info h1 {
-        font-size: 17px;
+        font-size: 24px;
         color: #000;
         margin-bottom: 10px;
         font-weight: bold;
@@ -881,9 +887,9 @@
         transform: scale(0.98);
       }
       .info {
+        aspect-ratio: 40/24;
         padding-top: 46px;
-        padding-bottom: 120px;
-        padding-inline: 42px;
+        width: 400px;
         text-align: center;
       }
       .info-ttl {
@@ -899,7 +905,7 @@
         right: 0;
         left: 0;
         margin-inline: auto;
-        width: 80px;
+        width: 124px;
         height: auto;
       }
 
@@ -1127,6 +1133,7 @@
 
         /* 情報パネル */
         #info {
+          width: 200px;
           top: 5px;
           left: 5px;
         }
@@ -1355,7 +1362,7 @@
       <div id="info" class="info">
         <h1 class="info-ttl">お賽銭を投げ入れろ！</h1>
         <p class="info-text">犬や猫が邪魔します</p>
-        <img class="info-cat-character" src="osaisen-images/cat.png" alt="猫" />
+        <img class="info-cat-character" src="osaisen-images/cat-coin.png" alt="猫" />
       </div>
 
       <div id="hand-indicator">✋</div>
@@ -1388,8 +1395,10 @@
     <!-- 失敗オーバーレイ -->
     <div id="fail-overlay">
       <div id="fail-paper">
-        <div id="fail-title">残念！</div>
+        <div id="fail-title">残念！！！</div>
         <div id="fail-reason"></div>
+        <img id="fail-animal" src="" alt="" style="width: 120px; margin: 20px 0" />
+
         <button id="close-fail">もう一度投げる</button>
       </div>
     </div>
@@ -1858,24 +1867,19 @@
               return;
             }
 
-            if (!isOnTarget) {
-              // 賽銭箱を外した（失敗モーダルは表示しない）
-              playMissSound();
-            } else {
-              // 成功！
-              createSparkles(boxCenterX, boxCenterY);
-              triggerSuccessEffect(boxCenterX, boxCenterY);
-              playMoneySound();
+            // 成功！（犬・猫に取られなければ常に成功）
+            createSparkles(boxCenterX, boxCenterY);
+            triggerSuccessEffect(boxCenterX, boxCenterY);
+            playMoneySound();
 
-              const accuracy = 1 - Math.abs(power - 1) * 2;
-              const bonus = Math.floor(accuracy * 15);
-              score += 10 + bonus;
-              if (scoreElement) scoreElement.textContent = score;
+            const accuracy = 1 - Math.abs(power - 1) * 2;
+            const bonus = Math.floor(accuracy * 15);
+            score += 10 + bonus;
+            if (scoreElement) scoreElement.textContent = score;
 
-              setTimeout(() => {
-                showOmikuji();
-              }, 4000);
-            }
+            setTimeout(() => {
+              showOmikuji();
+            }, 4000);
           }
         }
 
@@ -1884,6 +1888,14 @@
 
       // 失敗モーダルを表示
       function showMissEffect(x, y, reason) {
+        const failAnimal = document.getElementById("fail-animal");
+        if (reason.includes("猫")) {
+          failAnimal.src = "osaisen-images/cat.png";
+          failAnimal.alt = "猫";
+        } else if (reason.includes("犬")) {
+          failAnimal.src = "osaisen-images/dog.png";
+          failAnimal.alt = "犬";
+        }
         failReason.textContent = reason;
         failOverlay.classList.add("show");
       }

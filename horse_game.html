@@ -118,6 +118,7 @@
         z-index: 1000;
         padding-block: 30px;
         padding-inline: 42px;
+        width: 400px;
       }
       .info-icon {
         font-size: 40px;
@@ -850,6 +851,10 @@
         #hand-detected .icon {
           font-size: 20px;
         }
+      .info-saru img,
+      .info-hebi img {
+        width: 60px;
+      }
       }
 
       .info-timer {
@@ -861,6 +866,10 @@
       }
       .info-header {
         position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
       }
       .info-saru {
         position: absolute;
@@ -869,7 +878,7 @@
       }
       .info-saru img,
       .info-hebi img {
-        width: 60px;
+        width: 100px;
       }
       .info-hebi {
         position: absolute;

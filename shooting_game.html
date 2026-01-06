@@ -410,11 +410,12 @@
         top: 20px;
         left: 20px;
         background: #fff;
-        padding: 20px 24px;
+        padding-inline: 52px;
+        padding-top: 40px;
+        padding-bottom: 38px;
         border-radius: 20px;
         z-index: 1000;
-        padding-block: 50px;
-        padding-inline: 42px;
+        padding-inline: 70px;
         display: none;
         min-width: 300px;
         overflow: hidden;
@@ -473,7 +474,6 @@
         display: flex;
         align-items: flex-end;
         justify-content: center;
-        margin-top: 16px;
         line-height: 1;
       }
 
@@ -498,12 +498,13 @@
       .result-content {
         background: #fff;
         border-radius: 40px;
-        max-width: 500px;
+        max-width: 400px;
+        max-height: 400px;
         width: 90%;
         text-align: center;
         color: #000;
-        padding-top: 85px;
-        padding-bottom: 85px;
+        padding-top: 60px;
+        padding-bottom: 60px;
         position: relative;
         overflow: hidden;
       }
@@ -523,7 +524,7 @@
         font-weight: 900;
       }
       .result-label-title {
-        font-size: 24px;
+        font-size: 20px;
         font-weight: 900;
         margin-bottom: 20px;
       }
@@ -536,7 +537,9 @@
         border-radius: 30px;
         cursor: pointer;
         background-color: #e7141b;
-        margin-top: 70px;
+        margin-top: 20px;
+        position: relative;
+        z-index: 2;
       }
 
       .result-button:active {
@@ -592,7 +595,7 @@
       }
 
       .minus-content {
-        background: #fff;
+        background: #202020;
         border-radius: 16px;
         padding: 40px 60px;
         text-align: center;
@@ -966,21 +969,20 @@
           border-radius: 20px;
           max-width: 400px;
         }
-        .result-title {
-          font-size: 20px;
+        .result-label-title {
+          font-size: 16px;
           margin-bottom: 10px;
         }
-        .result-score-label {
-          font-size: 14px;
-        }
-        .result-score-value {
+        .result-score {
           font-size: 36px;
         }
-        .result-detail {
-          font-size: 12px;
-          margin: 10px 0;
+        .result-score-unit {
+          font-size: 14px;
         }
-        .result-restart-btn {
+        .result-label {
+          font-size: 20px;
+        }
+        .result-button {
           font-size: 12px;
           padding: 8px 20px;
         }
@@ -1067,6 +1069,18 @@
         width: calc(280 / 1440 * 100vw);
         left: calc(10 / 1440 * 100vw);
         bottom: 0;
+      }
+      .result-content-mochi {
+        position: absolute;
+        width: calc(120 / 1440 * 100vw);
+        top: -1vw;
+        left: -1vw;
+      }
+      .result-content-hanethuki {
+        position: absolute;
+        width: calc(230 / 1440 * 100vw);
+        bottom: -3vw;
+        right: -6vw;
       }
     </style>
   </head>
@@ -1156,13 +1170,6 @@
           <span class="info-score" id="score-display">0</span>
         </p>
         <img
-          class="info-score-decorate01"
-          src="/shooting_game-images/target-mouse.png"
-          alt="弾丸アイコン"
-          width="24"
-          height="24"
-        />
-        <img
           class="info-score-decorate02"
           src="/shooting_game-images/target08.png"
           alt="弾丸アイコン"
@@ -1175,6 +1182,8 @@
     <!-- 結果画面 -->
     <div id="result-modal">
       <div class="result-content">
+        <img class="result-content-mochi" src="/shooting_game-images/target04.png" alt="" />
+        <img class="result-content-hanethuki" src="/shooting_game-images/target09.png" alt="" />
         <div class="result-label-title">あなたのスコア</div>
         <div class="result-score-container">
           <div class="result-score" id="final-score">0</div>
@@ -1418,11 +1427,9 @@
         { image: "shooting_game-images/target11.png", points: 400, size: 180 },
         { image: "shooting_game-images/target12.png", points: 500, size: 200 },
         { image: "shooting_game-images/target13.png", points: 500, size: 200 },
-        // マイナスポイントの的
+        // マイナスポイントの的（ぴえん🥺2色）
         { image: "shooting_game-images/target-minus01.png", points: -100, size: 200 },
         { image: "shooting_game-images/target-minus02.png", points: -150, size: 180 },
-        { image: "shooting_game-images/target-minus03.png", points: -200, size: 160 },
-        { image: "shooting_game-images/target-minus04.png", points: -250, size: 140 },
       ];
 
       // 的画像をプリロード
@@ -1468,32 +1475,40 @@
         // 固定配置: 画像の通りに並べる
         const fixedLayout = [
           // 上段
-          { y: 0.19, sizeMultiplier: 1, items: [9, 8, 11] },
+          { y: 0.19, sizeMultiplier: 0.75, items: [9, 8, 11] },
           // 中段
-          { y: 0.25, sizeMultiplier: 1, items: [5, 6] },
+          { y: 0.25, sizeMultiplier: 0.75, items: [5, 6] },
           // 下段
-          { y: 0.4, sizeMultiplier: 1.0, items: [4, 0, 7] },
-          { y: 0.5, sizeMultiplier: 1.0, items: [2, 12, 3, 10, 1] },
+          { y: 0.4, sizeMultiplier: 0.75, items: [4, 0, 7] },
+          { y: 0.5, sizeMultiplier: 0.75, items: [2, 12, 3, 10, 1] },
         ];
 
-        // マイナスの的のインデックス（13-16）
-        const minusTargetIndices = [13, 14, 15, 16];
+        // マイナスの的のインデックス（13-14：ぴえん2色）
+        const minusTargetIndices = [13, 14];
 
-        // 各段からランダムに1つずつ選んでマイナスの的に入れ替え
-        fixedLayout.forEach((shelf, shelfIndex) => {
-          if (minusTargetIndices.length > 0 && shelf.items.length > 0) {
+        // 4段から2段をランダムに選んでマイナスの的を配置
+        const allShelves = [0, 1, 2, 3];
+        // シャッフルして最初の2つを選ぶ
+        for (let i = allShelves.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [allShelves[i], allShelves[j]] = [allShelves[j], allShelves[i]];
+        }
+        const targetShelves = allShelves.slice(0, 2);
+
+        targetShelves.forEach((shelfIndex, i) => {
+          const shelf = fixedLayout[shelfIndex];
+          if (shelf && shelf.items.length > 0) {
             // ランダムな位置を選ぶ
             const randomPos = Math.floor(Math.random() * shelf.items.length);
-            // マイナスの的からランダムに1つ選んで入れ替え
-            const minusIndex = minusTargetIndices.splice(Math.floor(Math.random() * minusTargetIndices.length), 1)[0];
-            shelf.items[randomPos] = minusIndex;
+            // マイナスの的を入れ替え
+            shelf.items[randomPos] = minusTargetIndices[i];
           }
         });
 
         fixedLayout.forEach((shelf, shelfIndex) => {
           const count = shelf.items.length;
-          // 的の間隔を固定（0.12）して中央揃え
-          const spacingX = 0.12;
+          // 的の間隔を固定（0.11）して中央揃え
+          const spacingX = 0.11;
           const totalWidth = spacingX * (count - 1);
           const startX = 0.5 - totalWidth / 2; // 中央揃えの開始位置
 
