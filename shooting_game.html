@@ -1517,13 +1517,14 @@
 
         // 固定配置: 画像の通りに並べる
         const fixedLayout = [
-          // 上段
-          { y: 0.19, sizeMultiplier: 0.75, items: [9, 8, 11] },
-          // 中段
-          { y: 0.25, sizeMultiplier: 0.75, items: [5, 6] },
-          // 下段
-          { y: 0.4, sizeMultiplier: 0.75, items: [4, 0, 7] },
-          { y: 0.5, sizeMultiplier: 0.75, items: [2, 12, 3, 10, 1] },
+          // 1段目（最上段）- 2個
+          { y: 0.21, sizeMultiplier: 0.75, items: [9, 11] },
+          // 2段目 - 3個
+          { y: 0.32, sizeMultiplier: 0.75, items: [8, 5, 6] },
+          // 3段目 - 4個
+          { y: 0.45, sizeMultiplier: 0.75, items: [4, 0, 7, 12] },
+          // 4段目（最下段）- 4個
+          { y: 0.56, sizeMultiplier: 0.75, items: [2, 3, 10, 1] },
         ];
 
         // マイナスの的のインデックス（13-14：ぴえん2色）
