@@ -503,8 +503,8 @@
         width: 90%;
         text-align: center;
         color: #000;
-        padding-top: 60px;
-        padding-bottom: 60px;
+        padding-top: 40px;
+        padding-bottom: 40px;
         position: relative;
         overflow: hidden;
       }
@@ -526,10 +526,9 @@
       .result-label-title {
         font-size: 20px;
         font-weight: 900;
-        margin-bottom: 20px;
       }
       .result-button {
-        padding: 15px 40px;
+        padding: 10px 24px;
         font-size: 20px;
         font-weight: bold;
         color: #fff;
@@ -624,7 +623,7 @@
 
       .minus-text {
         font-size: 24px;
-        color: #333;
+        color: #000;
         margin-bottom: 10px;
       }
 
@@ -716,8 +715,8 @@
 
         /* 結果画面 スマホ対応 */
         .result-content {
-          padding-top: 50px;
-          padding-bottom: 50px;
+          padding-top: 40px;
+          padding-bottom: 40px;
           padding-left: 20px;
           padding-right: 20px;
           border-radius: 20px;
@@ -787,7 +786,7 @@
         line-height: 1;
       }
       .result-score-container {
-        margin-bottom: 32px;
+        margin-bottom: 10px;
       }
       .info-score-decorate01 {
         position: absolute;
@@ -848,99 +847,105 @@
       @media (max-height: 450px) and (orientation: landscape) {
         /* チュートリアルモーダル */
         .tutorial-content {
-          padding: 15px 20px;
-          max-width: 90%;
+          padding: 10px 15px;
+          max-width: 80%;
+          max-height: 90vh;
+          overflow-y: auto;
         }
         .tutorial-content h1 {
-          font-size: 18px;
-          margin-bottom: 10px;
+          font-size: 14px;
+          margin-bottom: 8px;
         }
         .slides-container {
-          height: 180px;
+          height: 120px;
         }
         .slide-subtitle {
-          font-size: 16px;
-          margin-bottom: 10px;
+          font-size: 13px;
+          margin-bottom: 6px;
+        }
+        .slide-title {
+          font-size: 10px;
+          margin-bottom: 2px;
         }
         .hand-icons {
-          margin-bottom: 15px;
+          margin-bottom: 8px;
         }
         .hand-icon {
-          width: 50px;
-          height: 60px;
+          width: 35px;
+          height: 45px;
         }
         .hand-emoji {
-          font-size: 50px;
+          font-size: 32px;
         }
         .arrow-icon {
-          font-size: 20px;
-        }
-        .slide .icon {
-          font-size: 40px;
-          margin-bottom: 10px;
-        }
-        .slide-description {
-          font-size: 13px;
-          line-height: 1.5;
-        }
-        .slide-note {
-          font-size: 11px;
-          margin-top: 8px;
-        }
-        .slide .text {
-          font-size: 14px;
-        }
-        .slide .text strong {
           font-size: 16px;
         }
+        .slide .icon {
+          font-size: 28px;
+          margin-bottom: 6px;
+        }
+        .slide-description {
+          font-size: 11px;
+          line-height: 1.4;
+        }
+        .slide-note {
+          font-size: 9px;
+          margin-top: 5px;
+        }
+        .slide .text {
+          font-size: 11px;
+        }
+        .slide .text strong {
+          font-size: 13px;
+        }
         .slide-indicators {
-          margin: 10px 0;
+          margin: 6px 0;
         }
         .slide-indicator {
-          width: 8px;
-          height: 8px;
+          width: 6px;
+          height: 6px;
         }
         .tutorial-button {
-          font-size: 14px;
-          padding: 8px 20px;
+          font-size: 12px;
+          padding: 6px 16px;
         }
 
         /* ゲームUI */
         #game-ui {
           top: 5px;
           left: 5px;
-          padding: 8px 12px;
+          padding: 6px 10px;
           min-width: auto;
-          max-width: 140px;
-          border-radius: 10px;
+          max-width: 110px;
+          border-radius: 8px;
         }
         #game-ui h1 {
-          font-size: 10px;
-          margin-bottom: 3px;
+          font-size: 8px;
+          margin-bottom: 2px;
         }
         #timer-display {
-          font-size: 24px;
+          font-size: 18px;
           width: auto;
         }
         #timer-display.warning {
-          font-size: 24px;
+          font-size: 18px;
         }
         .info-icon {
-          font-size: 14px;
-          margin-right: 3px;
+          font-size: 12px;
+          margin-right: 2px;
         }
         .info-remaining {
-          margin-top: 5px;
-        }
-        .info-remaining-unit {
-          font-size: 12px;
-        }
-        .info-score {
-          font-size: 12px !important;
           margin-top: 3px;
         }
+        .info-remaining-unit {
+          font-size: 10px;
+        }
+        .info-score {
+          font-size: 10px !important;
+          margin-top: 2px;
+        }
         #score-display {
-          font-size: 14px;
+          font-size: 12px;
         }
         .info-score-decorate01,
         .info-score-decorate02 {
@@ -949,63 +954,79 @@
 
         /* ビデオコンテナ */
         #video-container {
-          width: 100px !important;
-          height: 75px !important;
+          width: 80px !important;
+          height: 60px !important;
           top: auto;
-          bottom: 10px;
-          right: 10px;
+          bottom: 5px;
+          right: 5px;
           border-width: 2px;
         }
 
         /* 照準 */
         #crosshair {
-          width: 50px;
-          height: 50px;
+          width: 40px;
+          height: 40px;
         }
 
         /* 結果画面 */
         .result-content {
-          padding: 20px 15px;
-          border-radius: 20px;
-          max-width: 400px;
+          padding: 15px 12px;
+          border-radius: 15px;
+          max-width: 280px;
         }
         .result-label-title {
-          font-size: 16px;
-          margin-bottom: 10px;
+          font-size: 12px;
+          margin-bottom: 8px;
         }
         .result-score {
-          font-size: 36px;
+          font-size: 28px;
         }
         .result-score-unit {
-          font-size: 14px;
+          font-size: 12px;
         }
         .result-label {
-          font-size: 20px;
+          font-size: 16px;
         }
         .result-button {
-          font-size: 12px;
-          padding: 8px 20px;
+          font-size: 11px;
+          padding: 6px 16px;
+        }
+        .result-content-mochi {
+          width: 50px;
+        }
+        .result-content-hanethuki {
+          width: 80px;
+          bottom: -10px;
+          right: -20px;
         }
 
         /* マイナス表示 */
         .minus-overlay .minus-content {
-          width: 150px;
-          height: 150px;
+          width: 100px;
+          height: 100px;
         }
         .minus-text {
-          font-size: 16px;
+          font-size: 12px;
         }
         .minus-points {
-          font-size: 32px;
+          font-size: 24px;
         }
 
         /* 手検知マーク */
         #hand-detected {
-          font-size: 14px;
-          padding: 10px 20px;
+          font-size: 12px;
+          padding: 8px 16px;
         }
         #hand-detected .icon {
-          font-size: 20px;
+          font-size: 16px;
+        }
+
+        /* 装飾画像 */
+        .shooting-game-shishimai {
+          width: 100px;
+        }
+        .shooting-game-kadomatsu {
+          width: 120px;
         }
       }
 
@@ -1081,6 +1102,25 @@
         width: calc(230 / 1440 * 100vw);
         bottom: -3vw;
         right: -6vw;
+      }
+      .c-top-btn {
+        margin-top: 8px;
+      }
+      .c-top-btn a {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 32px;
+        padding: 16px 24px;
+        text-decoration: none;
+      }
+      [data-color="white"].c-top-btn a {
+        color: #212121;
+        background-color: #fff;
+      }
+      [data-color="dark"].c-top-btn a {
+        color: #fff;
+        background-color: #212121;
       }
     </style>
   </head>
@@ -1171,7 +1211,7 @@
         </p>
         <img
           class="info-score-decorate02"
-          src="/shooting_game-images/target08.png"
+          src="shooting_game-images/target08.png"
           alt="弾丸アイコン"
           width="24"
           height="24"
@@ -1193,6 +1233,9 @@
           <span class="result-label" id="rank-label"></span>
         </div>
         <button class="result-button" id="retry-button">もう一度遊ぶ</button>
+        <p class="c-top-btn" data-color="dark">
+          <a href="/">ゲーム一覧へ戻る</a>
+        </p>
       </div>
     </div>
 

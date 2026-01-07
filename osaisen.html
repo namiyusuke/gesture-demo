@@ -121,91 +121,53 @@
         height: auto;
         z-index: 25;
         filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
-        opacity: 0;
-        transition: opacity 0.3s ease;
-      }
-
-      #dog-character.active {
         opacity: 1;
+        animation: dogIdle 1.2s ease-in-out infinite;
       }
 
-      #dog-character.blocking {
-        animation: dogRun 2.5s ease-in-out forwards;
-      }
-
-      @keyframes dogRun {
-        0% {
-          transform: translateX(0) translateY(0) scaleX(1);
-        }
-        10% {
-          transform: translateX(40px) translateY(-8px) scaleX(1);
-        }
-        20% {
-          transform: translateX(90px) translateY(0) scaleX(1);
-        }
-        30% {
-          transform: translateX(150px) translateY(-8px) scaleX(1);
-        }
-        40% {
-          transform: translateX(210px) translateY(0) scaleX(1);
+      @keyframes dogIdle {
+        0%,
+        100% {
+          transform: translateY(0);
         }
         50% {
-          transform: translateX(280px) translateY(-5px) scaleX(1);
+          transform: translateY(-15px);
         }
-        60% {
-          transform: translateX(350px) translateY(0) scaleX(1);
-        }
-        70% {
-          transform: translateX(400px) translateY(-8px) scaleX(1);
-        }
-        80% {
-          transform: translateX(460px) translateY(0) scaleX(1);
-        }
-        90% {
-          transform: translateX(510px) translateY(-5px) scaleX(1);
-        }
-        100% {
-          transform: translateX(560px) translateY(0) scaleX(1);
-        }
+      }
+
+      #dog-character.intercepting {
+        animation: none;
       }
 
       /* 猫キャラクター（邪魔役） */
       #cat-character {
         position: absolute;
         bottom: 80px;
-        left: calc(50% + 60px);
+        left: calc(50% + 140px);
         width: 120px;
         height: auto;
         z-index: 30;
         filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
-        opacity: 0;
-        transition: all 0.3s ease;
-        transform: translateY(50px);
-      }
-
-      #cat-character.active {
         opacity: 1;
-        transform: translateY(0);
+        animation: catIdle 1s ease-in-out infinite;
+        animation-delay: 0.3s;
       }
 
-      #cat-character.blocking {
-        animation: catBlock 0.3s ease-in-out infinite;
-      }
-
-      @keyframes catBlock {
+      @keyframes catIdle {
         0%,
         100% {
-          transform: translateX(0) rotate(0deg) scale(1);
+          transform: translateY(0) rotate(0deg);
         }
         25% {
-          transform: translateX(-50px) rotate(-15deg) scale(1.1);
-        }
-        50% {
-          transform: translateX(0) rotate(0deg) scale(1.2);
+          transform: translateY(-12px) rotate(-3deg);
         }
         75% {
-          transform: translateX(50px) rotate(15deg) scale(1.1);
+          transform: translateY(-12px) rotate(3deg);
         }
+      }
+
+      #cat-character.intercepting {
+        animation: none;
       }
 
       /* 鈴 */
@@ -558,8 +520,8 @@
       }
 
       #close-fail {
-        padding: 15px 40px;
-        font-size: 20px;
+        padding: 15px 24px;
+        font-size: 16px;
         font-weight: bold;
         color: #fff;
         background-color: #e7141b;
@@ -972,7 +934,7 @@
         #cat-character {
           width: 70px;
           bottom: 50px;
-          left: calc(50% + 40px);
+          left: calc(50% + 80px);
         }
 
         /* 鈴 */
@@ -1093,158 +1055,168 @@
       @media (max-height: 450px) and (orientation: landscape) {
         /* チュートリアルモーダル */
         .tutorial-content {
-          padding: 15px 20px;
-          max-width: 90%;
+          padding: 10px 15px;
+          max-width: 80%;
+          max-height: 90vh;
+          overflow-y: auto;
         }
         .tutorial-content h1 {
-          font-size: 18px;
-          margin-bottom: 10px;
+          font-size: 14px;
+          margin-bottom: 8px;
         }
         .slides-container {
-          height: 180px;
+          height: 120px;
         }
         .slide-subtitle {
-          font-size: 16px;
-          margin-bottom: 10px;
+          font-size: 13px;
+          margin-bottom: 6px;
         }
         .slide .icon {
-          font-size: 40px;
-          margin-bottom: 10px;
+          font-size: 28px;
+          margin-bottom: 6px;
         }
         .slide-description {
-          font-size: 13px;
-          line-height: 1.5;
+          font-size: 11px;
+          line-height: 1.4;
         }
         .slide-note {
-          font-size: 11px;
-          margin-top: 8px;
+          font-size: 9px;
+          margin-top: 5px;
         }
         .slide-indicators {
-          margin: 10px 0;
+          margin: 6px 0;
         }
         .slide-indicator {
-          width: 8px;
-          height: 8px;
+          width: 6px;
+          height: 6px;
         }
         .tutorial-button {
-          font-size: 14px;
-          padding: 8px 20px;
+          font-size: 12px;
+          padding: 6px 16px;
         }
 
         /* 情報パネル */
         #info {
-          width: 200px;
+          width: 150px;
           top: 5px;
           left: 5px;
         }
         .info {
-          padding: 10px 15px 40px;
+          padding: 8px 12px 35px;
+          aspect-ratio: auto;
         }
         .info-ttl {
-          font-size: 12px;
-        }
-        .info-text {
           font-size: 10px;
         }
-        .info-icon {
-          font-size: 18px;
+        .info-text {
+          font-size: 8px;
         }
-        #coin-count {
+        .info-icon {
           font-size: 14px;
         }
+        #coin-count {
+          font-size: 12px;
+        }
         .info-remaining {
-          margin-top: 8px;
+          margin-top: 5px;
         }
         .info-dog-character,
         .info-cat-character {
-          width: 35px;
+          width: 28px;
         }
 
         /* ビデオコンテナ */
         #video-container {
-          width: 100px !important;
-          height: 75px !important;
+          width: 80px !important;
+          height: 60px !important;
           top: auto;
-          bottom: 10px;
-          right: 10px;
+          bottom: 5px;
+          right: 5px;
           border-width: 2px;
         }
 
         /* 手のインジケーター */
         #hand-indicator {
-          width: 35px;
-          height: 35px;
-          font-size: 30px;
+          width: 30px;
+          height: 30px;
+          font-size: 25px;
         }
 
         /* 神社エリア */
         #shrine-area {
-          height: calc(100% - 50px);
+          height: calc(100% - 40px);
         }
         #saisenbox-image {
-          width: 100px;
+          width: 80px;
         }
         #saisenbox-area {
-          bottom: 30px;
+          bottom: 20px;
         }
         #dog-character {
-          width: 50px;
-          bottom: 40px;
-          left: calc(50% - 100px);
+          width: 40px;
+          bottom: 30px;
+          left: calc(50% - 80px);
         }
         #cat-character {
-          width: 45px;
-          bottom: 30px;
-          left: calc(50% + 25px);
+          width: 35px;
+          bottom: 20px;
+          left: calc(50% + 50px);
         }
         #bell {
-          font-size: 30px;
-          top: 80px;
+          font-size: 24px;
+          top: 60px;
         }
 
         /* 結果オーバーレイ */
         #omikuji-paper {
-          width: 85%;
+          width: 80%;
+          max-width: 350px;
         }
         #result-image {
-          max-height: 45vh;
+          max-height: 40vh;
         }
         #close-omikuji {
-          margin-top: 15px;
-          padding: 8px 20px;
-          font-size: 12px;
+          margin-top: 10px;
+          padding: 6px 16px;
+          font-size: 11px;
         }
 
         /* 失敗オーバーレイ */
         #fail-paper {
-          padding: 30px 20px;
-          border-radius: 20px;
+          padding: 20px 15px;
+          border-radius: 15px;
+          max-width: 280px;
         }
         #fail-title {
-          font-size: 20px;
-          margin-bottom: 15px;
+          font-size: 16px;
+          margin-bottom: 8px;
         }
         #fail-reason {
-          font-size: 24px;
+          font-size: 18px;
+          margin-bottom: 10px;
+        }
+        #fail-animal {
+          width: 80px !important;
+          margin: 10px 0 !important;
         }
         #close-fail {
-          font-size: 14px;
-          padding: 10px 24px;
-          margin-top: 20px;
+          font-size: 12px;
+          padding: 8px 20px;
+          margin-top: 10px;
         }
 
         /* 手検知マーク */
         #hand-detected {
-          font-size: 14px;
-          padding: 10px 20px;
+          font-size: 12px;
+          padding: 8px 16px;
         }
         #hand-detected .icon {
-          font-size: 20px;
+          font-size: 16px;
         }
 
         /* コイン */
         .coin {
-          font-size: 25px;
+          font-size: 20px;
         }
       }
 
@@ -1296,6 +1268,25 @@
         #orientation-overlay {
           display: flex;
         }
+      }
+      .c-top-btn {
+        margin-top: 8px;
+      }
+      .c-top-btn a {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 32px;
+        padding: 16px 24px;
+        text-decoration: none;
+      }
+      [data-color="white"].c-top-btn a {
+        color: #212121;
+        background-color: #fff;
+      }
+      [data-color="dark"].c-top-btn a {
+        color: #fff;
+        background-color: #212121;
       }
     </style>
   </head>
@@ -1389,6 +1380,9 @@
       <div id="omikuji-paper">
         <img id="result-image" src="" alt="結果" />
         <button id="close-omikuji">もう一度投げる</button>
+        <p class="c-top-btn" data-color="white">
+          <a href="/">ゲーム一覧へ戻る</a>
+        </p>
       </div>
     </div>
 
@@ -1398,8 +1392,8 @@
         <div id="fail-title">残念！！！</div>
         <div id="fail-reason"></div>
         <img id="fail-animal" src="" alt="" style="width: 120px; margin: 20px 0" />
-
         <button id="close-fail">もう一度投げる</button>
+        <p class="c-top-btn" data-color="white"><a href="/">ゲーム一覧へ戻る</a></p>
       </div>
     </div>
 
@@ -1567,9 +1561,18 @@
       // コインを横取りする動物の情報
       let interceptor = null; // { type: 'cat' | 'dog', timing: number, x: number, y: number }
 
+      // 猫の初期位置を保存
+      const catInitialLeft = "calc(50% + 140px)";
+      const catInitialBottom = "80px";
+
+      // 犬の初期位置を保存
+      const dogInitialLeft = "calc(50% - 280px)";
+      const dogInitialBottom = "100px";
+
       // 猫がジャンプしてコインを取る
       function catIntercept(targetX, targetY, callback) {
         catActive = true;
+        catCharacter.classList.add("intercepting");
 
         // 猫の開始位置（左右ランダム）
         const fromLeft = Math.random() < 0.5;
@@ -1579,8 +1582,6 @@
         catCharacter.style.bottom = "auto";
         catCharacter.style.top = `${targetY + 50}px`;
         catCharacter.style.transform = fromLeft ? "scaleX(1)" : "scaleX(-1)";
-
-        catCharacter.classList.add("active");
 
         // ジャンプアニメーション
         setTimeout(() => {
@@ -1602,11 +1603,15 @@
           catCharacter.style.opacity = "0";
         }, 600);
 
+        // 猫を元の位置に戻す
         setTimeout(() => {
-          catCharacter.classList.remove("active");
+          catCharacter.classList.remove("intercepting");
           catCharacter.style.transition = "";
           catCharacter.style.opacity = "";
           catCharacter.style.transform = "";
+          catCharacter.style.left = catInitialLeft;
+          catCharacter.style.top = "";
+          catCharacter.style.bottom = catInitialBottom;
           catActive = false;
           catBlockingActive = false;
         }, 1000);
@@ -1615,6 +1620,7 @@
       // 犬がジャンプしてコインを取る
       function dogIntercept(targetX, targetY, callback) {
         dogActive = true;
+        dogCharacter.classList.add("intercepting");
 
         // 犬の開始位置（左右ランダム）
         const fromLeft = Math.random() < 0.5;
@@ -1624,8 +1630,6 @@
         dogCharacter.style.bottom = "auto";
         dogCharacter.style.top = `${targetY + 50}px`;
         dogCharacter.style.transform = fromLeft ? "scaleX(1)" : "scaleX(-1)";
-
-        dogCharacter.classList.add("active");
 
         // ジャンプアニメーション
         setTimeout(() => {
@@ -1647,11 +1651,15 @@
           dogCharacter.style.opacity = "0";
         }, 600);
 
+        // 犬を元の位置に戻す
         setTimeout(() => {
-          dogCharacter.classList.remove("active");
+          dogCharacter.classList.remove("intercepting");
           dogCharacter.style.transition = "";
           dogCharacter.style.opacity = "";
           dogCharacter.style.transform = "";
+          dogCharacter.style.left = dogInitialLeft;
+          dogCharacter.style.top = "";
+          dogCharacter.style.bottom = dogInitialBottom;
           dogActive = false;
           dogBlockingActive = false;
         }, 1000);
